@@ -2,172 +2,960 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Literary Rides VocabPro – By Dr Vishwanath Bite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Literary Rides VocabPro - By Dr. Vishwanath Bite</title>
+  <!-- React + ReactDOM (UMD) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- In-browser Babel so we can use JSX in one file -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- TailwindCSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Free vocabulary app for competitive exams. Secure, educational, always free."/>
 </head>
-<body>
+<body class="antialiased">
   <div id="root"></div>
 
   <script type="text/babel">
-  /* ------------------- Helpers ------------------- */
-  const shuffleArray = (arr) => arr.slice().sort(()=>Math.random()-0.5);
-  const hashPassword = (txt) => btoa(txt);           // simple client-side hash placeholder
-  const pickUnique = (correct, pool, size=4) => {
-      const set = new Set([correct]);
-      for(const opt of shuffleArray(pool)){
-        if(set.size>=size) break;
-        if(!set.has(opt) && opt.trim().toLowerCase()!==correct.trim().toLowerCase()){
-          set.add(opt);
+    // ===========================
+    // Inline SVG Icon Components
+    // ===========================
+    const BookOpen = (props) => (
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    );
+    const Trophy = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+    );
+    const Flame = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+    );
+    const Crown = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>
+    );
+    const UserPlus = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+    );
+    const Brain = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/></svg>
+    );
+    const MessageSquare = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    );
+    const Target = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    );
+    const List = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+    );
+    const Volume2 = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+    );
+    const CheckCircle = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    );
+    const XCircle = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+    );
+    const Save = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    );
+    const Gift = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+    );
+    const X = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    );
+    const Youtube = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
+    );
+    const Instagram = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+    );
+    const Globe = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+    );
+    const Copy = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+    );
+    const Share2 = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+    );
+    const Zap = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+    );
+    const Lock = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    );
+    const TrendingUp = (p)=>(
+      <svg {...p} xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    );
+
+    // ===========================
+    // Tiny password hash (demo)
+    // ===========================
+    const hashPassword = (password) => {
+      let hash = 0;
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+      }
+      return hash.toString(36);
+    };
+
+    // ===========================
+    // Databases
+    // ===========================
+    const securityQuestions = [
+      "What was your first school's name?",
+      "What is your mother's maiden name?",
+      "What city were you born in?",
+      "What was your childhood nickname?"
+    ];
+
+    const vocabularyDB = {
+      easy: [
+        {word:"Abolish",definition:"To formally put an end to a system, practice, or institution",pronunciation:"uh-BOL-ish",synonyms:["eliminate","eradicate","terminate","annul"],antonyms:["establish","create","institute","found"],example:"The Indian government decided to abolish the practice of untouchability through Article 17.",mnemonic:"A-POLISH: Remove completely like polishing away dirt",usage:"Used in governance and social reform contexts",exam:"UPSC/SSC",difficulty:"easy"},
+        {word:"Abundant",definition:"Existing or available in large quantities; plentiful",pronunciation:"uh-BUN-duhnt",synonyms:["plentiful","ample","copious","profuse"],antonyms:["scarce","sparse","insufficient","meager"],example:"The Western Ghats receive abundant rainfall during monsoon season.",mnemonic:"A-BUN-DANT: Imagine abundant buns at a bakery",usage:"Describes quantity and availability",exam:"SSC/Banking",difficulty:"easy"},
+        {word:"Accurate",definition:"Correct in all details; exact and without error",pronunciation:"AK-yuh-ruht",synonyms:["precise","exact","correct","faithful"],antonyms:["inaccurate","incorrect","erroneous","imprecise"],example:"Census operations require accurate data collection for effective policy planning.",mnemonic:"AC-CUR-ATE: Like a cure that hits accurately",usage:"Essential in data, measurements, and reporting",exam:"Banking/SSC",difficulty:"easy"},
+        {word:"Brave",definition:"Ready to face and endure danger or pain; showing courage",pronunciation:"BRAYV",synonyms:["courageous","fearless","valiant","bold"],antonyms:["cowardly","timid","afraid","fearful"],example:"The brave soldiers defended the border with unwavering determination.",mnemonic:"BRAVE: Be Ready And Very Energetic",usage:"Describes courage in adversity",exam:"SSC",difficulty:"easy"},
+        {word:"Calm",definition:"Not showing or feeling nervousness, anger, or strong emotion",pronunciation:"KAHM",synonyms:["peaceful","tranquil","serene","composed"],antonyms:["agitated","excited","nervous","anxious"],example:"The meditation session helped students remain calm during exam stress.",mnemonic:"CALM: Cool And Low Mood",usage:"Emotional state, weather conditions",exam:"Banking/SSC",difficulty:"easy"},
+        {word:"Diligent",definition:"Having or showing care and conscientiousness in work or duties",pronunciation:"DIL-i-juhnt",synonyms:["hardworking","industrious","conscientious","assiduous"],antonyms:["lazy","careless","negligent","slack"],example:"Diligent preparation is the key to success in competitive examinations.",mnemonic:"DIL-I-GENT: Gentle person with big heart (dil) works hard",usage:"Work ethic and dedication",exam:"Banking/SSC",difficulty:"easy"},
+        {word:"Honest",definition:"Free of deceit and untruthfulness; sincere",pronunciation:"ON-ist",synonyms:["truthful","sincere","genuine","frank"],antonyms:["dishonest","deceitful","lying","fraudulent"],example:"Honest taxpayers contribute to the nation's development.",mnemonic:"HON-EST: Honor is the best policy",usage:"Character and integrity",exam:"Banking/SSC",difficulty:"easy"},
+        {word:"Important",definition:"Of great significance or value; likely to have a profound effect",pronunciation:"im-POR-tuhnt",synonyms:["significant","crucial","vital","essential"],antonyms:["unimportant","trivial","insignificant","minor"],example:"Education is important for individual growth and national progress.",mnemonic:"IM-PORT-ANT: Like an important port for ships",usage:"Priority and significance",exam:"SSC/Banking",difficulty:"easy"},
+        {word:"Kind",definition:"Having or showing a friendly, generous, and considerate nature",pronunciation:"KYND",synonyms:["caring","compassionate","generous","benevolent"],antonyms:["cruel","unkind","mean","harsh"],example:"Teachers should be kind yet firm in their approach to students.",mnemonic:"KIND: Keep It Nice Daily",usage:"Character and behavior",exam:"SSC",difficulty:"easy"},
+        {word:"Quick",definition:"Moving fast or doing something in a short time",pronunciation:"KWIK",synonyms:["fast","rapid","swift","speedy"],antonyms:["slow","sluggish","gradual","leisurely"],example:"Quick decision-making is crucial during emergency situations.",mnemonic:"QUICK: Quite Unique In Character Kinetically",usage:"Speed and responsiveness",exam:"Banking/SSC",difficulty:"easy"}
+      ],
+      medium: [
+        {word:"Benevolent",definition:"Well-meaning and kindly; showing goodwill and charitable intentions",pronunciation:"buh-NEV-uh-luhnt",synonyms:["kind","compassionate","caring","philanthropic"],antonyms:["malevolent","cruel","mean","unkind"],example:"The benevolent industrialist donated crores for rural education development.",mnemonic:"BENE-VOLENT: Beneficial volunteer who is excellent",usage:"Charitable actions and kind intentions",exam:"SSC/Banking",difficulty:"medium"},
+        {word:"Coherent",definition:"Logical and consistent; forming a unified whole",pronunciation:"koh-HEER-uhnt",synonyms:["logical","consistent","rational","orderly"],antonyms:["incoherent","confused","illogical","disjointed"],example:"The witness presented a coherent account of the incident to the court.",mnemonic:"CO-HERENT: Coming together inherently",usage:"Arguments, testimony, and explanations",exam:"Banking/SSC",difficulty:"medium"},
+        {word:"Diligent",definition:"Having or showing care and conscientiousness in work",pronunciation:"DIL-i-juhnt",synonyms:["hardworking","industrious","conscientious","meticulous"],antonyms:["lazy","careless","negligent","slack"],example:"Diligent civil servants ensure smooth governance.",mnemonic:"DIL-GENT: Gentle with big heart works hard",usage:"Work ethic",exam:"Banking/SSC",difficulty:"medium"},
+        {word:"Eloquent",definition:"Fluent or persuasive in speaking or writing",pronunciation:"EL-uh-kwuhnt",synonyms:["articulate","fluent","persuasive","expressive"],antonyms:["inarticulate","hesitant","tongue-tied","awkward"],example:"The advocate's eloquent arguments swayed the jury's opinion.",mnemonic:"ELO-QUENT: Eloquence is frequent in quality speakers",usage:"Communication skills",exam:"UPSC/Banking",difficulty:"medium"},
+        {word:"Empathy",definition:"The ability to understand and share feelings of another",pronunciation:"EM-puh-thee",synonyms:["compassion","understanding","sympathy","sensitivity"],antonyms:["apathy","indifference","insensitivity","callousness"],example:"Effective leaders demonstrate empathy towards citizens' concerns.",mnemonic:"EM-PATH-Y: Emotional path to understand others",usage:"Emotional intelligence",exam:"UPSC/SSC",difficulty:"medium"},
+        {word:"Feasible",definition:"Possible to do easily or conveniently; practical",pronunciation:"FEE-zuh-buhl",synonyms:["practical","possible","viable","achievable"],antonyms:["infeasible","impossible","impractical","unworkable"],example:"The committee evaluated whether the project was financially feasible.",mnemonic:"FEE-SIBLE: If you can see the fee, it's feasible",usage:"Project planning",exam:"Banking/SSC",difficulty:"medium"},
+        {word:"Genuine",definition:"Truly what something is said to be; authentic",pronunciation:"JEN-yoo-in",synonyms:["authentic","real","true","legitimate"],antonyms:["fake","false","counterfeit","artificial"],example:"The museum verified that the artifact was genuine before acquisition.",mnemonic:"GENU-INE: Genuinely in excellent condition",usage:"Authenticity",exam:"SSC/Banking",difficulty:"medium"},
+        {word:"Impartial",definition:"Treating all rivals or disputants equally; fair and just",pronunciation:"im-PAHR-shuhl",synonyms:["unbiased","fair","neutral","objective"],antonyms:["biased","partial","prejudiced","unfair"],example:"Judges must remain impartial while delivering verdicts.",mnemonic:"IM-PARTIAL: Not partial to any side",usage:"Justice and fairness",exam:"UPSC/Banking",difficulty:"medium"},
+        {word:"Resilient",definition:"Able to withstand or recover quickly from difficult conditions",pronunciation:"rih-ZIL-yuhnt",synonyms:["tough","strong","flexible","adaptable"],antonyms:["weak","fragile","brittle","inflexible"],example:"Indian farmers have shown resilient spirit during challenging times.",mnemonic:"RE-SILENT: Rising even when silent/down",usage:"Recovery and strength",exam:"UPSC/Banking",difficulty:"medium"},
+        {word:"Transparent",definition:"Open to public scrutiny; easy to perceive or detect",pronunciation:"trans-PAIR-uhnt",synonyms:["clear","obvious","evident","candid"],antonyms:["opaque","unclear","obscure","hidden"],example:"The government promotes transparent governance to build public trust.",mnemonic:"TRANS-PARENT: Clearly visible like transparent glass",usage:"Governance and clarity",exam:"UPSC/Banking",difficulty:"medium"}
+      ],
+      hard: [
+        {word:"Abstruse",definition:"Difficult to understand; obscure and profound in meaning",pronunciation:"ab-STROOS",synonyms:["obscure","complex","cryptic","esoteric"],antonyms:["clear","simple","obvious","straightforward"],example:"Quantum physics concepts remain abstruse to most undergraduate students.",mnemonic:"AB-STRUSE: Absolutely confusing to understand",usage:"Complex theories and difficult concepts",exam:"UPSC",difficulty:"hard"},
+        {word:"Alacrity",definition:"Brisk and cheerful readiness; eager willingness",pronunciation:"uh-LAK-ri-tee",synonyms:["eagerness","enthusiasm","willingness","promptness"],antonyms:["reluctance","apathy","hesitation","unwillingness"],example:"The volunteers responded with alacrity to the disaster relief call.",mnemonic:"A-LACK-RITY: No lack of energy or enthusiasm",usage:"Prompt and enthusiastic response",exam:"UPSC",difficulty:"hard"},
+        {word:"Ambiguous",definition:"Open to more than one interpretation; unclear",pronunciation:"am-BIG-yoo-uhs",synonyms:["unclear","vague","equivocal","cryptic"],antonyms:["clear","unambiguous","definite","explicit"],example:"The policy statement was deliberately ambiguous to allow flexibility.",mnemonic:"AM-BIG-UOUS: Meaning is as big as confusion",usage:"Unclear statements",exam:"UPSC/Banking",difficulty:"hard"},
+        {word:"Anomaly",definition:"Something that deviates from what is standard, normal, or expected",pronunciation:"uh-NOM-uh-lee",synonyms:["irregularity","deviation","aberration","exception"],antonyms:["normality","regularity","standard","conformity"],example:"The sudden temperature drop was a meteorological anomaly.",mnemonic:"A-NOMALY: Not normal, abnormality",usage:"Deviations from norm",exam:"Banking/UPSC",difficulty:"hard"},
+        {word:"Arduous",definition:"Involving or requiring strenuous effort; difficult and tiring",pronunciation:"AHR-joo-uhs",synonyms:["difficult","laborious","strenuous","taxing"],antonyms:["easy","effortless","simple","light"],example:"The arduous journey through the Himalayas tested their endurance.",mnemonic:"ARD-UOUS: Hard and continuous effort",usage:"Difficult tasks",exam:"Banking/UPSC",difficulty:"hard"},
+        {word:"Cacophony",definition:"A harsh, discordant mixture of sounds",pronunciation:"kuh-KOF-uh-nee",synonyms:["din","noise","discord","dissonance"],antonyms:["harmony","melody","euphony","consonance"],example:"The rush hour traffic created a cacophony of honking horns.",mnemonic:"CACO-PHONY: Cracked phone produces bad sound",usage:"Unpleasant sounds",exam:"Banking/UPSC",difficulty:"hard"},
+        {word:"Cogent",definition:"Clear, logical, and convincing; powerfully persuasive",pronunciation:"KOH-juhnt",synonyms:["convincing","compelling","forceful","persuasive"],antonyms:["unconvincing","weak","flimsy","ineffective"],example:"The lawyer presented cogent arguments that won the case.",mnemonic:"CO-GENT: Gentleman with convincing arguments",usage:"Strong arguments",exam:"UPSC/Banking",difficulty:"hard"},
+        {word:"Dichotomy",definition:"A division or contrast between two things that are opposed or different",pronunciation:"dy-KOT-uh-mee",synonyms:["division","split","separation","contrast"],antonyms:["unity","synthesis","agreement","harmony"],example:"There exists a dichotomy between urban and rural development.",mnemonic:"DI-CHOTOMY: Divide into two parts anatomically",usage:"Contrasts and divisions",exam:"UPSC",difficulty:"hard"},
+        {word:"Ebullient",definition:"Cheerful and full of energy; enthusiastic",pronunciation:"ih-BUL-yuhnt",synonyms:["exuberant","enthusiastic","vivacious","buoyant"],antonyms:["depressed","gloomy","lethargic","subdued"],example:"The team was ebullient after securing the championship victory.",mnemonic:"E-BULLIENT: Energy bubbling like boiling water",usage:"Enthusiastic mood",exam:"UPSC",difficulty:"hard"},
+        {word:"Ephemeral",definition:"Lasting for a very short time; transitory",pronunciation:"ih-FEM-er-uhl",synonyms:["transient","fleeting","temporary","brief"],antonyms:["permanent","lasting","enduring","eternal"],example:"Social media trends are often ephemeral, lasting only days.",mnemonic:"E-PHEMERAL: Temporary like a fever",usage:"Temporary things",exam:"UPSC",difficulty:"hard"},
+        {word:"Erudite",definition:"Having or showing great knowledge or learning",pronunciation:"ER-yuh-dyt",synonyms:["learned","scholarly","knowledgeable","educated"],antonyms:["ignorant","uneducated","illiterate","unlearned"],example:"The erudite professor has published over fifty research papers.",mnemonic:"ERU-DITE: Earn respect through deep study",usage:"Scholarly knowledge",exam:"UPSC",difficulty:"hard"},
+        {word:"Fastidious",definition:"Very attentive to and concerned about accuracy and detail",pronunciation:"fa-STID-ee-uhs",synonyms:["meticulous","particular","demanding","perfectionist"],antonyms:["careless","sloppy","negligent","lax"],example:"The chef was fastidious about ingredient quality and presentation.",mnemonic:"FAST-TIDIOUS: Fast and tediously careful",usage:"Attention to detail",exam:"UPSC",difficulty:"hard"}
+      ]
+    };
+
+    const oneWordSubstitutes = [
+      {phrase:"A government by the wealthy",answer:"Plutocracy",options:["Plutocracy","Democracy","Aristocracy","Oligarchy"],explanation:"Plutocracy: 'plutos' (wealth) + 'kratos' (power).",exam:"UPSC/SSC"},
+      {phrase:"A person who loves books",answer:"Bibliophile",options:["Bibliophile","Bibliographer","Librarian","Scholar"],explanation:"'biblio' (book) + 'phile' (lover).",exam:"SSC/Banking"},
+      {phrase:"A person who hates mankind",answer:"Misanthrope",options:["Misanthrope","Philanthropist","Humanitarian","Altruist"],explanation:"'mis' (hatred) + 'anthropos' (human).",exam:"UPSC/Banking"},
+      {phrase:"Murder of one's own father",answer:"Patricide",options:["Patricide","Matricide","Homicide","Fratricide"],explanation:"'pater' (father) + 'cide' (kill).",exam:"UPSC/SSC"},
+      {phrase:"A place where bees are kept",answer:"Apiary",options:["Apiary","Aviary","Aquarium","Menagerie"],explanation:"From Latin 'apis' (bee).",exam:"SSC/Banking"}
+    ];
+
+    // ===========================
+    // Helpers
+    // ===========================
+    const shuffleArray = (array) => {
+      const newArr = [...array];
+      for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+      }
+      return newArr;
+    };
+
+    const sample = (arr, n, excludeSet = new Set()) => {
+      const pool = arr.filter(v => !excludeSet.has(v));
+      const out = [];
+      while (out.length < n && pool.length) {
+        const i = Math.floor(Math.random() * pool.length);
+        out.push(pool.splice(i,1)[0]);
+      }
+      return out;
+    };
+
+    const generateSmartDistractors = (correctDef, words, count = 3) => {
+      const pool = words.filter(w => w.definition !== correctDef).map(w=>w.definition);
+      return sample(pool, count, new Set([correctDef]));
+    };
+
+    // Build synonym/antonym distractor pools (flatten)
+    const buildFlatPool = (words, key) => {
+      const flat = [];
+      words.forEach(w => flat.push(...(w[key] || [])));
+      return flat;
+    };
+
+    // ===========================
+    // App Component (single-file)
+    // ===========================
+    function App(){
+      const [screen, setScreen] = React.useState('home');
+      const [mode, setMode] = React.useState(null);
+      const [difficulty, setDifficulty] = React.useState(null);
+      const [currentIndex, setCurrentIndex] = React.useState(0);
+      const [score, setScore] = React.useState(0);
+      const [streak, setStreak] = React.useState(0);
+      const [totalPoints, setTotalPoints] = React.useState(0);
+      const [level, setLevel] = React.useState(1);
+      const [showResult, setShowResult] = React.useState(false);
+      const [isCorrect, setIsCorrect] = React.useState(false);
+      const [totalAnswered, setTotalAnswered] = React.useState(0);
+      const [masteredWords, setMasteredWords] = React.useState([]);
+      const [strugglingWords, setStrugglingWords] = React.useState([]);
+
+      const [isSignedIn, setIsSignedIn] = React.useState(false);
+      const [showAuthModal, setShowAuthModal] = React.useState(false);
+      const [authMode, setAuthMode] = React.useState('signin');
+      const [users, setUsers] = React.useState({});
+      const [userProfile, setUserProfile] = React.useState(null);
+
+      const [signInData, setSignInData] = React.useState({ mobile:'', password:'' });
+      const [signUpData, setSignUpData] = React.useState({ firstName:'', lastName:'', mobile:'', email:'', password:'', securityQuestion:'', securityAnswer:'' });
+      const [forgotData, setForgotData] = React.useState({ mobile:'', answer:'' });
+
+      const [showSignupReminder, setShowSignupReminder] = React.useState(false);
+      const [showDifficultyModal, setShowDifficultyModal] = React.useState(false);
+      const [selectedMode, setSelectedMode] = React.useState(null);
+      const [referralCode, setReferralCode] = React.useState('');
+      const [referralCount, setReferralCount] = React.useState(0);
+      const [showReferralModal, setShowReferralModal] = React.useState(false);
+
+      const [questionSet, setQuestionSet] = React.useState([]); // prebuilt questions
+      const utteranceRef = React.useRef(null);
+
+      // Load saved users + referral capture
+      React.useEffect(()=>{
+        const saved = localStorage.getItem('vocabProUsers');
+        if (saved) setUsers(JSON.parse(saved));
+
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) localStorage.setItem('pendingReferral', ref);
+
+        return () => {
+          // cancel any TTS on unmount
+          try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+        };
+      },[]);
+
+      // Gentle upsell to sign up
+      React.useEffect(()=>{
+        if (!isSignedIn && (totalAnswered >= 5 || totalPoints >= 50)) {
+          setShowSignupReminder(true);
         }
-      }
-      return shuffleArray([...set]);
-  };
+      },[totalAnswered,totalPoints,isSignedIn]);
 
-  /* ------------------- Icons (trimmed to essential) ------------------- */
-  const BookOpen = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>;
-  const Save = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
-  const Volume2 = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>;
-  const X = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-  const CheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-  const XCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
+      // Level calc
+      React.useEffect(()=>{
+        setLevel(Math.floor(totalPoints/100) + 1);
+      },[totalPoints]);
 
-  /* ------------------- Sample DB ------------------- */
-  const vocabularyDB = {
-    easy:[{word:"Abolish",definition:"To formally put an end to a system or practice",synonyms:["eliminate","eradicate","terminate","annul"],antonyms:["establish","create","institute","found"],example:"The govt decided to abolish the outdated tax system."}],
-    medium:[{word:"Benevolent",definition:"Well meaning and kindly",synonyms:["kind","compassionate","caring","generous"],antonyms:["malevolent","cruel","mean","unkind"],example:"The benevolent donor funded scholarships."}],
-    hard:[{word:"Eloquent",definition:"Fluent or persuasive in speaking",synonyms:["articulate","fluent","persuasive","expressive"],antonyms:["inarticulate","hesitant","tongue-tied","awkward"],example:"The lawyer's eloquent argument convinced the jury."}],
-    oneword:[{word:"Patricide",definition:"Murder of one's own father",options:["Homicide","Matricide","Fratricide","Patricide"],example:"Patricide is a severe crime."}]
-  };
+      // ESC closes modals
+      React.useEffect(()=>{
+        const onEsc = (e)=>{
+          if (e.key === 'Escape'){
+            setShowAuthModal(false);
+            setShowDifficultyModal(false);
+            setShowReferralModal(false);
+            setShowSignupReminder(false);
+          }
+        };
+        window.addEventListener('keydown', onEsc);
+        return ()=>window.removeEventListener('keydown', onEsc);
+      },[]);
 
-  /* ------------------- Main App ------------------- */
-  const App=()=>{
-    const [screen,setScreen]=React.useState('home');
-    const [mode,setMode]=React.useState(null);
-    const [difficulty,setDifficulty]=React.useState(null);
-    const [idx,setIdx]=React.useState(0);
-    const [score,setScore]=React.useState(0);
-    const [streak,setStreak]=React.useState(0);
-    const [points,setPoints]=React.useState(0);
-    const [showResult,setShowResult]=React.useState(false);
-    const [isCorrect,setIsCorrect]=React.useState(false);
+      // Auth Handlers
+      const handleSignIn = ()=>{
+        const hashed = hashPassword(signInData.password);
+        if (users[signInData.mobile] && users[signInData.mobile].passwordHash === hashed){
+          setIsSignedIn(true);
+          setUserProfile(users[signInData.mobile].profile);
+          const data = users[signInData.mobile].data || {};
+          setTotalPoints(data.totalPoints || 0);
+          setStreak(data.streak || 0);
+          setReferralCode(data.referralCode || '');
+          setReferralCount(data.referralCount || 0);
+          setMasteredWords(data.masteredWords || []);
+          setStrugglingWords(data.strugglingWords || []);
+          setShowAuthModal(false);
+          alert('✅ Welcome back!');
+        } else {
+          alert('❌ Invalid mobile number or password');
+        }
+      };
 
-    /* -------- Quiz builder -------- */
-    const buildQ=()=>{
-      const pool=difficulty?vocabularyDB[difficulty]:vocabularyDB.easy;
-      const w=mode==='oneword'?vocabularyDB.oneword[idx%vocabularyDB.oneword.length]:pool[idx%pool.length];
-      let question,options,correct;
-      if(mode==='vocab'){
-        question=`What does "${w.word}" mean?`;
-        correct=w.definition;
-        options=pickUnique(correct,pool.map(x=>x.definition),4);
-      }else if(mode==='synonym'){
-        correct=w.synonyms[0];
-        const globalSyn=Object.values(vocabularyDB).flat().flatMap(x=>x.synonyms||[]);
-        options=pickUnique(correct,globalSyn,4);
-        question=`Choose a SYNONYM for "${w.word}"`;
-      }else if(mode==='antonym'){
-        correct=w.antonyms[0];
-        const globalAnt=Object.values(vocabularyDB).flat().flatMap(x=>x.antonyms||[]);
-        options=pickUnique(correct,globalAnt,4);
-        question=`Choose an ANTONYM for "${w.word}"`;
-      }else if(mode==='oneword'){
-        question=`One-word for: "${w.definition}"`;
-        options=w.options;
-        correct=w.word;
-      }
-      return {w,question,options,correct};
-    };
-    const {w,question,options,correct}=buildQ();
+      const handleSignUp = ()=>{
+        if (users[signUpData.mobile]){
+          alert('❌ Mobile number already registered. Please sign in.');
+          return;
+        }
+        const newRefCode = (signUpData.firstName || 'USER').substring(0,3).toUpperCase() + Math.random().toString(36).substring(2,6).toUpperCase();
+        let bonus = 50;
 
-    const handleAns=(opt)=>{
-      const ok=opt===correct;
-      setIsCorrect(ok);
-      setShowResult(true);
-      if(ok){
-        const pts=mode==='oneword'?10:difficulty==='hard'?20:difficulty==='medium'?15:10;
-        setScore(s=>s+pts);
-        setPoints(p=>p+pts);
-        setStreak(s=>s+1);
-      }else setStreak(0);
-    };
-    const nextQ=()=>{setIdx(i=>i+1);setShowResult(false);};
+        // referral
+        const pending = localStorage.getItem('pendingReferral');
+        if (pending){
+          const referrerEntry = Object.entries(users).find(([_,u]) => u.data?.referralCode === pending);
+          if (referrerEntry){
+            const [refMobile] = referrerEntry;
+            users[refMobile].data = users[refMobile].data || {};
+            users[refMobile].data.referralCount = (users[refMobile].data.referralCount||0)+1;
+            users[refMobile].data.totalPoints = (users[refMobile].data.totalPoints||0)+100;
+          }
+          bonus += 100;
+          localStorage.removeItem('pendingReferral');
+        }
 
-    /* --------- Render ---------- */
-    if(screen==='quiz'){
-      return(
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4">
-        <div className="max-w-md mx-auto">
-          <button onClick={()=>setScreen('home')} className="mb-3 bg-white/20 text-white px-3 py-1 rounded-xl">← Back</button>
-          <div className="bg-white rounded-3xl p-6">
-            <div className="text-center mb-6">
-              {mode!=='oneword'&&(
-                <div className="flex justify-center items-center space-x-2 mb-3">
-                  <h2 className="text-3xl font-black">{w.word}</h2>
-                  <button onClick={()=>speechSynthesis.speak(new SpeechSynthesisUtterance(w.word))} className="bg-blue-500 text-white p-2 rounded-full"><Volume2/></button>
+        const newUser = {
+          passwordHash: hashPassword(signUpData.password),
+          profile: signUpData,
+          data: {
+            totalPoints: totalPoints + bonus,
+            streak,
+            referralCode: newRefCode,
+            referralCount: 0,
+            masteredWords: [],
+            strugglingWords: []
+          }
+        };
+
+        const updated = { ...users, [signUpData.mobile]: newUser };
+        setUsers(updated);
+        localStorage.setItem('vocabProUsers', JSON.stringify(updated));
+
+        setIsSignedIn(true);
+        setUserProfile(signUpData);
+        setReferralCode(newRefCode);
+        setTotalPoints(totalPoints + bonus);
+        setShowAuthModal(false);
+        setShowSignupReminder(false);
+        alert(`🎉 Welcome! You got +${bonus} bonus points!`);
+      };
+
+      const handleForgotPassword = ()=>{
+        if (users[forgotData.mobile] && users[forgotData.mobile].profile.securityAnswer.toLowerCase() === (forgotData.answer||'').toLowerCase()){
+          const np = prompt('Enter your new password (min 6 chars):');
+          if (np && np.length >= 6){
+            users[forgotData.mobile].passwordHash = hashPassword(np);
+            localStorage.setItem('vocabProUsers', JSON.stringify(users));
+            alert('✅ Password reset successful! Please sign in with your new password.');
+            setAuthMode('signin');
+            setForgotData({mobile:'',answer:''});
+          } else {
+            alert('Password must be at least 6 characters.');
+          }
+        } else {
+          alert('❌ Invalid mobile number or security answer');
+        }
+      };
+
+      const saveProgress = ()=>{
+        if (isSignedIn && userProfile?.mobile){
+          const updated = {
+            ...users[userProfile.mobile],
+            data: { totalPoints, streak, referralCode, referralCount, masteredWords, strugglingWords }
+          };
+          const all = { ...users, [userProfile.mobile]: updated };
+          setUsers(all);
+          localStorage.setItem('vocabProUsers', JSON.stringify(all));
+          alert('✅ Progress Saved!');
+        } else {
+          alert('⚠️ Please sign in to save progress');
+        }
+      };
+
+      // ======== Quiz building ========
+      const buildQuestionSet = (m, lvl) => {
+        if (m === 'oneword') {
+          // clone & shuffle
+          return shuffleArray(oneWordSubstitutes.map((q)=>({
+            type:'oneword',
+            word:q.answer,
+            prompt:`One word for: "${q.phrase}"`,
+            options: shuffleArray([...q.options]),
+            correct: q.answer,
+            data:{ definition:q.phrase, example:q.explanation, exam:q.exam }
+          })));
+        }
+
+        const words = vocabularyDB[lvl] || vocabularyDB.easy;
+        const wordsShuffled = shuffleArray(words);
+
+        if (m === 'vocab') {
+          return wordsShuffled.map(w => {
+            const distractors = generateSmartDistractors(w.definition, words, 3);
+            const opts = shuffleArray([w.definition, ...distractors]);
+            return {
+              type:'vocab',
+              word:w.word,
+              prompt:`What does "${w.word}" mean?`,
+              options: opts,
+              correct: w.definition,
+              data: w
+            };
+          });
+        }
+
+        if (m === 'synonym' || m === 'antonym') {
+          const key = m === 'synonym' ? 'synonyms' : 'antonyms';
+          // Build flat pool of possible distractors from OTHER words
+          const flat = buildFlatPool(words, key);
+          return wordsShuffled.map(w => {
+            const correct = w[key]?.[0]; // choose a single canonical correct option
+            const exclude = new Set([correct, w.word]);
+            // prefer distractors that are NOT in this word's own list
+            const ownList = new Set(w[key] || []);
+            const goodDistractors = flat.filter(s => !ownList.has(s) && s !== correct && typeof s === 'string');
+            let distractors = sample(goodDistractors, 3, exclude);
+            // fallback if needed
+            if (distractors.length < 3) {
+              const backup = flat.filter(s => s !== correct && typeof s === 'string');
+              distractors = [...distractors, ...sample(backup, 3 - distractors.length, new Set([correct, ...distractors]))];
+            }
+            const options = shuffleArray([correct, ...distractors].slice(0,4));
+            return {
+              type:m,
+              word:w.word,
+              prompt:`Choose an ${m === 'synonym' ? 'SYNONYM' : 'ANTONYM'} for "${w.word}"`,
+              options,
+              correct,
+              data: w
+            };
+          });
+        }
+
+        return [];
+      };
+
+      const selectDifficulty = (lvl)=>{
+        setDifficulty(lvl);
+        setMode(selectedMode);
+        const qs = buildQuestionSet(selectedMode, lvl);
+        setQuestionSet(qs);
+        setScreen('quiz');
+        setCurrentIndex(0);
+        setScore(0);
+        setShowResult(false);
+      };
+
+      const startQuiz = (m)=>{
+        setSelectedMode(m);
+        if (m === 'vocab' || m === 'synonym' || m === 'antonym'){
+          setShowDifficultyModal(true);
+        } else {
+          setMode(m);
+          const qs = buildQuestionSet(m, difficulty);
+          setQuestionSet(qs);
+          setScreen('quiz');
+          setCurrentIndex(0);
+          setScore(0);
+          setShowResult(false);
+        }
+      };
+
+      const speakWord = (text)=>{
+        if (!('speechSynthesis' in window)){
+          alert('Text-to-speech not supported in your browser');
+          return;
+        }
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.rate = 0.8;
+          u.lang = 'en-US';
+          utteranceRef.current = u;
+          window.speechSynthesis.speak(u);
+        } catch {}
+      };
+
+      const handleAnswer = (answer, correct, currentWord)=>{
+        const correctFlag = answer === correct;
+        setIsCorrect(correctFlag);
+        setShowResult(true);
+        setTotalAnswered(t=>t+1);
+
+        // learning progress
+        if (correctFlag){
+          if (!masteredWords.includes(currentWord.word)){
+            setMasteredWords(prev=>[...prev, currentWord.word]);
+          }
+          setStrugglingWords(prev=>prev.filter(w => w !== currentWord.word));
+        } else {
+          setStrugglingWords(prev=>{
+            if (!prev.includes(currentWord.word) && !masteredWords.includes(currentWord.word)) {
+              return [...prev, currentWord.word];
+            }
+            return prev;
+          });
+        }
+
+        if (correctFlag){
+          const pts = difficulty === 'hard' ? 20 : difficulty === 'medium' ? 15 : 10;
+          setScore(s=>s+pts);
+          setTotalPoints(p=>p+pts);
+          setStreak(s=>s+1);
+        }else{
+          setStreak(0);
+        }
+      };
+
+      const nextQuestion = ()=>{
+        if (!questionSet.length) return;
+        setCurrentIndex(i => (i+1) % questionSet.length);
+        setShowResult(false);
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+      };
+
+      const shareReferral = ()=>{
+        const text = `🎓 Join Literary Rides VocabPro!\n\n📚 FREE vocabulary app for competitive exams\n🎁 Use my code: ${referralCode}\n💯 Get 150 bonus points!\n\nBy Dr. Vishwanath Bite\n\n${window.location.origin}${window.location.pathname}?ref=${referralCode}`;
+        if (navigator.share){
+          navigator.share({ title:'Literary Rides VocabPro', text });
+        } else {
+          navigator.clipboard.writeText(text);
+          alert('✅ Referral link copied!');
+        }
+      };
+
+      // ---------- Render Screens ----------
+      if (screen === 'home'){
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pb-40">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-700 via-blue-700 to-indigo-700 shadow-2xl">
+              <div className="max-w-4xl mx-auto px-4 py-6">
+                <div className="flex flex-col items-center justify-center mb-4">
+                  <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl mb-4">
+                    <BookOpen className="text-white" width="40" height="40" />
+                  </div>
+                  <div className="text-center">
+                    <h1 className="text-4xl font-black text-white mb-2">Literary Rides</h1>
+                    <h2 className="text-2xl font-bold text-yellow-300 mb-2">VocabPro</h2>
+                    <p className="text-purple-200 text-sm font-medium">By Dr. Vishwanath Bite</p>
+                  </div>
                 </div>
-              )}
-              <p className="text-lg font-bold text-gray-700">{question}</p>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mt-2 ${
-                mode==='oneword'?'bg-indigo-100 text-indigo-700':
-                difficulty==='hard'?'bg-red-100 text-red-700':
-                difficulty==='medium'?'bg-yellow-100 text-yellow-700':
-                'bg-green-100 text-green-700'}`}>
-                {mode==='oneword'?'ONE-WORD • 10 pts':(difficulty||'EASY').toUpperCase()}
-              </span>
+
+                <div className="flex justify-center space-x-3">
+                  {!isSignedIn ? (
+                    <>
+                      <button onClick={()=>{setAuthMode('signin');setShowAuthModal(true);}} className="bg-white text-purple-700 px-6 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
+                        Sign In
+                      </button>
+                      <button onClick={()=>{setAuthMode('signup');setShowAuthModal(true);}} className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-xl font-bold text-sm animate-pulse hover:scale-105 transition-transform">
+                        Sign Up FREE
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-white bg-opacity-20 backdrop-blur-xl rounded-xl px-4 py-2">
+                        <p className="text-white font-bold text-sm">Hi, {userProfile?.firstName}! 👋</p>
+                      </div>
+                      <button onClick={saveProgress} className="bg-green-500 text-white p-2 rounded-xl hover:scale-110 transition-transform" aria-label="Save progress">
+                        <Save width="20" height="20" />
+                      </button>
+                      <button onClick={()=>setShowReferralModal(true)} className="bg-white bg-opacity-20 p-2 rounded-xl hover:scale-110 transition-transform" aria-label="Refer and earn">
+                        <Gift width="20" height="20" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {!showResult?(
-              <div className="space-y-3">
-                {options.map((o,i)=>(
-                  <button key={i} disabled={showResult}
-                    onClick={()=>handleAns(o)}
-                    className={`w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border-2 hover:border-blue-500`}>
-                    {o}
-                  </button>
-                ))}
+            <div className="max-w-md mx-auto p-4">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-4 mb-4 text-center">
+                <h3 className="text-white font-black text-xl mb-1">✨ 100% FREE ✨</h3>
+                <p className="text-green-100 text-sm">Secure • Educational • Always Free</p>
               </div>
-            ):(
-              <div className={`p-5 rounded-2xl ${isCorrect?'bg-green-50 border-4 border-green-500':'bg-red-50 border-4 border-red-500'}`}>
-                <div className="flex items-center justify-center mb-4">
-                  {isCorrect?<CheckCircle/>:<XCircle/>}
-                  <h3 className={`text-2xl font-black ml-3 ${isCorrect?'text-green-700':'text-red-700'}`}>
-                    {isCorrect?'Correct! 🎉':'Try Again!'}
+
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+                  <Trophy className="mx-auto mb-1 text-yellow-300" width="24" height="24" />
+                  <p className="text-white font-black text-lg">{totalPoints}</p>
+                  <p className="text-xs text-gray-300">Points</p>
+                </div>
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+                  <Flame className="mx-auto mb-1 text-orange-400" width="24" height="24" />
+                  <p className="text-white font-black text-lg">{streak}</p>
+                  <p className="text-xs text-gray-300">Streak</p>
+                </div>
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+                  <Crown className="mx-auto mb-1 text-yellow-400" width="24" height="24" />
+                  <p className="text-white font-black text-lg">{level}</p>
+                  <p className="text-xs text-gray-300">Level</p>
+                </div>
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+                  <UserPlus className="mx-auto mb-1 text-blue-300" width="24" height="24" />
+                  <p className="text-white font-black text-lg">{referralCount}</p>
+                  <p className="text-xs text-gray-300">Referrals</p>
+                </div>
+              </div>
+
+              {isSignedIn && (masteredWords.length > 0 || strugglingWords.length > 0) && (
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-4 mb-4">
+                  <h3 className="text-white font-bold mb-2 flex items-center">
+                    <TrendingUp className="mr-2" width="20" height="20" /> Your Learning Progress
                   </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-green-500 bg-opacity-20 rounded-xl p-2 text-center">
+                      <p className="text-white font-black text-2xl">{masteredWords.length}</p>
+                      <p className="text-green-200 text-xs">Mastered</p>
+                    </div>
+                    <div className="bg-orange-500 bg-opacity-20 rounded-xl p-2 text-center">
+                      <p className="text-white font-black text-2xl">{strugglingWords.length}</p>
+                      <p className="text-orange-200 text-xs">Need Practice</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-white rounded-xl p-3 mb-3">
-                  <p className="font-bold">Definition:</p>
-                  <p className="text-gray-600">{w.definition}</p>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button onClick={()=>startQuiz('vocab')} className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start vocabulary quiz">
+                  <Brain className="mx-auto mb-2 text-white" width="32" height="32" />
+                  <p className="text-white font-black text-sm">Vocabulary</p>
+                  <p className="text-green-100 text-xs">3 Levels</p>
+                </button>
+                <button onClick={()=>startQuiz('synonym')} className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start synonyms quiz">
+                  <MessageSquare className="mx-auto mb-2 text-white" width="32" height="32" />
+                  <p className="text-white font-black text-sm">Synonyms</p>
+                  <p className="text-blue-100 text-xs">3 Levels</p>
+                </button>
+                <button onClick={()=>startQuiz('antonym')} className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start antonyms quiz">
+                  <Target className="mx-auto mb-2 text-white" width="32" height="32" />
+                  <p className="text-white font-black text-sm">Antonyms</p>
+                  <p className="text-orange-100 text-xs">3 Levels</p>
+                </button>
+                <button onClick={()=>startQuiz('oneword')} className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start one-word substitutes quiz">
+                  <List className="mx-auto mb-2 text-white" width="32" height="32" />
+                  <p className="text-white font-black text-sm">One Word</p>
+                  <p className="text-purple-100 text-xs">Substitutes</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-800 via-blue-800 to-indigo-800 border-t-4 border-yellow-400">
+              <div className="max-w-4xl mx-auto px-4 py-4">
+                <div className="text-center mb-3">
+                  <p className="text-white font-bold text-sm mb-2">Connect with Literary Rides</p>
+                  <div className="flex justify-center space-x-4">
+                    <a href="https://youtube.com/@literaryrides" target="_blank" rel="noopener noreferrer" className="bg-red-600 p-3 rounded-full hover:scale-110 transition-transform" aria-label="YouTube">
+                      <Youtube className="text-white" width="20" height="20" />
+                    </a>
+                    <a href="https://instagram.com/literaryrides" target="_blank" rel="noopener noreferrer" className="bg-pink-600 p-3 rounded-full hover:scale-110 transition-transform" aria-label="Instagram">
+                      <Instagram className="text-white" width="20" height="20" />
+                    </a>
+                    <a href="https://open.spotify.com/show/3lsJLi7SBqrsR65I1jqxAn" target="_blank" rel="noopener noreferrer" className="bg-green-600 p-3 rounded-full hover:scale-110 transition-transform" aria-label="Spotify Podcast">
+                      <Globe className="text-white" width="20" height="20" />
+                    </a>
+                  </div>
                 </div>
-                <button onClick={nextQ} className="w-full mt-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-2 rounded-xl">Next →</button>
+                <div className="text-center">
+                  <p className="text-purple-200 text-xs">© 2025 Literary Rides • Created by Dr. Vishwanath Bite</p>
+                  <p className="text-purple-300 text-xs mt-1">🔐 Secure • 📚 Educational • 💯 Always Free</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Auth Modal */}
+            {showAuthModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 my-8">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 id="auth-modal-title" className="text-2xl font-black">
+                      {authMode==='signin'?'🔐 Sign In':authMode==='signup'?'🎉 Sign Up':'🔑 Reset Password'}
+                    </h3>
+                    <button onClick={()=>setShowAuthModal(false)} aria-label="Close modal" className="p-2 hover:bg-gray-100 rounded-full">
+                      <X width="24" height="24"/>
+                    </button>
+                  </div>
+
+                  {authMode==='signin' && (
+                    <div className="space-y-3">
+                      <input type="tel" placeholder="Mobile Number" maxLength="10" value={signInData.mobile} onChange={(e)=>setSignInData({...signInData,mobile:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none" aria-label="Mobile number"/>
+                      <input type="password" placeholder="Password" value={signInData.password} onChange={(e)=>setSignInData({...signInData,password:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none" aria-label="Password"/>
+                      <button onClick={handleSignIn} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-105 transition-transform">Sign In</button>
+                      <div className="text-center space-y-2">
+                        <button onClick={()=>setAuthMode('forgot')} className="text-blue-600 text-sm font-bold hover:underline">Forgot Password?</button>
+                        <p className="text-gray-600 text-sm">Don't have an account? <button onClick={()=>setAuthMode('signup')} className="text-purple-600 font-bold hover:underline">Sign Up</button></p>
+                      </div>
+                    </div>
+                  )}
+
+                  {authMode==='signup' && (
+                    <div className="space-y-3">
+                      <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-3 mb-4">
+                        <p className="text-sm font-bold text-yellow-800">🎁 Get +50 points on signup!</p>
+                        <p className="text-xs text-yellow-700">+100 extra if you use a referral code!</p>
+                      </div>
+                      <input type="text" placeholder="First Name *" value={signUpData.firstName} onChange={(e)=>setSignUpData({...signUpData,firstName:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      <input type="text" placeholder="Last Name *" value={signUpData.lastName} onChange={(e)=>setSignUpData({...signUpData,lastName:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      <input type="tel" placeholder="Mobile (10 digits) *" maxLength="10" value={signUpData.mobile} onChange={(e)=>setSignUpData({...signUpData,mobile:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      <input type="email" placeholder="Email (Optional)" value={signUpData.email} onChange={(e)=>setSignUpData({...signUpData,email:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      <input type="password" placeholder="Create Password (min 6 chars) *" value={signUpData.password} onChange={(e)=>setSignUpData({...signUpData,password:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      <select value={signUpData.securityQuestion} onChange={(e)=>setSignUpData({...signUpData,securityQuestion:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none">
+                        <option value="">Select Security Question *</option>
+                        {securityQuestions.map((q,i)=><option key={i} value={q}>{q}</option>)}
+                      </select>
+                      <input type="text" placeholder="Security Answer *" value={signUpData.securityAnswer} onChange={(e)=>setSignUpData({...signUpData,securityAnswer:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      <button onClick={handleSignUp} className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black py-4 rounded-xl hover:scale-105 transition-transform">Sign Up & Get Bonus Points 🎁</button>
+                      <p className="text-center text-gray-600 text-sm">Already have an account? <button onClick={()=>setAuthMode('signin')} className="text-purple-600 font-bold hover:underline">Sign In</button></p>
+                    </div>
+                  )}
+
+                  {authMode==='forgot' && (
+                    <div className="space-y-3">
+                      <div className="bg-blue-50 p-3 rounded-xl mb-4">
+                        <p className="text-sm text-gray-700"><Lock className="inline mr-2" width="16" height="16"/>For security, you'll set a new password</p>
+                      </div>
+                      <input type="tel" placeholder="Mobile Number" maxLength="10" value={forgotData.mobile} onChange={(e)=>setForgotData({...forgotData,mobile:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                      {forgotData.mobile.length===10 && users[forgotData.mobile] && (
+                        <>
+                          <div className="bg-blue-50 p-3 rounded-xl">
+                            <p className="text-sm font-bold">Your Security Question:</p>
+                            <p className="text-sm text-gray-600">{users[forgotData.mobile].profile.securityQuestion}</p>
+                          </div>
+                          <input type="text" placeholder="Your Answer" value={forgotData.answer} onChange={(e)=>setForgotData({...forgotData,answer:e.target.value})} className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"/>
+                        </>
+                      )}
+                      <button onClick={handleForgotPassword} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-105 transition-transform">Reset Password</button>
+                      <button onClick={()=>setAuthMode('signin')} className="w-full text-center text-purple-600 font-bold hover:underline">Back to Sign In</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Difficulty Modal */}
+            {showDifficultyModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6">
+                  <h3 className="text-2xl font-black text-center mb-6">Choose Difficulty</h3>
+                  <div className="space-y-3">
+                    <button onClick={()=>selectDifficulty('easy')} className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4 hover:scale-105 transition-transform">
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <p className="font-black text-lg">Easy</p>
+                          <p className="text-sm">Perfect for beginners • 10 pts</p>
+                        </div>
+                        <Zap width="32" height="32"/>
+                      </div>
+                    </button>
+                    <button onClick={()=>selectDifficulty('medium')} className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-2xl p-4 hover:scale-105 transition-transform">
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <p className="font-black text-lg">Medium</p>
+                          <p className="text-sm">Good challenge • 15 pts</p>
+                        </div>
+                        <Flame width="32" height="32"/>
+                      </div>
+                    </button>
+                    <button onClick={()=>selectDifficulty('hard')} className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-2xl p-4 hover:scale-105 transition-transform">
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <p className="font-black text-lg">Hard</p>
+                          <p className="text-sm">Expert level • 20 pts</p>
+                        </div>
+                        <Crown width="32" height="32"/>
+                      </div>
+                    </button>
+                  </div>
+                  <button onClick={()=>setShowDifficultyModal(false)} className="w-full mt-4 bg-gray-200 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {/* Referral Modal */}
+            {showReferralModal && isSignedIn && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-2xl font-black">🎁 Refer & Earn</h3>
+                    <button onClick={()=>setShowReferralModal(false)} aria-label="Close"><X width="24" height="24"/></button>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-xl p-4 mb-4">
+                    <p className="font-bold mb-2">How it works:</p>
+                    <ul className="text-sm space-y-1">
+                      <li>✅ Share your unique code</li>
+                      <li>✅ Friend gets +150 bonus points</li>
+                      <li>✅ You get +100 points per referral</li>
+                    </ul>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                    <p className="font-bold mb-2">Your Referral Code:</p>
+                    <div className="flex items-center justify-between bg-white p-3 rounded-lg border-2 border-purple-300">
+                      <p className="text-2xl font-black text-purple-600">{referralCode || '— — — —'}</p>
+                      <button onClick={()=>{navigator.clipboard.writeText(referralCode || '');alert('✅ Code copied!');}} className="bg-purple-600 text-white p-2 rounded-lg hover:scale-110 transition-transform" aria-label="Copy referral code">
+                        <Copy width="20" height="20"/>
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">You've referred <span className="font-bold text-purple-600">{referralCount}</span> student{referralCount!==1?'s':''}</p>
+                  </div>
+                  <button onClick={shareReferral} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black py-3 rounded-xl mb-2 flex items-center justify-center hover:scale-105 transition-transform">
+                    <Share2 width="20" height="20"/><span className="ml-2">Share Code</span>
+                  </button>
+                  <button onClick={()=>setShowReferralModal(false)} className="w-full bg-gray-200 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors">Close</button>
+                </div>
+              </div>
+            )}
+
+            {/* Signup Reminder */}
+            {showSignupReminder && !isSignedIn && (
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6">
+                  <div className="text-center mb-4">
+                    <div className="text-6xl mb-3">🎉</div>
+                    <h3 className="text-2xl font-black mb-2">Great Progress!</h3>
+                    <p className="text-gray-600">You've earned <span className="font-bold text-purple-600">{totalPoints} points</span></p>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl p-4 mb-4">
+                    <p className="text-sm font-bold mb-2">🎁 Sign up to unlock:</p>
+                    <ul className="text-sm space-y-1">
+                      <li>✅ Save progress permanently</li>
+                      <li>✅ Get +50 bonus points</li>
+                      <li>✅ Track learning progress</li>
+                      <li>✅ Unlock referral rewards</li>
+                    </ul>
+                  </div>
+                  <button onClick={()=>{setShowSignupReminder(false);setAuthMode('signup');setShowAuthModal(true);}} className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black py-3 rounded-xl mb-2 hover:scale-105 transition-transform">
+                    Sign Up & Get +50 Points
+                  </button>
+                  <button onClick={()=>setShowSignupReminder(false)} className="w-full bg-gray-200 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors">Maybe Later</button>
+                </div>
               </div>
             )}
           </div>
-        </div>
-      </div>);
+        );
+      }
+
+      // QUIZ SCREEN
+      if (screen === 'quiz'){
+        const q = questionSet[currentIndex] || {};
+        const currentWord = q.data || {};
+        const question = q.prompt || '';
+        const options = q.options || [];
+        const correctAnswer = q.correct;
+        const modeText = q.type;
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4">
+            <div className="max-w-md mx-auto">
+              <div className="flex justify-between items-center mb-3">
+                <button onClick={()=>{try{window.speechSynthesis && window.speechSynthesis.cancel();}catch{} setScreen('home');}} className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-xl font-bold hover:scale-105 transition-transform">
+                  ← Back
+                </button>
+                <div className="flex items-center space-x-2">
+                  <div className="bg-white bg-opacity-20 px-3 py-2 rounded-xl">
+                    <p className="text-white font-black">{score}</p>
+                  </div>
+                  <div className="flex items-center bg-white bg-opacity-20 px-3 py-2 rounded-xl">
+                    <Flame className="text-orange-400" width="20" height="20" />
+                    <p className="text-white font-black ml-1">{streak}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl p-6 shadow-2xl">
+                <div className="text-center mb-6">
+                  <div className="flex justify-center items-center space-x-2 mb-3">
+                    <h2 className="text-3xl font-black text-gray-800">{q.word || ''}</h2>
+                    {modeText!=='oneword' && (
+                      <button onClick={()=>speakWord(q.word || '')} className="bg-blue-500 text-white p-2 rounded-full hover:scale-110 transition-transform" aria-label="Pronounce word">
+                        <Volume2 width="20" height="20"/>
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-lg font-bold text-gray-700 mb-2">{question}</p>
+                  {modeText!=='oneword' && difficulty && (
+                    <div className="flex items-center justify-center space-x-2">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                        difficulty==='hard' ? 'bg-red-100 text-red-700' :
+                        difficulty==='medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                      }`}>{(difficulty||'EASY').toUpperCase()}</span>
+                      <span className="text-xs text-gray-500">• {currentWord.exam}</span>
+                    </div>
+                  )}
+                </div>
+
+                {!showResult && (
+                  <div className="space-y-3">
+                    {options.map((opt,i)=>(
+                      <button key={i} onClick={()=>handleAnswer(opt, correctAnswer, {word:q.word, ...currentWord})} className="w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-gray-200 hover:border-blue-500 hover:scale-102 transition-all">
+                        <p className="font-semibold text-gray-800">{opt}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {showResult && (
+                  <div className={`p-5 rounded-2xl ${isCorrect ? 'bg-green-50 border-4 border-green-500' : 'bg-red-50 border-4 border-red-500'}`}>
+                    <div className="flex items-center justify-center mb-4">
+                      {isCorrect ? <CheckCircle className="text-green-600" width="40" height="40"/> : <XCircle className="text-red-600" width="40" height="40"/>}
+                      <h3 className={`text-2xl font-black ml-3 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>{isCorrect ? 'Excellent! 🎉' : 'Keep Learning!'}</h3>
+                    </div>
+
+                    <div className="space-y-3 text-sm">
+                      <div className="bg-white rounded-xl p-3 border-l-4 border-blue-500">
+                        <p className="font-bold text-gray-700">Definition:</p>
+                        <p className="text-gray-600">{currentWord.definition || q.data?.definition || (modeText==='oneword' ? q.data?.definition : '')}</p>
+                      </div>
+                      {modeText!=='oneword' && (
+                        <>
+                          {currentWord.example && (
+                            <div className="bg-white rounded-xl p-3 border-l-4 border-purple-500">
+                              <p className="font-bold text-gray-700">Example:</p>
+                              <p className="text-gray-600 italic">{currentWord.example}</p>
+                            </div>
+                          )}
+                          {currentWord.mnemonic && (
+                            <div className="bg-white rounded-xl p-3 border-l-4 border-yellow-500">
+                              <p className="font-bold text-gray-700">Memory Trick:</p>
+                              <p className="text-gray-600">{currentWord.mnemonic}</p>
+                            </div>
+                          )}
+                          {currentWord.usage && (
+                            <div className="bg-white rounded-xl p-3 border-l-4 border-green-500">
+                              <p className="font-bold text-gray-700">Usage:</p>
+                              <p className="text-gray-600">{currentWord.usage}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {modeText==='oneword' && q.data?.example && (
+                        <div className="bg-white rounded-xl p-3 border-l-4 border-purple-500">
+                          <p className="font-bold text-gray-700">Explanation:</p>
+                          <p className="text-gray-600">{q.data.example}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <button onClick={nextQuestion} className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-105 transition-transform">
+                      Next Question →
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return null;
     }
 
-    /* ---- Home screen ---- */
-    return(
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6 text-white">
-        <div className="max-w-md mx-auto text-center">
-          <div className="mb-4 flex justify-center"><BookOpen/></div>
-          <h1 className="text-3xl font-black">Literary Rides VocabPro</h1>
-          <p className="text-purple-200 mb-6">By Dr Vishwanath Bite</p>
-          <div className="grid grid-cols-2 gap-4">
-            <button onClick={()=>{setMode('vocab');setDifficulty('easy');setScreen('quiz')}} className="bg-green-600 p-4 rounded-xl">Vocabulary</button>
-            <button onClick={()=>{setMode('synonym');setDifficulty('easy');setScreen('quiz')}} className="bg-blue-600 p-4 rounded-xl">Synonyms</button>
-            <button onClick={()=>{setMode('antonym');setDifficulty('easy');setScreen('quiz')}} className="bg-orange-600 p-4 rounded-xl">Antonyms</button>
-            <button onClick={()=>{setMode('oneword');setDifficulty(null);setScreen('quiz')}} className="bg-indigo-600 p-4 rounded-xl">One-Word</button>
-          </div>
-        </div>
-      </div>);
-  };
-
-  ReactDOM.render(<App/>,document.getElementById('root'));
+    // Mount
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>
