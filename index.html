@@ -8,13 +8,33 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
   <div id="root"></div>
   
   <script type="text/babel">
-    const { BookOpen, Trophy, Target, Volume2, Flame, Zap, Brain, MessageSquare, List, CheckCircle, XCircle, Save, Gift, Crown, Copy, UserPlus, X, Youtube, Instagram, Globe, Share2 } = lucide;
+    // Simple Icon Components (no external library needed)
+    const BookOpen = () => <svg className="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+    const Trophy = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
+    const Flame = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>;
+    const Crown = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>;
+    const UserPlus = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>;
+    const Brain = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg>;
+    const MessageSquare = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+    const Target = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+    const List = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
+    const Volume2 = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>;
+    const CheckCircle = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+    const XCircle = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
+    const Save = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+    const Gift = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>;
+    const X = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+    const Youtube = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>;
+    const Instagram = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>;
+    const Globe = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
+    const Copy = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+    const Share2 = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>;
+    const Zap = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>;
 
     // Vocabulary Database
     const vocabularyDB = {
@@ -238,7 +258,7 @@
               <div className="max-w-4xl mx-auto px-4 py-6">
                 <div className="flex flex-col items-center justify-center mb-4">
                   <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl mb-4">
-                    <BookOpen className="w-12 h-12 text-white" />
+                    <BookOpen />
                   </div>
                   
                   <div className="text-center">
@@ -264,10 +284,10 @@
                         <p className="text-white font-bold text-sm">Hi, {userProfile.firstName}! 👋</p>
                       </div>
                       <button onClick={saveProgress} className="bg-green-500 text-white p-2 rounded-xl">
-                        <Save className="w-5 h-5" />
+                        <Save />
                       </button>
                       <button onClick={() => setShowReferralModal(true)} className="bg-white bg-opacity-20 p-2 rounded-xl">
-                        <Gift className="w-5 h-5 text-white" />
+                        <Gift />
                       </button>
                     </div>
                   )}
@@ -283,22 +303,22 @@
 
               <div className="grid grid-cols-4 gap-2 mb-4">
                 <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <Trophy className="w-6 h-6 text-yellow-300 mx-auto mb-1" />
+                  <div className="flex justify-center mb-1"><Trophy /></div>
                   <p className="text-white font-black text-lg">{totalPoints}</p>
                   <p className="text-xs text-gray-300">Points</p>
                 </div>
                 <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <Flame className="w-6 h-6 text-orange-400 mx-auto mb-1" />
+                  <div className="flex justify-center mb-1"><Flame /></div>
                   <p className="text-white font-black text-lg">{streak}</p>
                   <p className="text-xs text-gray-300">Streak</p>
                 </div>
                 <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <Crown className="w-6 h-6 text-purple-300 mx-auto mb-1" />
+                  <div className="flex justify-center mb-1"><Crown /></div>
                   <p className="text-white font-black text-lg">{level}</p>
                   <p className="text-xs text-gray-300">Level</p>
                 </div>
                 <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <UserPlus className="w-6 h-6 text-green-300 mx-auto mb-1" />
+                  <div className="flex justify-center mb-1"><UserPlus /></div>
                   <p className="text-white font-black text-lg">{referralCount}</p>
                   <p className="text-xs text-gray-300">Referrals</p>
                 </div>
@@ -306,25 +326,25 @@
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <button onClick={() => startQuiz('vocab')} className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4">
-                  <Brain className="w-8 h-8 text-white mx-auto mb-2" />
+                  <div className="flex justify-center mb-2"><Brain /></div>
                   <p className="text-white font-black text-sm">Vocabulary</p>
                   <p className="text-green-100 text-xs">3 Levels</p>
                 </button>
 
                 <button onClick={() => startQuiz('synonym')} className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-4">
-                  <MessageSquare className="w-8 h-8 text-white mx-auto mb-2" />
+                  <div className="flex justify-center mb-2"><MessageSquare /></div>
                   <p className="text-white font-black text-sm">Synonyms</p>
                   <p className="text-blue-100 text-xs">3 Levels</p>
                 </button>
 
                 <button onClick={() => startQuiz('antonym')} className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4">
-                  <Target className="w-8 h-8 text-white mx-auto mb-2" />
+                  <div className="flex justify-center mb-2"><Target /></div>
                   <p className="text-white font-black text-sm">Antonyms</p>
                   <p className="text-orange-100 text-xs">3 Levels</p>
                 </button>
 
                 <button onClick={() => startQuiz('oneword')} className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-4">
-                  <List className="w-8 h-8 text-white mx-auto mb-2" />
+                  <div className="flex justify-center mb-2"><List /></div>
                   <p className="text-white font-black text-sm">One Word</p>
                   <p className="text-purple-100 text-xs">Substitutes</p>
                 </button>
@@ -337,13 +357,13 @@
                   <p className="text-white font-bold text-sm mb-2">Connect with Literary Rides</p>
                   <div className="flex justify-center space-x-4">
                     <a href="https://youtube.com/@literaryrides" target="_blank" className="bg-red-600 p-3 rounded-full">
-                      <Youtube className="w-5 h-5 text-white" />
+                      <Youtube />
                     </a>
                     <a href="https://instagram.com/literaryrides" target="_blank" className="bg-pink-600 p-3 rounded-full">
-                      <Instagram className="w-5 h-5 text-white" />
+                      <Instagram />
                     </a>
                     <a href="https://open.spotify.com/show/3lsJLi7SBqrsR65I1jqxAn?si=dfc20ae522e74424" target="_blank" className="bg-green-600 p-3 rounded-full">
-                      <Globe className="w-5 h-5 text-white" />
+                      <Globe />
                     </a>
                   </div>
                 </div>
@@ -354,15 +374,16 @@
               </div>
             </div>
 
+            {/* Auth Modal */}
             {showAuthModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-3xl max-w-md w-full p-6">
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 my-8">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-2xl font-black">
                       {authMode === 'signin' ? '🔐 Sign In' : authMode === 'signup' ? '🎉 Sign Up' : '🔑 Forgot Password'}
                     </h3>
-                    <button onClick={() => setShowAuthModal(false)}>
-                      <X className="w-6 h-6" />
+                    <button onClick={() => setShowAuthModal(false)} className="p-2">
+                      <X />
                     </button>
                   </div>
 
@@ -484,6 +505,7 @@
               </div>
             )}
 
+            {/* Difficulty Modal */}
             {showDifficultyModal && (
               <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-3xl max-w-md w-full p-6">
@@ -496,7 +518,7 @@
                           <p className="font-black text-lg">Easy</p>
                           <p className="text-sm">Perfect for beginners • 10 pts</p>
                         </div>
-                        <Zap className="w-8 h-8" />
+                        <Zap />
                       </div>
                     </button>
 
@@ -506,7 +528,7 @@
                           <p className="font-black text-lg">Medium</p>
                           <p className="text-sm">Good challenge • 15 pts</p>
                         </div>
-                        <Flame className="w-8 h-8" />
+                        <Flame />
                       </div>
                     </button>
 
@@ -516,7 +538,7 @@
                           <p className="font-black text-lg">Hard</p>
                           <p className="text-sm">Expert level • 20 pts</p>
                         </div>
-                        <Crown className="w-8 h-8" />
+                        <Crown />
                       </div>
                     </button>
                   </div>
@@ -528,13 +550,14 @@
               </div>
             )}
 
+            {/* Referral Modal */}
             {showReferralModal && isSignedIn && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-3xl max-w-md w-full p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-2xl font-black">🎁 Refer & Earn</h3>
                     <button onClick={() => setShowReferralModal(false)}>
-                      <X className="w-6 h-6" />
+                      <X />
                     </button>
                   </div>
 
@@ -549,14 +572,14 @@
                         }}
                         className="bg-purple-600 text-white p-2 rounded-lg"
                       >
-                        <Copy className="w-5 h-5" />
+                        <Copy />
                       </button>
                     </div>
                   </div>
 
-                  <button onClick={shareReferral} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black py-3 rounded-xl mb-2">
-                    <Share2 className="w-5 h-5 inline mr-2" />
-                    Share Code
+                  <button onClick={shareReferral} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black py-3 rounded-xl mb-2 flex items-center justify-center">
+                    <Share2 />
+                    <span className="ml-2">Share Code</span>
                   </button>
 
                   <button onClick={() => setShowReferralModal(false)} className="w-full bg-gray-200 font-bold py-3 rounded-xl">
@@ -566,6 +589,7 @@
               </div>
             )}
 
+            {/* Signup Reminder */}
             {showSignupReminder && !isSignedIn && (
               <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-3xl max-w-md w-full p-6">
@@ -642,8 +666,8 @@
                     <p className="text-white font-black">{score}</p>
                   </div>
                   <div className="flex items-center bg-white bg-opacity-20 px-3 py-2 rounded-xl">
-                    <Flame className="w-4 h-4 text-orange-400 mr-1" />
-                    <p className="text-white font-black">{streak}</p>
+                    <Flame />
+                    <p className="text-white font-black ml-1">{streak}</p>
                   </div>
                 </div>
               </div>
@@ -653,7 +677,7 @@
                   <div className="flex justify-center items-center space-x-2 mb-3">
                     <h2 className="text-3xl font-black">{word.word}</h2>
                     <button onClick={() => speakWord(word.word)} className="bg-blue-500 text-white p-2 rounded-full">
-                      <Volume2 className="w-5 h-5" />
+                      <Volume2 />
                     </button>
                   </div>
                   <p className="text-lg font-bold text-gray-700">{question}</p>
@@ -679,7 +703,7 @@
                 {showResult && (
                   <div className={`p-5 rounded-2xl ${isCorrect ? 'bg-green-50 border-4 border-green-500' : 'bg-red-50 border-4 border-red-500'}`}>
                     <div className="flex items-center justify-center mb-4">
-                      {isCorrect ? <CheckCircle className="w-12 h-12 text-green-600" /> : <XCircle className="w-12 h-12 text-red-600" />}
+                      {isCorrect ? <CheckCircle /> : <XCircle />}
                       <h3 className={`text-2xl font-black ml-3 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                         {isCorrect ? 'Correct! 🎉' : 'Try Again!'}
                       </h3>
