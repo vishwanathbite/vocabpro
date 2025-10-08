@@ -1,740 +1,1174 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Literary Rides VocabPro - By Dr. Vishwanath Bite</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-  <div id="root"></div>
+import React, { useState, useEffect, useRef } from 'react';
+import { BookOpen, Trophy, Flame, Crown, UserPlus, Brain, MessageSquare, Target, List, Volume2, CheckCircle, XCircle, Save, Gift, X, Youtube, Instagram, Globe, Copy, Share2, Zap, AlertCircle, Lock, TrendingUp } from 'lucide-react';
+
+// ============================================
+// SECURITY: Password Hashing (Simple but better than plain text)
+// ============================================
+const hashPassword = (password) => {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+};
+
+// ============================================
+// VOCABULARY DATABASE - Educationally Designed
+// ============================================
+const vocabularyDB = {
+  easy: [
+    { 
+      word: "Abolish", 
+      definition: "To formally put an end to a system, practice, or institution",
+      pronunciation: "uh-BOL-ish",
+      synonyms: ["eliminate", "eradicate", "terminate", "annul"],
+      antonyms: ["establish", "create", "institute", "found"],
+      example: "The Indian government decided to abolish the practice of untouchability through Article 17.",
+      mnemonic: "A-POLISH: Remove completely like polishing away dirt",
+      usage: "Used in governance and social reform contexts",
+      exam: "UPSC/SSC",
+      difficulty: "easy"
+    },
+    { 
+      word: "Abundant", 
+      definition: "Existing or available in large quantities; plentiful",
+      pronunciation: "uh-BUN-duhnt",
+      synonyms: ["plentiful", "ample", "copious", "profuse"],
+      antonyms: ["scarce", "sparse", "insufficient", "meager"],
+      example: "The Western Ghats receive abundant rainfall during monsoon season.",
+      mnemonic: "A-BUN-DANT: Imagine abundant buns at a bakery",
+      usage: "Describes quantity and availability",
+      exam: "SSC/Banking",
+      difficulty: "easy"
+    },
+    { 
+      word: "Accurate", 
+      definition: "Correct in all details; exact and without error",
+      pronunciation: "AK-yuh-ruht",
+      synonyms: ["precise", "exact", "correct", "faithful"],
+      antonyms: ["inaccurate", "incorrect", "erroneous", "imprecise"],
+      example: "Census operations require accurate data collection for effective policy planning.",
+      mnemonic: "AC-CUR-ATE: Like a cure that hits accurately",
+      usage: "Essential in data, measurements, and reporting",
+      exam: "Banking/SSC",
+      difficulty: "easy"
+    },
+    // Add 7 more for demo (in production, add all 50)
+    { word: "Brave", definition: "Ready to face and endure danger or pain; showing courage", pronunciation: "BRAYV", synonyms: ["courageous", "fearless", "valiant", "bold"], antonyms: ["cowardly", "timid", "afraid", "fearful"], example: "The brave soldiers defended the border with unwavering determination.", mnemonic: "BRAVE: Be Ready And Very Energetic", usage: "Describes courage in adversity", exam: "SSC", difficulty: "easy" },
+    { word: "Calm", definition: "Not showing or feeling nervousness, anger, or strong emotion", pronunciation: "KAHM", synonyms: ["peaceful", "tranquil", "serene", "composed"], antonyms: ["agitated", "excited", "nervous", "anxious"], example: "The meditation session helped students remain calm during exam stress.", mnemonic: "CALM: Cool And Low Mood", usage: "Emotional state, weather conditions", exam: "Banking/SSC", difficulty: "easy" },
+    { word: "Diligent", definition: "Having or showing care and conscientiousness in work or duties", pronunciation: "DIL-i-juhnt", synonyms: ["hardworking", "industrious", "conscientious", "assiduous"], antonyms: ["lazy", "careless", "negligent", "slack"], example: "Diligent preparation is the key to success in competitive examinations.", mnemonic: "DIL-I-GENT: Gentle person with big heart (dil) works hard", usage: "Work ethic and dedication", exam: "Banking/SSC", difficulty: "easy" },
+    { word: "Honest", definition: "Free of deceit and untruthfulness; sincere", pronunciation: "ON-ist", synonyms: ["truthful", "sincere", "genuine", "frank"], antonyms: ["dishonest", "deceitful", "lying", "fraudulent"], example: "Honest taxpayers contribute to the nation's development.", mnemonic: "HON-EST: Honor is the best policy", usage: "Character and integrity", exam: "Banking/SSC", difficulty: "easy" },
+    { word: "Important", definition: "Of great significance or value; likely to have a profound effect", pronunciation: "im-POR-tuhnt", synonyms: ["significant", "crucial", "vital", "essential"], antonyms: ["unimportant", "trivial", "insignificant", "minor"], example: "Education is important for individual growth and national progress.", mnemonic: "IM-PORT-ANT: Like an important port for ships", usage: "Priority and significance", exam: "SSC/Banking", difficulty: "easy" },
+    { word: "Kind", definition: "Having or showing a friendly, generous, and considerate nature", pronunciation: "KYND", synonyms: ["caring", "compassionate", "generous", "benevolent"], antonyms: ["cruel", "unkind", "mean", "harsh"], example: "Teachers should be kind yet firm in their approach to students.", mnemonic: "KIND: Keep It Nice Daily", usage: "Character and behavior", exam: "SSC", difficulty: "easy" },
+    { word: "Quick", definition: "Moving fast or doing something in a short time", pronunciation: "KWIK", synonyms: ["fast", "rapid", "swift", "speedy"], antonyms: ["slow", "sluggish", "gradual", "leisurely"], example: "Quick decision-making is crucial during emergency situations.", mnemonic: "QUICK: Quite Unique In Character Kinetically", usage: "Speed and responsiveness", exam: "Banking/SSC", difficulty: "easy" }
+  ],
+  medium: [
+    {
+      word: "Benevolent",
+      definition: "Well-meaning and kindly; showing goodwill and charitable intentions",
+      pronunciation: "buh-NEV-uh-luhnt",
+      synonyms: ["kind", "compassionate", "caring", "philanthropic"],
+      antonyms: ["malevolent", "cruel", "mean", "unkind"],
+      example: "The benevolent industrialist donated crores for rural education development.",
+      mnemonic: "BENE-VOLENT: Beneficial volunteer who is excellent",
+      usage: "Charitable actions and kind intentions",
+      exam: "SSC/Banking",
+      difficulty: "medium"
+    },
+    {
+      word: "Coherent",
+      definition: "Logical and consistent; forming a unified whole",
+      pronunciation: "koh-HEER-uhnt",
+      synonyms: ["logical", "consistent", "rational", "orderly"],
+      antonyms: ["incoherent", "confused", "illogical", "disjointed"],
+      example: "The witness presented a coherent account of the incident to the court.",
+      mnemonic: "CO-HERENT: Coming together inherently",
+      usage: "Arguments, testimony, and explanations",
+      exam: "Banking/SSC",
+      difficulty: "medium"
+    },
+    // Add 8 more for demo
+    { word: "Diligent", definition: "Having or showing care and conscientiousness in work", pronunciation: "DIL-i-juhnt", synonyms: ["hardworking", "industrious", "conscientious", "meticulous"], antonyms: ["lazy", "careless", "negligent", "slack"], example: "Diligent civil servants ensure smooth governance.", mnemonic: "DIL-GENT: Gentle with big heart works hard", usage: "Work ethic", exam: "Banking/SSC", difficulty: "medium" },
+    { word: "Eloquent", definition: "Fluent or persuasive in speaking or writing", pronunciation: "EL-uh-kwuhnt", synonyms: ["articulate", "fluent", "persuasive", "expressive"], antonyms: ["inarticulate", "hesitant", "tongue-tied", "awkward"], example: "The advocate's eloquent arguments swayed the jury's opinion.", mnemonic: "ELO-QUENT: Eloquence is frequent in quality speakers", usage: "Communication skills", exam: "UPSC/Banking", difficulty: "medium" },
+    { word: "Empathy", definition: "The ability to understand and share feelings of another", pronunciation: "EM-puh-thee", synonyms: ["compassion", "understanding", "sympathy", "sensitivity"], antonyms: ["apathy", "indifference", "insensitivity", "callousness"], example: "Effective leaders demonstrate empathy towards citizens' concerns.", mnemonic: "EM-PATH-Y: Emotional path to understand others", usage: "Emotional intelligence", exam: "UPSC/SSC", difficulty: "medium" },
+    { word: "Feasible", definition: "Possible to do easily or conveniently; practical", pronunciation: "FEE-zuh-buhl", synonyms: ["practical", "possible", "viable", "achievable"], antonyms: ["infeasible", "impossible", "impractical", "unworkable"], example: "The committee evaluated whether the project was financially feasible.", mnemonic: "FEE-SIBLE: If you can see the fee, it's feasible", usage: "Project planning", exam: "Banking/SSC", difficulty: "medium" },
+    { word: "Genuine", definition: "Truly what something is said to be; authentic", pronunciation: "JEN-yoo-in", synonyms: ["authentic", "real", "true", "legitimate"], antonyms: ["fake", "false", "counterfeit", "artificial"], example: "The museum verified that the artifact was genuine before acquisition.", mnemonic: "GENU-INE: Genuinely in excellent condition", usage: "Authenticity", exam: "SSC/Banking", difficulty: "medium" },
+    { word: "Impartial", definition: "Treating all rivals or disputants equally; fair and just", pronunciation: "im-PAHR-shuhl", synonyms: ["unbiased", "fair", "neutral", "objective"], antonyms: ["biased", "partial", "prejudiced", "unfair"], example: "Judges must remain impartial while delivering verdicts.", mnemonic: "IM-PARTIAL: Not partial to any side", usage: "Justice and fairness", exam: "UPSC/Banking", difficulty: "medium" },
+    { word: "Resilient", definition: "Able to withstand or recover quickly from difficult conditions", pronunciation: "rih-ZIL-yuhnt", synonyms: ["tough", "strong", "flexible", "adaptable"], antonyms: ["weak", "fragile", "brittle", "inflexible"], example: "Indian farmers have shown resilient spirit during challenging times.", mnemonic: "RE-SILENT: Rising even when silent/down", usage: "Recovery and strength", exam: "UPSC/Banking", difficulty: "medium" },
+    { word: "Transparent", definition: "Open to public scrutiny; easy to perceive or detect", pronunciation: "trans-PAIR-uhnt", synonyms: ["clear", "obvious", "evident", "candid"], antonyms: ["opaque", "unclear", "obscure", "hidden"], example: "The government promotes transparent governance to build public trust.", mnemonic: "TRANS-PARENT: Clearly visible like transparent glass", usage: "Governance and clarity", exam: "UPSC/Banking", difficulty: "medium" }
+  ],
+  hard: [
+    {
+      word: "Abstruse",
+      definition: "Difficult to understand; obscure and profound in meaning",
+      pronunciation: "ab-STROOS",
+      synonyms: ["obscure", "complex", "cryptic", "esoteric"],
+      antonyms: ["clear", "simple", "obvious", "straightforward"],
+      example: "Quantum physics concepts remain abstruse to most undergraduate students.",
+      mnemonic: "AB-STRUSE: Absolutely confusing to understand",
+      usage: "Complex theories and difficult concepts",
+      exam: "UPSC",
+      difficulty: "hard"
+    },
+    {
+      word: "Alacrity",
+      definition: "Brisk and cheerful readiness; eager willingness",
+      pronunciation: "uh-LAK-ri-tee",
+      synonyms: ["eagerness", "enthusiasm", "willingness", "promptness"],
+      antonyms: ["reluctance", "apathy", "hesitation", "unwillingness"],
+      example: "The volunteers responded with alacrity to the disaster relief call.",
+      mnemonic: "A-LACK-RITY: No lack of energy or enthusiasm",
+      usage: "Prompt and enthusiastic response",
+      exam: "UPSC",
+      difficulty: "hard"
+    },
+    // Add 8 more for demo
+    { word: "Ambiguous", definition: "Open to more than one interpretation; unclear", pronunciation: "am-BIG-yoo-uhs", synonyms: ["unclear", "vague", "equivocal", "cryptic"], antonyms: ["clear", "unambiguous", "definite", "explicit"], example: "The policy statement was deliberately ambiguous to allow flexibility.", mnemonic: "AM-BIG-UOUS: Meaning is as big as confusion", usage: "Unclear statements", exam: "UPSC/Banking", difficulty: "hard" },
+    { word: "Anomaly", definition: "Something that deviates from what is standard, normal, or expected", pronunciation: "uh-NOM-uh-lee", synonyms: ["irregularity", "deviation", "aberration", "exception"], antonyms: ["normality", "regularity", "standard", "conformity"], example: "The sudden temperature drop was a meteorological anomaly.", mnemonic: "A-NOMALY: Not normal, abnormality", usage: "Deviations from norm", exam: "Banking/UPSC", difficulty: "hard" },
+    { word: "Arduous", definition: "Involving or requiring strenuous effort; difficult and tiring", pronunciation: "AHR-joo-uhs", synonyms: ["difficult", "laborious", "strenuous", "taxing"], antonyms: ["easy", "effortless", "simple", "light"], example: "The arduous journey through the Himalayas tested their endurance.", mnemonic: "ARD-UOUS: Hard and continuous effort", usage: "Difficult tasks", exam: "Banking/UPSC", difficulty: "hard" },
+    { word: "Cacophony", definition: "A harsh, discordant mixture of sounds", pronunciation: "kuh-KOF-uh-nee", synonyms: ["din", "noise", "discord", "dissonance"], antonyms: ["harmony", "melody", "euphony", "consonance"], example: "The rush hour traffic created a cacophony of honking horns.", mnemonic: "CACO-PHONY: Cracked phone produces bad sound", usage: "Unpleasant sounds", exam: "Banking/UPSC", difficulty: "hard" },
+    { word: "Cogent", definition: "Clear, logical, and convincing; powerfully persuasive", pronunciation: "KOH-juhnt", synonyms: ["convincing", "compelling", "forceful", "persuasive"], antonyms: ["unconvincing", "weak", "flimsy", "ineffective"], example: "The lawyer presented cogent arguments that won the case.", mnemonic: "CO-GENT: Gentleman with convincing arguments", usage: "Strong arguments", exam: "UPSC/Banking", difficulty: "hard" },
+    { word: "Dichotomy", definition: "A division or contrast between two things that are opposed or different", pronunciation: "dy-KOT-uh-mee", synonyms: ["division", "split", "separation", "contrast"], antonyms: ["unity", "synthesis", "agreement", "harmony"], example: "There exists a dichotomy between urban and rural development.", mnemonic: "DI-CHOTOMY: Divide into two parts anatomically", usage: "Contrasts and divisions", exam: "UPSC", difficulty: "hard" },
+    { word: "Ebullient", definition: "Cheerful and full of energy; enthusiastic", pronunciation: "ih-BUL-yuhnt", synonyms: ["exuberant", "enthusiastic", "vivacious", "buoyant"], antonyms: ["depressed", "gloomy", "lethargic", "subdued"], example: "The team was ebullient after securing the championship victory.", mnemonic: "E-BULLIENT: Energy bubbling like boiling water", usage: "Enthusiastic mood", exam: "UPSC", difficulty: "hard" },
+    { word: "Ephemeral", definition: "Lasting for a very short time; transitory", pronunciation: "ih-FEM-er-uhl", synonyms: ["transient", "fleeting", "temporary", "brief"], antonyms: ["permanent", "lasting", "enduring", "eternal"], example: "Social media trends are often ephemeral, lasting only days.", mnemonic: "E-PHEMERAL: Temporary like a fever", usage: "Temporary things", exam: "UPSC", difficulty: "hard" },
+    { word: "Erudite", definition: "Having or showing great knowledge or learning", pronunciation: "ER-yuh-dyt", synonyms: ["learned", "scholarly", "knowledgeable", "educated"], antonyms: ["ignorant", "uneducated", "illiterate", "unlearned"], example: "The erudite professor has published over fifty research papers.", mnemonic: "ERU-DITE: Earn respect through deep study", usage: "Scholarly knowledge", exam: "UPSC", difficulty: "hard" },
+    { word: "Fastidious", definition: "Very attentive to and concerned about accuracy and detail", pronunciation: "fa-STID-ee-uhs", synonyms: ["meticulous", "particular", "demanding", "perfectionist"], antonyms: ["careless", "sloppy", "negligent", "lax"], example: "The chef was fastidious about ingredient quality and presentation.", mnemonic: "FAST-TIDIOUS: Fast and tediously careful", usage: "Attention to detail", exam: "UPSC", difficulty: "hard" }
+  ]
+};
+
+// One-Word Substitutes with educationally sound distractors
+const oneWordSubstitutes = [
+  { 
+    phrase: "A government by the wealthy", 
+    answer: "Plutocracy",
+    options: ["Plutocracy", "Democracy", "Aristocracy", "Oligarchy"],
+    explanation: "Plutocracy comes from 'plutos' (wealth) + 'kratos' (power). Democracy is rule by people, Aristocracy by nobility, Oligarchy by a few.",
+    exam: "UPSC/SSC"
+  },
+  { 
+    phrase: "A person who loves books", 
+    answer: "Bibliophile",
+    options: ["Bibliophile", "Bibliographer", "Librarian", "Scholar"],
+    explanation: "Bibliophile: 'biblio' (book) + 'phile' (lover). Bibliographer catalogs books, Librarian manages libraries, Scholar studies subjects.",
+    exam: "SSC/Banking"
+  },
+  { 
+    phrase: "A person who hates mankind", 
+    answer: "Misanthrope",
+    options: ["Misanthrope", "Philanthropist", "Humanitarian", "Altruist"],
+    explanation: "Misanthrope: 'mis' (hatred) + 'anthropos' (human). The other options mean opposite - lovers of humanity.",
+    exam: "UPSC/Banking"
+  },
+  { 
+    phrase: "Murder of one's own father", 
+    answer: "Patricide",
+    options: ["Patricide", "Matricide", "Homicide", "Fratricide"],
+    explanation: "Patricide: 'pater' (father) + 'cide' (kill). Matricide is mother, Homicide is any human, Fratricide is brother.",
+    exam: "UPSC/SSC"
+  },
+  { 
+    phrase: "A place where bees are kept", 
+    answer: "Apiary",
+    options: ["Apiary", "Aviary", "Aquarium", "Menagerie"],
+    explanation: "Apiary: from Latin 'apis' (bee). Aviary is for birds, Aquarium for aquatic life, Menagerie for various animals.",
+    exam: "SSC/Banking"
+  }
+];
+
+const securityQuestions = [
+  "What was your first school's name?",
+  "What is your mother's maiden name?",
+  "What city were you born in?",
+  "What was your childhood nickname?"
+];
+
+// Shuffle function
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+// Generate smart distractors for vocabulary
+const generateSmartDistractors = (correctDef, allWords, count = 3) => {
+  const distractors = [];
+  const available = allWords.filter(w => w.definition !== correctDef);
   
-  <script type="text/babel">
-    // Simple Icon Components (no external library needed)
-    const BookOpen = () => <svg className="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
-    const Trophy = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
-    const Flame = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>;
-    const Crown = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>;
-    const UserPlus = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>;
-    const Brain = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg>;
-    const MessageSquare = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
-    const Target = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
-    const List = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
-    const Volume2 = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>;
-    const CheckCircle = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-    const XCircle = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
-    const Save = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
-    const Gift = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>;
-    const X = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-    const Youtube = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>;
-    const Instagram = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>;
-    const Globe = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
-    const Copy = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
-    const Share2 = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>;
-    const Zap = () => <svg className="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>;
+  // Get random but unique distractors
+  while (distractors.length < count && available.length > 0) {
+    const randomIndex = Math.floor(Math.random() * available.length);
+    const distractor = available[randomIndex].definition;
+    if (!distractors.includes(distractor)) {
+      distractors.push(distractor);
+    }
+    available.splice(randomIndex, 1);
+  }
+  
+  return distractors;
+};
 
-    // Vocabulary Database
-    const vocabularyDB = {
-      easy: [
-        { word: "Abolish", definition: "To formally put an end to a system or practice", pronunciation: "uh-BOL-ish", synonyms: ["eliminate", "eradicate", "terminate", "annul"], antonyms: ["establish", "create", "institute", "found"], example: "The government decided to abolish the outdated tax system.", exam: "UPSC/SSC" },
-        { word: "Abundant", definition: "Existing in large quantities", pronunciation: "uh-BUN-duhnt", synonyms: ["plentiful", "ample", "copious", "profuse"], antonyms: ["scarce", "sparse", "insufficient", "meager"], example: "The monsoon brings abundant rainfall to Western Ghats.", exam: "SSC/Banking" },
-        { word: "Accurate", definition: "Correct in all details", pronunciation: "AK-yuh-ruht", synonyms: ["precise", "exact", "correct", "faithful"], antonyms: ["inaccurate", "incorrect", "erroneous", "imprecise"], example: "Census requires accurate data for planning.", exam: "Banking/SSC" }
-      ],
-      medium: [
-        { word: "Benevolent", definition: "Well meaning and kindly", pronunciation: "buh-NEV-uh-luhnt", synonyms: ["kind", "compassionate", "caring", "generous"], antonyms: ["malevolent", "cruel", "mean", "unkind"], example: "The benevolent donor funded scholarships.", exam: "SSC/Banking" },
-        { word: "Candid", definition: "Truthful and straightforward", pronunciation: "KAN-did", synonyms: ["honest", "frank", "open", "sincere"], antonyms: ["dishonest", "deceptive", "insincere", "evasive"], example: "The minister gave a candid interview.", exam: "UPSC/SSC" }
-      ],
-      hard: [
-        { word: "Eloquent", definition: "Fluent or persuasive in speaking", pronunciation: "EL-uh-kwuhnt", synonyms: ["articulate", "fluent", "persuasive", "expressive"], antonyms: ["inarticulate", "hesitant", "tongue-tied", "awkward"], example: "The lawyer's eloquent argument convinced the jury.", exam: "UPSC/Banking" }
-      ]
-    };
+// Main App Component
+export default function LiteraryRidesVocabPro() {
+  const [screen, setScreen] = useState('home');
+  const [mode, setMode] = useState(null);
+  const [difficulty, setDifficulty] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [totalAnswered, setTotalAnswered] = useState(0);
+  const [masteredWords, setMasteredWords] = useState([]);
+  const [strugglingWords, setStrugglingWords] = useState([]);
+  
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
+  const [users, setUsers] = useState({});
+  const [userProfile, setUserProfile] = useState(null);
+  
+  const [signInData, setSignInData] = useState({ mobile: '', password: '' });
+  const [signUpData, setSignUpData] = useState({
+    firstName: '', lastName: '', mobile: '', email: '',
+    password: '', securityQuestion: '', securityAnswer: ''
+  });
+  const [forgotData, setForgotData] = useState({ mobile: '', answer: '' });
+  
+  const [showSignupReminder, setShowSignupReminder] = useState(false);
+  const [showDifficultyModal, setShowDifficultyModal] = useState(false);
+  const [selectedMode, setSelectedMode] = useState(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [referralCount, setReferralCount] = useState(0);
+  const [showReferralModal, setShowReferralModal] = useState(false);
+  
+  const utteranceRef = useRef(null);
 
-    const securityQuestions = [
-      "What was your first school's name?",
-      "What is your mother's maiden name?",
-      "What city were you born in?",
-      "What was your childhood nickname?"
-    ];
+  // Load users and check referral code on mount
+  useEffect(() => {
+    const savedUsers = localStorage.getItem('vocabProUsers');
+    if (savedUsers) setUsers(JSON.parse(savedUsers));
+    
+    // Check for referral code in URL
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      localStorage.setItem('pendingReferral', refCode);
+    }
+  }, []);
 
-    const generateReferralCode = (name) => {
-      return name.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
-    };
+  // Signup reminder
+  useEffect(() => {
+    if (!isSignedIn && (totalAnswered >= 5 || totalPoints >= 50)) {
+      setShowSignupReminder(true);
+    }
+  }, [totalAnswered, totalPoints, isSignedIn]);
 
-    const LiteraryRidesVocabPro = () => {
-      const [screen, setScreen] = React.useState('home');
-      const [mode, setMode] = React.useState(null);
-      const [difficulty, setDifficulty] = React.useState(null);
-      const [currentIndex, setCurrentIndex] = React.useState(0);
-      const [score, setScore] = React.useState(0);
-      const [streak, setStreak] = React.useState(0);
-      const [totalPoints, setTotalPoints] = React.useState(0);
-      const [level, setLevel] = React.useState(1);
-      const [showResult, setShowResult] = React.useState(false);
-      const [isCorrect, setIsCorrect] = React.useState(false);
-      const [totalAnswered, setTotalAnswered] = React.useState(0);
-      
-      const [isSignedIn, setIsSignedIn] = React.useState(false);
-      const [showAuthModal, setShowAuthModal] = React.useState(false);
-      const [authMode, setAuthMode] = React.useState('signin');
-      const [users, setUsers] = React.useState({});
-      
-      const [userProfile, setUserProfile] = React.useState({
-        firstName: '', lastName: '', mobile: '', email: '',
-        password: '', securityQuestion: '', securityAnswer: ''
-      });
-      
-      const [forgotMobile, setForgotMobile] = React.useState('');
-      const [forgotAnswer, setForgotAnswer] = React.useState('');
-      const [showSignupReminder, setShowSignupReminder] = React.useState(false);
-      const [showDifficultyModal, setShowDifficultyModal] = React.useState(false);
-      const [selectedMode, setSelectedMode] = React.useState(null);
-      const [referralCode, setReferralCode] = React.useState('');
-      const [referralCount, setReferralCount] = React.useState(0);
-      const [showReferralModal, setShowReferralModal] = React.useState(false);
+  // Level calculation
+  useEffect(() => {
+    setLevel(Math.floor(totalPoints / 100) + 1);
+  }, [totalPoints]);
 
-      React.useEffect(() => {
-        const savedUsers = localStorage.getItem('vocabProUsers');
-        if (savedUsers) setUsers(JSON.parse(savedUsers));
-      }, []);
+  // Security: Hash password before storing
+  const handleSignIn = () => {
+    const hashedPassword = hashPassword(signInData.password);
+    if (users[signInData.mobile] && users[signInData.mobile].passwordHash === hashedPassword) {
+      setIsSignedIn(true);
+      setUserProfile(users[signInData.mobile].profile);
+      setTotalPoints(users[signInData.mobile].data.totalPoints || 0);
+      setStreak(users[signInData.mobile].data.streak || 0);
+      setReferralCode(users[signInData.mobile].data.referralCode || '');
+      setReferralCount(users[signInData.mobile].data.referralCount || 0);
+      setMasteredWords(users[signInData.mobile].data.masteredWords || []);
+      setStrugglingWords(users[signInData.mobile].data.strugglingWords || []);
+      setShowAuthModal(false);
+      alert('✅ Welcome back!');
+    } else {
+      alert('❌ Invalid mobile number or password');
+    }
+  };
 
-      React.useEffect(() => {
-        if (!isSignedIn && (totalAnswered >= 5 || totalPoints >= 50)) {
-          setShowSignupReminder(true);
+  const handleSignUp = () => {
+    if (users[signUpData.mobile]) {
+      alert('❌ Mobile number already registered. Please sign in.');
+      return;
+    }
+    
+    const newReferralCode = signUpData.firstName.substring(0, 3).toUpperCase() + 
+                           Math.random().toString(36).substring(2, 6).toUpperCase();
+    
+    let bonusPoints = 50;
+    
+    // Process pending referral
+    const pendingReferral = localStorage.getItem('pendingReferral');
+    if (pendingReferral) {
+      // Find the referrer
+      const referrer = Object.values(users).find(u => u.data.referralCode === pendingReferral);
+      if (referrer) {
+        // Credit referrer
+        const referrerMobile = Object.keys(users).find(key => users[key].data.referralCode === pendingReferral);
+        if (referrerMobile) {
+          users[referrerMobile].data.referralCount += 1;
+          users[referrerMobile].data.totalPoints += 100;
         }
-      }, [totalAnswered, totalPoints, isSignedIn]);
+        bonusPoints += 100; // New user gets 100 extra
+        localStorage.removeItem('pendingReferral');
+      }
+    }
+    
+    const newUser = {
+      passwordHash: hashPassword(signUpData.password),
+      profile: signUpData,
+      data: {
+        totalPoints: totalPoints + bonusPoints,
+        streak: streak,
+        referralCode: newReferralCode,
+        referralCount: 0,
+        masteredWords: [],
+        strugglingWords: []
+      }
+    };
+    
+    const updatedUsers = { ...users, [signUpData.mobile]: newUser };
+    setUsers(updatedUsers);
+    localStorage.setItem('vocabProUsers', JSON.stringify(updatedUsers));
+    
+    setIsSignedIn(true);
+    setUserProfile(signUpData);
+    setReferralCode(newReferralCode);
+    setTotalPoints(totalPoints + bonusPoints);
+    setShowAuthModal(false);
+    setShowSignupReminder(false);
+    alert(`🎉 Welcome! You got +${bonusPoints} bonus points!`);
+  };
 
-      React.useEffect(() => {
-        setLevel(Math.floor(totalPoints / 100) + 1);
-      }, [totalPoints]);
+  const handleForgotPassword = () => {
+    if (users[forgotData.mobile] && 
+        users[forgotData.mobile].profile.securityAnswer.toLowerCase() === forgotData.answer.toLowerCase()) {
+      // SECURITY FIX: Don't show password, allow reset
+      const newPassword = prompt('Enter your new password:');
+      if (newPassword && newPassword.length >= 6) {
+        users[forgotData.mobile].passwordHash = hashPassword(newPassword);
+        localStorage.setItem('vocabProUsers', JSON.stringify(users));
+        alert('✅ Password reset successful! Please sign in with new password.');
+        setAuthMode('signin');
+        setForgotData({ mobile: '', answer: '' });
+      } else {
+        alert('Password must be at least 6 characters');
+      }
+    } else {
+      alert('❌ Invalid mobile number or security answer');
+    }
+  };
 
-      const handleSignIn = (mobile, password) => {
-        if (users[mobile] && users[mobile].password === password) {
-          setIsSignedIn(true);
-          setUserProfile(users[mobile].profile);
-          setTotalPoints(users[mobile].data.totalPoints || 0);
-          setStreak(users[mobile].data.streak || 0);
-          setReferralCode(users[mobile].data.referralCode || '');
-          setReferralCount(users[mobile].data.referralCount || 0);
-          setShowAuthModal(false);
-          alert('✅ Welcome back!');
-        } else {
-          alert('❌ Invalid mobile number or password');
+  const saveProgress = () => {
+    if (isSignedIn && userProfile?.mobile) {
+      const updatedUser = {
+        ...users[userProfile.mobile],
+        data: { 
+          totalPoints, 
+          streak, 
+          referralCode, 
+          referralCount,
+          masteredWords,
+          strugglingWords
         }
       };
+      
+      const updatedUsers = { ...users, [userProfile.mobile]: updatedUser };
+      setUsers(updatedUsers);
+      localStorage.setItem('vocabProUsers', JSON.stringify(updatedUsers));
+      alert('✅ Progress Saved!');
+    } else {
+      alert('⚠️ Please sign in to save progress');
+    }
+  };
 
-      const handleSignUp = (profile) => {
-        if (users[profile.mobile]) {
-          alert('❌ Mobile number already registered. Please sign in.');
-          return;
-        }
-        
-        const newReferralCode = generateReferralCode(profile.firstName + profile.lastName);
-        const newUser = {
-          password: profile.password,
-          profile: profile,
-          data: {
-            totalPoints: totalPoints + 50,
-            streak: streak,
-            referralCode: newReferralCode,
-            referralCount: 0
-          }
-        };
-        
-        const updatedUsers = { ...users, [profile.mobile]: newUser };
-        setUsers(updatedUsers);
-        localStorage.setItem('vocabProUsers', JSON.stringify(updatedUsers));
-        
-        setIsSignedIn(true);
-        setUserProfile(profile);
-        setReferralCode(newReferralCode);
-        setTotalPoints(totalPoints + 50);
+  const selectDifficulty = (level) => {
+    setDifficulty(level);
+    setMode(selectedMode);
+    setScreen('quiz');
+    setCurrentIndex(0);
+    setScore(0);
+    setShowResult(false);
+    setShowDifficultyModal(false);
+  };
+
+  const startQuiz = (quizMode) => {
+    setSelectedMode(quizMode);
+    if (quizMode === 'vocab' || quizMode === 'synonym' || quizMode === 'antonym') {
+      setShowDifficultyModal(true);
+    } else {
+      setMode(quizMode);
+      setScreen('quiz');
+      setCurrentIndex(0);
+      setScore(0);
+      setShowResult(false);
+    }
+  };
+
+  // Text-to-speech with browser check and cancellation
+  const speakWord = (text) => {
+    if (!('speechSynthesis' in window)) {
+      alert('Text-to-speech not supported in your browser');
+      return;
+    }
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.8;
+    utterance.lang = 'en-US';
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleAnswer = (answer, correctAnswer, currentWord) => {
+    const correct = answer === correctAnswer;
+    setIsCorrect(correct);
+    setShowResult(true);
+    setTotalAnswered(totalAnswered + 1);
+    
+    // Track learning progress
+    if (correct) {
+      if (!masteredWords.includes(currentWord.word)) {
+        setMasteredWords([...masteredWords, currentWord.word]);
+      }
+      // Remove from struggling if mastered
+      setStrugglingWords(strugglingWords.filter(w => w !== currentWord.word));
+    } else {
+      if (!strugglingWords.includes(currentWord.word) && !masteredWords.includes(currentWord.word)) {
+        setStrugglingWords([...strugglingWords, currentWord.word]);
+      }
+    }
+    
+    if (correct) {
+      const points = difficulty === 'hard' ? 20 : difficulty === 'medium' ? 15 : 10;
+      setScore(score + points);
+      setTotalPoints(totalPoints + points);
+      setStreak(streak + 1);
+    } else {
+      setStreak(0);
+    }
+  };
+
+  const nextQuestion = () => {
+    const maxLength = mode === 'oneword' ? oneWordSubstitutes.length : vocabularyDB[difficulty || 'easy'].length;
+    setCurrentIndex((currentIndex + 1) % maxLength);
+    setShowResult(false);
+  };
+
+  const shareReferral = () => {
+    const text = `🎓 Join Literary Rides VocabPro!\n\n📚 FREE vocabulary app for competitive exams\n🎁 Use my code: ${referralCode}\n💯 Get 150 bonus points!\n\nBy Dr. Vishwanath Bite\n\n${window.location.origin}${window.location.pathname}?ref=${referralCode}`;
+    
+    if (navigator.share) {
+      navigator.share({ title: 'Literary Rides VocabPro', text: text });
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('✅ Referral link copied!');
+    }
+  };
+
+  // Close modal on ESC key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
         setShowAuthModal(false);
-        setShowSignupReminder(false);
-        alert('🎉 Welcome! You got +50 bonus points!');
-      };
-
-      const handleForgotPassword = () => {
-        if (users[forgotMobile] && users[forgotMobile].profile.securityAnswer.toLowerCase() === forgotAnswer.toLowerCase()) {
-          alert(`✅ Your password is: ${users[forgotMobile].password}`);
-          setAuthMode('signin');
-          setForgotMobile('');
-          setForgotAnswer('');
-        } else {
-          alert('❌ Invalid mobile number or security answer');
-        }
-      };
-
-      const saveProgress = () => {
-        if (isSignedIn && userProfile.mobile) {
-          const updatedUser = {
-            ...users[userProfile.mobile],
-            data: { totalPoints, streak, referralCode, referralCount }
-          };
-          
-          const updatedUsers = { ...users, [userProfile.mobile]: updatedUser };
-          setUsers(updatedUsers);
-          localStorage.setItem('vocabProUsers', JSON.stringify(updatedUsers));
-          alert('✅ Progress Saved!');
-        } else {
-          alert('⚠️ Please sign in to save progress');
-        }
-      };
-
-      const selectDifficulty = (level) => {
-        setDifficulty(level);
-        setMode(selectedMode);
-        setScreen('quiz');
-        setCurrentIndex(0);
-        setScore(0);
-        setShowResult(false);
         setShowDifficultyModal(false);
-      };
+        setShowReferralModal(false);
+        setShowSignupReminder(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
-      const startQuiz = (quizMode) => {
-        setSelectedMode(quizMode);
-        if (quizMode === 'vocab' || quizMode === 'synonym' || quizMode === 'antonym') {
-          setShowDifficultyModal(true);
-        } else {
-          setMode(quizMode);
-          setScreen('quiz');
-          setCurrentIndex(0);
-          setScore(0);
-          setShowResult(false);
-        }
-      };
+  // HOME SCREEN
+  if (screen === 'home') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pb-40">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-700 via-blue-700 to-indigo-700 shadow-2xl">
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            <div className="flex flex-col items-center justify-center mb-4">
+              <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl mb-4">
+                <BookOpen className="text-white" size={40} />
+              </div>
+              
+              <div className="text-center">
+                <h1 className="text-4xl font-black text-white mb-2">Literary Rides</h1>
+                <h2 className="text-2xl font-bold text-yellow-300 mb-2">VocabPro</h2>
+                <p className="text-purple-200 text-sm font-medium">By Dr. Vishwanath Bite</p>
+              </div>
+            </div>
 
-      const speakWord = (text) => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.8;
-        window.speechSynthesis.speak(utterance);
-      };
-
-      const handleAnswer = (answer, correctAnswer) => {
-        const correct = answer === correctAnswer;
-        setIsCorrect(correct);
-        setShowResult(true);
-        setTotalAnswered(totalAnswered + 1);
-        
-        if (correct) {
-          const points = difficulty === 'hard' ? 20 : difficulty === 'medium' ? 15 : 10;
-          setScore(score + points);
-          setTotalPoints(totalPoints + points);
-          setStreak(streak + 1);
-        } else {
-          setStreak(0);
-        }
-      };
-
-      const nextQuestion = () => {
-        const words = difficulty ? vocabularyDB[difficulty] : vocabularyDB.easy;
-        const maxIndex = words.length - 1;
-        
-        if (currentIndex < maxIndex) {
-          setCurrentIndex(currentIndex + 1);
-        } else {
-          setCurrentIndex(0);
-        }
-        setShowResult(false);
-      };
-
-      const shareReferral = () => {
-        const text = `🎓 Join Literary Rides VocabPro!\n\n📚 FREE vocabulary app for competitive exams\n🎁 Use my code: ${referralCode}\n💯 Get 100 bonus points!\n\nBy Dr. Vishwanath Bite\n\n${window.location.href}?ref=${referralCode}`;
-        
-        if (navigator.share) {
-          navigator.share({ title: 'Literary Rides VocabPro', text: text });
-        } else {
-          navigator.clipboard.writeText(text);
-          alert('✅ Referral link copied!');
-        }
-      };
-
-      if (screen === 'home') {
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pb-32">
-            <div className="bg-gradient-to-r from-purple-700 via-blue-700 to-indigo-700 shadow-2xl">
-              <div className="max-w-4xl mx-auto px-4 py-6">
-                <div className="flex flex-col items-center justify-center mb-4">
-                  <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl mb-4">
-                    <BookOpen />
+            <div className="flex justify-center space-x-3">
+              {!isSignedIn ? (
+                <>
+                  <button 
+                    onClick={() => { setAuthMode('signin'); setShowAuthModal(true); }} 
+                    className="bg-white text-purple-700 px-6 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-transform"
+                  >
+                    Sign In
+                  </button>
+                  <button 
+                    onClick={() => { setAuthMode('signup'); setShowAuthModal(true); }} 
+                    className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-xl font-bold text-sm animate-pulse hover:scale-105 transition-transform"
+                  >
+                    Sign Up FREE
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white bg-opacity-20 backdrop-blur-xl rounded-xl px-4 py-2">
+                    <p className="text-white font-bold text-sm">Hi, {userProfile?.firstName}! 👋</p>
                   </div>
-                  
-                  <div className="text-center">
-                    <h1 className="text-4xl font-black text-white mb-2">Literary Rides</h1>
-                    <h2 className="text-2xl font-bold text-yellow-300 mb-2">VocabPro</h2>
-                    <p className="text-purple-200 text-sm font-medium">By Dr. Vishwanath Bite</p>
+                  <button onClick={saveProgress} className="bg-green-500 text-white p-2 rounded-xl hover:scale-110 transition-transform">
+                    <Save size={20} />
+                  </button>
+                  <button onClick={() => setShowReferralModal(true)} className="bg-white bg-opacity-20 p-2 rounded-xl hover:scale-110 transition-transform">
+                    <Gift size={20} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-md mx-auto p-4">
+          {/* Free Banner */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-4 mb-4 text-center">
+            <h3 className="text-white font-black text-xl mb-1">✨ 100% FREE ✨</h3>
+            <p className="text-green-100 text-sm">Secure • Educational • Always Free</p>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+              <Trophy className="mx-auto mb-1 text-yellow-300" size={24} />
+              <p className="text-white font-black text-lg">{totalPoints}</p>
+              <p className="text-xs text-gray-300">Points</p>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+              <Flame className="mx-auto mb-1 text-orange-400" size={24} />
+              <p className="text-white font-black text-lg">{streak}</p>
+              <p className="text-xs text-gray-300">Streak</p>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+              <Crown className="mx-auto mb-1 text-yellow-400" size={24} />
+              <p className="text-white font-black text-lg">{level}</p>
+              <p className="text-xs text-gray-300">Level</p>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
+              <UserPlus className="mx-auto mb-1 text-blue-300" size={24} />
+              <p className="text-white font-black text-lg">{referralCount}</p>
+              <p className="text-xs text-gray-300">Referrals</p>
+            </div>
+          </div>
+
+          {/* Learning Progress */}
+          {isSignedIn && (masteredWords.length > 0 || strugglingWords.length > 0) && (
+            <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-4 mb-4">
+              <h3 className="text-white font-bold mb-2 flex items-center">
+                <TrendingUp size={20} className="mr-2" />
+                Your Learning Progress
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-green-500 bg-opacity-20 rounded-xl p-2 text-center">
+                  <p className="text-white font-black text-2xl">{masteredWords.length}</p>
+                  <p className="text-green-200 text-xs">Mastered</p>
+                </div>
+                <div className="bg-orange-500 bg-opacity-20 rounded-xl p-2 text-center">
+                  <p className="text-white font-black text-2xl">{strugglingWords.length}</p>
+                  <p className="text-orange-200 text-xs">Need Practice</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Quiz Modes */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <button 
+              onClick={() => startQuiz('vocab')} 
+              className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg"
+              aria-label="Start vocabulary quiz"
+            >
+              <Brain className="mx-auto mb-2 text-white" size={32} />
+              <p className="text-white font-black text-sm">Vocabulary</p>
+              <p className="text-green-100 text-xs">3 Levels</p>
+            </button>
+
+            <button 
+              onClick={() => startQuiz('synonym')} 
+              className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg"
+              aria-label="Start synonyms quiz"
+            >
+              <MessageSquare className="mx-auto mb-2 text-white" size={32} />
+              <p className="text-white font-black text-sm">Synonyms</p>
+              <p className="text-blue-100 text-xs">3 Levels</p>
+            </button>
+
+            <button 
+              onClick={() => startQuiz('antonym')} 
+              className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg"
+              aria-label="Start antonyms quiz"
+            >
+              <Target className="mx-auto mb-2 text-white" size={32} />
+              <p className="text-white font-black text-sm">Antonyms</p>
+              <p className="text-orange-100 text-xs">3 Levels</p>
+            </button>
+
+            <button 
+              onClick={() => startQuiz('oneword')} 
+              className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg"
+              aria-label="Start one-word substitutes quiz"
+            >
+              <List className="mx-auto mb-2 text-white" size={32} />
+              <p className="text-white font-black text-sm">One Word</p>
+              <p className="text-purple-100 text-xs">Substitutes</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-800 via-blue-800 to-indigo-800 border-t-4 border-yellow-400">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="text-center mb-3">
+              <p className="text-white font-bold text-sm mb-2">Connect with Literary Rides</p>
+              <div className="flex justify-center space-x-4">
+                <a href="https://youtube.com/@literaryrides" target="_blank" rel="noopener noreferrer" className="bg-red-600 p-3 rounded-full hover:scale-110 transition-transform" aria-label="YouTube">
+                  <Youtube className="text-white" size={20} />
+                </a>
+                <a href="https://instagram.com/literaryrides" target="_blank" rel="noopener noreferrer" className="bg-pink-600 p-3 rounded-full hover:scale-110 transition-transform" aria-label="Instagram">
+                  <Instagram className="text-white" size={20} />
+                </a>
+                <a href="https://open.spotify.com/show/3lsJLi7SBqrsR65I1jqxAn" target="_blank" rel="noopener noreferrer" className="bg-green-600 p-3 rounded-full hover:scale-110 transition-transform" aria-label="Spotify Podcast">
+                  <Globe className="text-white" size={20} />
+                </a>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-purple-200 text-xs">© 2025 Literary Rides • Created by Dr. Vishwanath Bite</p>
+              <p className="text-purple-300 text-xs mt-1">🔐 Secure • 📚 Educational • 💯 Always Free</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Modals */}
+        {showAuthModal && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-modal-title"
+          >
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 my-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 id="auth-modal-title" className="text-2xl font-black">
+                  {authMode === 'signin' ? '🔐 Sign In' : authMode === 'signup' ? '🎉 Sign Up' : '🔑 Reset Password'}
+                </h3>
+                <button onClick={() => setShowAuthModal(false)} aria-label="Close modal" className="p-2 hover:bg-gray-100 rounded-full">
+                  <X size={24} />
+                </button>
+              </div>
+
+              {authMode === 'signin' && (
+                <div className="space-y-3">
+                  <input 
+                    type="tel" 
+                    placeholder="Mobile Number" 
+                    maxLength="10" 
+                    value={signInData.mobile}
+                    onChange={(e) => setSignInData({...signInData, mobile: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                    aria-label="Mobile number"
+                  />
+                  <input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={signInData.password}
+                    onChange={(e) => setSignInData({...signInData, password: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                    aria-label="Password"
+                  />
+                  <button
+                    onClick={handleSignIn}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-105 transition-transform"
+                  >
+                    Sign In
+                  </button>
+                  <div className="text-center space-y-2">
+                    <button onClick={() => setAuthMode('forgot')} className="text-blue-600 text-sm font-bold hover:underline">
+                      Forgot Password?
+                    </button>
+                    <p className="text-gray-600 text-sm">
+                      Don't have an account?{' '}
+                      <button onClick={() => setAuthMode('signup')} className="text-purple-600 font-bold hover:underline">
+                        Sign Up
+                      </button>
+                    </p>
                   </div>
                 </div>
+              )}
 
-                <div className="flex justify-center space-x-3">
-                  {!isSignedIn ? (
+              {authMode === 'signup' && (
+                <div className="space-y-3">
+                  <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-3 mb-4">
+                    <p className="text-sm font-bold text-yellow-800">🎁 Get +50 points on signup!</p>
+                    <p className="text-xs text-yellow-700">+100 extra if you use a referral code!</p>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="First Name *" 
+                    value={signUpData.firstName}
+                    onChange={(e) => setSignUpData({...signUpData, firstName: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Last Name *" 
+                    value={signUpData.lastName}
+                    onChange={(e) => setSignUpData({...signUpData, lastName: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  <input 
+                    type="tel" 
+                    placeholder="Mobile (10 digits) *" 
+                    maxLength="10" 
+                    value={signUpData.mobile}
+                    onChange={(e) => setSignUpData({...signUpData, mobile: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  <input 
+                    type="email" 
+                    placeholder="Email (Optional)" 
+                    value={signUpData.email}
+                    onChange={(e) => setSignUpData({...signUpData, email: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  <input 
+                    type="password" 
+                    placeholder="Create Password (min 6 chars) *" 
+                    value={signUpData.password}
+                    onChange={(e) => setSignUpData({...signUpData, password: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  <select 
+                    value={signUpData.securityQuestion}
+                    onChange={(e) => setSignUpData({...signUpData, securityQuestion: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  >
+                    <option value="">Select Security Question *</option>
+                    {securityQuestions.map((q, i) => <option key={i} value={q}>{q}</option>)}
+                  </select>
+                  <input 
+                    type="text" 
+                    placeholder="Security Answer *" 
+                    value={signUpData.securityAnswer}
+                    onChange={(e) => setSignUpData({...signUpData, securityAnswer: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  
+                  <button
+                    onClick={handleSignUp}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black py-4 rounded-xl hover:scale-105 transition-transform"
+                  >
+                    Sign Up & Get Bonus Points 🎁
+                  </button>
+                  
+                  <p className="text-center text-gray-600 text-sm">
+                    Already have an account?{' '}
+                    <button onClick={() => setAuthMode('signin')} className="text-purple-600 font-bold hover:underline">
+                      Sign In
+                    </button>
+                  </p>
+                </div>
+              )}
+
+              {authMode === 'forgot' && (
+                <div className="space-y-3">
+                  <div className="bg-blue-50 p-3 rounded-xl mb-4">
+                    <p className="text-sm text-gray-700">
+                      <Lock size={16} className="inline mr-2" />
+                      For security, you'll set a new password
+                    </p>
+                  </div>
+                  <input
+                    type="tel"
+                    placeholder="Mobile Number"
+                    maxLength="10"
+                    value={forgotData.mobile}
+                    onChange={(e) => setForgotData({...forgotData, mobile: e.target.value})}
+                    className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
+                  />
+                  {forgotData.mobile.length === 10 && users[forgotData.mobile] && (
                     <>
-                      <button onClick={() => { setAuthMode('signin'); setShowAuthModal(true); }} className="bg-white text-purple-700 px-6 py-2 rounded-xl font-bold text-sm">
-                        Sign In
-                      </button>
-                      <button onClick={() => { setAuthMode('signup'); setShowAuthModal(true); }} className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-xl font-bold text-sm animate-pulse">
-                        Sign Up FREE
-                      </button>
-                    </>
-                  ) : (
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-white bg-opacity-20 backdrop-blur-xl rounded-xl px-4 py-2">
-                        <p className="text-white font-bold text-sm">Hi, {userProfile.firstName}! 👋</p>
+                      <div className="bg-blue-50 p-3 rounded-xl">
+                        <p className="text-sm font-bold">Your Security Question:</p>
+                        <p className="text-sm text-gray-600">{users[forgotData.mobile].profile.securityQuestion}</p>
                       </div>
-                      <button onClick={saveProgress} className="bg-green-500 text-white p-2 rounded-xl">
-                        <Save />
-                      </button>
-                      <button onClick={() => setShowReferralModal(true)} className="bg-white bg-opacity-20 p-2 rounded-xl">
-                        <Gift />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="max-w-md mx-auto p-4">
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-4 mb-4 text-center">
-                <h3 className="text-white font-black text-xl mb-1">✨ 100% FREE ✨</h3>
-                <p className="text-green-100 text-sm">This app is and will always be free</p>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <div className="flex justify-center mb-1"><Trophy /></div>
-                  <p className="text-white font-black text-lg">{totalPoints}</p>
-                  <p className="text-xs text-gray-300">Points</p>
-                </div>
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <div className="flex justify-center mb-1"><Flame /></div>
-                  <p className="text-white font-black text-lg">{streak}</p>
-                  <p className="text-xs text-gray-300">Streak</p>
-                </div>
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <div className="flex justify-center mb-1"><Crown /></div>
-                  <p className="text-white font-black text-lg">{level}</p>
-                  <p className="text-xs text-gray-300">Level</p>
-                </div>
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center">
-                  <div className="flex justify-center mb-1"><UserPlus /></div>
-                  <p className="text-white font-black text-lg">{referralCount}</p>
-                  <p className="text-xs text-gray-300">Referrals</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <button onClick={() => startQuiz('vocab')} className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4">
-                  <div className="flex justify-center mb-2"><Brain /></div>
-                  <p className="text-white font-black text-sm">Vocabulary</p>
-                  <p className="text-green-100 text-xs">3 Levels</p>
-                </button>
-
-                <button onClick={() => startQuiz('synonym')} className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-4">
-                  <div className="flex justify-center mb-2"><MessageSquare /></div>
-                  <p className="text-white font-black text-sm">Synonyms</p>
-                  <p className="text-blue-100 text-xs">3 Levels</p>
-                </button>
-
-                <button onClick={() => startQuiz('antonym')} className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4">
-                  <div className="flex justify-center mb-2"><Target /></div>
-                  <p className="text-white font-black text-sm">Antonyms</p>
-                  <p className="text-orange-100 text-xs">3 Levels</p>
-                </button>
-
-                <button onClick={() => startQuiz('oneword')} className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-4">
-                  <div className="flex justify-center mb-2"><List /></div>
-                  <p className="text-white font-black text-sm">One Word</p>
-                  <p className="text-purple-100 text-xs">Substitutes</p>
-                </button>
-              </div>
-            </div>
-
-            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-800 via-blue-800 to-indigo-800 border-t-4 border-yellow-400">
-              <div className="max-w-4xl mx-auto px-4 py-4">
-                <div className="text-center mb-3">
-                  <p className="text-white font-bold text-sm mb-2">Connect with Literary Rides</p>
-                  <div className="flex justify-center space-x-4">
-                    <a href="https://youtube.com/@literaryrides" target="_blank" className="bg-red-600 p-3 rounded-full">
-                      <Youtube />
-                    </a>
-                    <a href="https://instagram.com/literaryrides" target="_blank" className="bg-pink-600 p-3 rounded-full">
-                      <Instagram />
-                    </a>
-                    <a href="https://open.spotify.com/show/3lsJLi7SBqrsR65I1jqxAn?si=dfc20ae522e74424" target="_blank" className="bg-green-600 p-3 rounded-full">
-                      <Globe />
-                    </a>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <p className="text-purple-200 text-xs">© 2025 Literary Rides • Created by Dr. Vishwanath Bite</p>
-                  <p className="text-purple-300 text-xs mt-1">For Students, By Educator • Always Free</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Auth Modal */}
-            {showAuthModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-                <div className="bg-white rounded-3xl max-w-md w-full p-6 my-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-2xl font-black">
-                      {authMode === 'signin' ? '🔐 Sign In' : authMode === 'signup' ? '🎉 Sign Up' : '🔑 Forgot Password'}
-                    </h3>
-                    <button onClick={() => setShowAuthModal(false)} className="p-2">
-                      <X />
-                    </button>
-                  </div>
-
-                  {authMode === 'signin' && (
-                    <div className="space-y-3">
-                      <input type="tel" placeholder="Mobile Number" id="signin-mobile" maxLength="10" className="w-full p-3 border-2 rounded-xl" />
-                      <input type="password" placeholder="Password" id="signin-password" className="w-full p-3 border-2 rounded-xl" />
-                      <button
-                        onClick={() => {
-                          const mobile = document.getElementById('signin-mobile').value;
-                          const password = document.getElementById('signin-password').value;
-                          if (mobile && password) handleSignIn(mobile, password);
-                          else alert('Please fill all fields');
-                        }}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl"
-                      >
-                        Sign In
-                      </button>
-                      <div className="text-center space-y-2">
-                        <button onClick={() => setAuthMode('forgot')} className="text-blue-600 text-sm font-bold">
-                          Forgot Password?
-                        </button>
-                        <p className="text-gray-600 text-sm">
-                          Don't have an account?{' '}
-                          <button onClick={() => setAuthMode('signup')} className="text-purple-600 font-bold">
-                            Sign Up
-                          </button>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {authMode === 'signup' && (
-                    <div className="space-y-3">
-                      <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-3 mb-4">
-                        <p className="text-sm font-bold text-yellow-800">🎁 Get +50 points on signup!</p>
-                      </div>
-                      <input type="text" placeholder="First Name *" id="signup-firstname" className="w-full p-3 border-2 rounded-xl" />
-                      <input type="text" placeholder="Last Name *" id="signup-lastname" className="w-full p-3 border-2 rounded-xl" />
-                      <input type="tel" placeholder="Mobile (10 digits) *" id="signup-mobile" maxLength="10" className="w-full p-3 border-2 rounded-xl" />
-                      <input type="email" placeholder="Email (Optional)" id="signup-email" className="w-full p-3 border-2 rounded-xl" />
-                      <input type="password" placeholder="Create Password *" id="signup-password" className="w-full p-3 border-2 rounded-xl" />
-                      <select id="signup-question" className="w-full p-3 border-2 rounded-xl">
-                        <option value="">Select Security Question *</option>
-                        {securityQuestions.map((q, i) => <option key={i} value={q}>{q}</option>)}
-                      </select>
-                      <input type="text" placeholder="Security Answer *" id="signup-answer" className="w-full p-3 border-2 rounded-xl" />
-                      
-                      <button
-                        onClick={() => {
-                          const profile = {
-                            firstName: document.getElementById('signup-firstname').value,
-                            lastName: document.getElementById('signup-lastname').value,
-                            mobile: document.getElementById('signup-mobile').value,
-                            email: document.getElementById('signup-email').value,
-                            password: document.getElementById('signup-password').value,
-                            securityQuestion: document.getElementById('signup-question').value,
-                            securityAnswer: document.getElementById('signup-answer').value
-                          };
-                          
-                          if (profile.firstName && profile.lastName && profile.mobile.length === 10 && profile.password && profile.securityQuestion && profile.securityAnswer) {
-                            handleSignUp(profile);
-                          } else {
-                            alert('Please fill all required fields');
-                          }
-                        }}
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black py-4 rounded-xl"
-                      >
-                        Sign Up & Get +50 Points 🎁
-                      </button>
-                      
-                      <p className="text-center text-gray-600 text-sm">
-                        Already have an account?{' '}
-                        <button onClick={() => setAuthMode('signin')} className="text-purple-600 font-bold">
-                          Sign In
-                        </button>
-                      </p>
-                    </div>
-                  )}
-
-                  {authMode === 'forgot' && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600 mb-4">Enter mobile number and answer security question</p>
                       <input
-                        type="tel"
-                        placeholder="Mobile Number"
-                        maxLength="10"
-                        value={forgotMobile}
-                        onChange={(e) => setForgotMobile(e.target.value)}
-                        className="w-full p-3 border-2 rounded-xl"
+                        type="text"
+                        placeholder="Your Answer"
+                        value={forgotData.answer}
+                        onChange={(e) => setForgotData({...forgotData, answer: e.target.value})}
+                        className="w-full p-3 border-2 rounded-xl focus:border-purple-500 outline-none"
                       />
-                      {forgotMobile.length === 10 && users[forgotMobile] && (
-                        <>
-                          <div className="bg-blue-50 p-3 rounded-xl">
-                            <p className="text-sm font-bold">Your Security Question:</p>
-                            <p className="text-sm text-gray-600">{users[forgotMobile].profile.securityQuestion}</p>
-                          </div>
-                          <input
-                            type="text"
-                            placeholder="Your Answer"
-                            value={forgotAnswer}
-                            onChange={(e) => setForgotAnswer(e.target.value)}
-                            className="w-full p-3 border-2 rounded-xl"
-                          />
-                        </>
-                      )}
-                      <button
-                        onClick={handleForgotPassword}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl"
-                      >
-                        Recover Password
-                      </button>
-                      <button onClick={() => setAuthMode('signin')} className="w-full text-center text-purple-600 font-bold">
-                        Back to Sign In
-                      </button>
-                    </div>
+                    </>
                   )}
-                </div>
-              </div>
-            )}
-
-            {/* Difficulty Modal */}
-            {showDifficultyModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-3xl max-w-md w-full p-6">
-                  <h3 className="text-2xl font-black text-center mb-6">Choose Difficulty</h3>
-                  
-                  <div className="space-y-3">
-                    <button onClick={() => selectDifficulty('easy')} className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <p className="font-black text-lg">Easy</p>
-                          <p className="text-sm">Perfect for beginners • 10 pts</p>
-                        </div>
-                        <Zap />
-                      </div>
-                    </button>
-
-                    <button onClick={() => selectDifficulty('medium')} className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-2xl p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <p className="font-black text-lg">Medium</p>
-                          <p className="text-sm">Good challenge • 15 pts</p>
-                        </div>
-                        <Flame />
-                      </div>
-                    </button>
-
-                    <button onClick={() => selectDifficulty('hard')} className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-2xl p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <p className="font-black text-lg">Hard</p>
-                          <p className="text-sm">Expert level • 20 pts</p>
-                        </div>
-                        <Crown />
-                      </div>
-                    </button>
-                  </div>
-
-                  <button onClick={() => setShowDifficultyModal(false)} className="w-full mt-4 bg-gray-200 font-bold py-3 rounded-xl">
-                    Cancel
+                  <button
+                    onClick={handleForgotPassword}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-105 transition-transform"
+                  >
+                    Reset Password
+                  </button>
+                  <button onClick={() => setAuthMode('signin')} className="w-full text-center text-purple-600 font-bold hover:underline">
+                    Back to Sign In
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+        )}
 
-            {/* Referral Modal */}
-            {showReferralModal && isSignedIn && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-3xl max-w-md w-full p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-2xl font-black">🎁 Refer & Earn</h3>
-                    <button onClick={() => setShowReferralModal(false)}>
-                      <X />
-                    </button>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                    <p className="font-bold mb-2">Your Referral Code:</p>
-                    <div className="flex items-center justify-between bg-white p-3 rounded-lg border-2 border-purple-300">
-                      <p className="text-2xl font-black text-purple-600">{referralCode}</p>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(referralCode);
-                          alert('✅ Code copied!');
-                        }}
-                        className="bg-purple-600 text-white p-2 rounded-lg"
-                      >
-                        <Copy />
-                      </button>
+        {showDifficultyModal && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="bg-white rounded-3xl max-w-md w-full p-6">
+              <h3 className="text-2xl font-black text-center mb-6">Choose Difficulty</h3>
+              
+              <div className="space-y-3">
+                <button 
+                  onClick={() => selectDifficulty('easy')} 
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4 hover:scale-105 transition-transform"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <p className="font-black text-lg">Easy</p>
+                      <p className="text-sm">Perfect for beginners • 10 pts</p>
                     </div>
+                    <Zap size={32} />
                   </div>
+                </button>
 
-                  <button onClick={shareReferral} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black py-3 rounded-xl mb-2 flex items-center justify-center">
-                    <Share2 />
-                    <span className="ml-2">Share Code</span>
-                  </button>
+                <button 
+                  onClick={() => selectDifficulty('medium')} 
+                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-2xl p-4 hover:scale-105 transition-transform"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <p className="font-black text-lg">Medium</p>
+                      <p className="text-sm">Good challenge • 15 pts</p>
+                    </div>
+                    <Flame size={32} />
+                  </div>
+                </button>
 
-                  <button onClick={() => setShowReferralModal(false)} className="w-full bg-gray-200 font-bold py-3 rounded-xl">
-                    Close
-                  </button>
-                </div>
+                <button 
+                  onClick={() => selectDifficulty('hard')} 
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-2xl p-4 hover:scale-105 transition-transform"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <p className="font-black text-lg">Hard</p>
+                      <p className="text-sm">Expert level • 20 pts</p>
+                    </div>
+                    <Crown size={32} />
+                  </div>
+                </button>
               </div>
-            )}
 
-            {/* Signup Reminder */}
-            {showSignupReminder && !isSignedIn && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-3xl max-w-md w-full p-6">
-                  <div className="text-center mb-4">
-                    <div className="text-6xl mb-3">🎉</div>
-                    <h3 className="text-2xl font-black mb-2">Great Progress!</h3>
-                    <p className="text-gray-600">You've earned <span className="font-bold text-purple-600">{totalPoints} points</span></p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl p-4 mb-4">
-                    <p className="text-sm font-bold mb-2">🎁 Sign up to unlock:</p>
-                    <ul className="text-sm space-y-1">
-                      <li>✅ Save progress permanently</li>
-                      <li>✅ Get +50 bonus points</li>
-                      <li>✅ Unlock referral rewards</li>
-                    </ul>
-                  </div>
+              <button 
+                onClick={() => setShowDifficultyModal(false)} 
+                className="w-full mt-4 bg-gray-200 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
+        {showReferralModal && isSignedIn && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="bg-white rounded-3xl max-w-md w-full p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-black">🎁 Refer & Earn</h3>
+                <button onClick={() => setShowReferralModal(false)} aria-label="Close">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-xl p-4 mb-4">
+                <p className="font-bold mb-2">How it works:</p>
+                <ul className="text-sm space-y-1">
+                  <li>✅ Share your unique code</li>
+                  <li>✅ Friend gets +150 bonus points</li>
+                  <li>✅ You get +100 points per referral</li>
+                </ul>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="font-bold mb-2">Your Referral Code:</p>
+                <div className="flex items-center justify-between bg-white p-3 rounded-lg border-2 border-purple-300">
+                  <p className="text-2xl font-black text-purple-600">{referralCode}</p>
                   <button
                     onClick={() => {
-                      setShowSignupReminder(false);
-                      setAuthMode('signup');
-                      setShowAuthModal(true);
+                      navigator.clipboard.writeText(referralCode);
+                      alert('✅ Code copied!');
                     }}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black py-3 rounded-xl mb-2"
+                    className="bg-purple-600 text-white p-2 rounded-lg hover:scale-110 transition-transform"
+                    aria-label="Copy referral code"
                   >
-                    Sign Up & Get +50 Points
-                  </button>
-                  <button onClick={() => setShowSignupReminder(false)} className="w-full bg-gray-200 font-bold py-3 rounded-xl">
-                    Maybe Later
+                    <Copy size={20} />
                   </button>
                 </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  You've referred <span className="font-bold text-purple-600">{referralCount}</span> student{referralCount !== 1 ? 's' : ''}
+                </p>
               </div>
-            )}
+
+              <button 
+                onClick={shareReferral} 
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-black py-3 rounded-xl mb-2 flex items-center justify-center hover:scale-105 transition-transform"
+              >
+                <Share2 size={20} />
+                <span className="ml-2">Share Code</span>
+              </button>
+
+              <button 
+                onClick={() => setShowReferralModal(false)} 
+                className="w-full bg-gray-200 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
-        );
-      }
+        )}
 
-      // Quiz Screen
-      if (screen === 'quiz') {
-        const words = difficulty ? vocabularyDB[difficulty] : vocabularyDB.easy;
-        const word = words[currentIndex % words.length];
-        
-        let question, options, correctAnswer;
-        
-        if (mode === 'vocab') {
-          question = `What does "${word.word}" mean?`;
-          options = [word.definition];
-          while (options.length < 4) {
-            const randomWord = words[Math.floor(Math.random() * words.length)];
-            if (!options.includes(randomWord.definition)) options.push(randomWord.definition);
-          }
-          options.sort(() => Math.random() - 0.5);
-          correctAnswer = word.definition;
-        } else if (mode === 'synonym') {
-          question = `Choose a SYNONYM for "${word.word}"`;
-          options = [...word.synonyms];
-          correctAnswer = word.synonyms[0];
-        } else if (mode === 'antonym') {
-          question = `Choose an ANTONYM for "${word.word}"`;
-          options = [...word.antonyms];
-          correctAnswer = word.antonyms[0];
-        }
-
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4">
-            <div className="max-w-md mx-auto">
-              <div className="flex justify-between items-center mb-3">
-                <button onClick={() => setScreen('home')} className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-xl font-bold">
-                  ← Back
-                </button>
-                <div className="flex items-center space-x-2">
-                  <div className="bg-white bg-opacity-20 px-3 py-2 rounded-xl">
-                    <p className="text-white font-black">{score}</p>
-                  </div>
-                  <div className="flex items-center bg-white bg-opacity-20 px-3 py-2 rounded-xl">
-                    <Flame />
-                    <p className="text-white font-black ml-1">{streak}</p>
-                  </div>
-                </div>
+        {showSignupReminder && !isSignedIn && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="bg-white rounded-3xl max-w-md w-full p-6">
+              <div className="text-center mb-4">
+                <div className="text-6xl mb-3">🎉</div>
+                <h3 className="text-2xl font-black mb-2">Great Progress!</h3>
+                <p className="text-gray-600">You've earned <span className="font-bold text-purple-600">{totalPoints} points</span></p>
+              </div>
+              
+              <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl p-4 mb-4">
+                <p className="text-sm font-bold mb-2">🎁 Sign up to unlock:</p>
+                <ul className="text-sm space-y-1">
+                  <li>✅ Save progress permanently</li>
+                  <li>✅ Get +50 bonus points</li>
+                  <li>✅ Track learning progress</li>
+                  <li>✅ Unlock referral rewards</li>
+                </ul>
               </div>
 
-              <div className="bg-white rounded-3xl p-6">
-                <div className="text-center mb-6">
-                  <div className="flex justify-center items-center space-x-2 mb-3">
-                    <h2 className="text-3xl font-black">{word.word}</h2>
-                    <button onClick={() => speakWord(word.word)} className="bg-blue-500 text-white p-2 rounded-full">
-                      <Volume2 />
-                    </button>
-                  </div>
-                  <p className="text-lg font-bold text-gray-700">{question}</p>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mt-2 ${
+              <button
+                onClick={() => {
+                  setShowSignupReminder(false);
+                  setAuthMode('signup');
+                  setShowAuthModal(true);
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black py-3 rounded-xl mb-2 hover:scale-105 transition-transform"
+              >
+                Sign Up & Get +50 Points
+              </button>
+              <button 
+                onClick={() => setShowSignupReminder(false)} 
+                className="w-full bg-gray-200 font-bold py-3 rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // QUIZ SCREEN
+  if (screen === 'quiz') {
+    let question, options, correctAnswer, currentWord, explanation;
+    
+    if (mode === 'oneword') {
+      const substitute = oneWordSubstitutes[currentIndex % oneWordSubstitutes.length];
+      question = `One word for: "${substitute.phrase}"`;
+      options = shuffleArray([...substitute.options]);
+      correctAnswer = substitute.answer;
+      explanation = substitute.explanation;
+      currentWord = { 
+        word: substitute.answer, 
+        definition: substitute.phrase, 
+        example: substitute.explanation,
+        exam: substitute.exam
+      };
+    } else {
+      const words = vocabularyDB[difficulty];
+      currentWord = words[currentIndex % words.length];
+      
+      if (mode === 'vocab') {
+        question = `What does "${currentWord.word}" mean?`;
+        const distractors = generateSmartDistractors(currentWord.definition, words, 3);
+        options = shuffleArray([currentWord.definition, ...distractors]);
+        correctAnswer = currentWord.definition;
+      } else if (mode === 'synonym') {
+        question = `Choose a SYNONYM for "${currentWord.word}"`;
+        options = shuffleArray([...currentWord.synonyms]);
+        correctAnswer = currentWord.synonyms[0];
+      } else if (mode === 'antonym') {
+        question = `Choose an ANTONYM for "${currentWord.word}"`;
+        options = shuffleArray([...currentWord.antonyms]);
+        correctAnswer = currentWord.antonyms[0];
+      }
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-4">
+        <div className="max-w-md mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-3">
+            <button 
+              onClick={() => {
+                window.speechSynthesis.cancel();
+                setScreen('home');
+              }} 
+              className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-xl font-bold hover:scale-105 transition-transform"
+            >
+              ← Back
+            </button>
+            <div className="flex items-center space-x-2">
+              <div className="bg-white bg-opacity-20 px-3 py-2 rounded-xl">
+                <p className="text-white font-black">{score}</p>
+              </div>
+              <div className="flex items-center bg-white bg-opacity-20 px-3 py-2 rounded-xl">
+                <Flame className="text-orange-400" size={20} />
+                <p className="text-white font-black ml-1">{streak}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Question Card */}
+          <div className="bg-white rounded-3xl p-6 shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="flex justify-center items-center space-x-2 mb-3">
+                <h2 className="text-3xl font-black text-gray-800">{currentWord.word}</h2>
+                {mode !== 'oneword' && (
+                  <button 
+                    onClick={() => speakWord(currentWord.word)} 
+                    className="bg-blue-500 text-white p-2 rounded-full hover:scale-110 transition-transform"
+                    aria-label="Pronounce word"
+                  >
+                    <Volume2 size={20} />
+                  </button>
+                )}
+              </div>
+              <p className="text-lg font-bold text-gray-700 mb-2">{question}</p>
+              {mode !== 'oneword' && (
+                <div className="flex items-center justify-center space-x-2">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                     difficulty === 'hard' ? 'bg-red-100 text-red-700' :
                     difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-green-100 text-green-700'
                   }`}>
-                    {difficulty ? difficulty.toUpperCase() : 'EASY'}
+                    {difficulty?.toUpperCase()}
                   </span>
+                  <span className="text-xs text-gray-500">• {currentWord.exam}</span>
+                </div>
+              )}
+            </div>
+
+            {!showResult && (
+              <div className="space-y-3">
+                {options.map((option, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => handleAnswer(option, correctAnswer, currentWord)} 
+                    className="w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-gray-200 hover:border-blue-500 hover:scale-102 transition-all"
+                  >
+                    <p className="font-semibold text-gray-800">{option}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showResult && (
+              <div className={`p-5 rounded-2xl ${isCorrect ? 'bg-green-50 border-4 border-green-500' : 'bg-red-50 border-4 border-red-500'}`}>
+                <div className="flex items-center justify-center mb-4">
+                  {isCorrect ? <CheckCircle className="text-green-600" size={40} /> : <XCircle className="text-red-600" size={40} />}
+                  <h3 className={`text-2xl font-black ml-3 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                    {isCorrect ? 'Excellent! 🎉' : 'Keep Learning!'}
+                  </h3>
                 </div>
 
-                {!showResult && (
-                  <div className="space-y-3">
-                    {options.map((option, i) => (
-                      <button key={i} onClick={() => handleAnswer(option, correctAnswer)} className="w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border-2 hover:border-blue-500">
-                        <p className="font-semibold">{option}</p>
-                      </button>
-                    ))}
+                <div className="space-y-3 text-sm">
+                  <div className="bg-white rounded-xl p-3 border-l-4 border-blue-500">
+                    <p className="font-bold text-gray-700">Definition:</p>
+                    <p className="text-gray-600">{currentWord.definition}</p>
                   </div>
-                )}
-
-                {showResult && (
-                  <div className={`p-5 rounded-2xl ${isCorrect ? 'bg-green-50 border-4 border-green-500' : 'bg-red-50 border-4 border-red-500'}`}>
-                    <div className="flex items-center justify-center mb-4">
-                      {isCorrect ? <CheckCircle /> : <XCircle />}
-                      <h3 className={`text-2xl font-black ml-3 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                        {isCorrect ? 'Correct! 🎉' : 'Try Again!'}
-                      </h3>
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                      <div className="bg-white rounded-xl p-3">
-                        <p className="font-bold">Definition:</p>
-                        <p className="text-gray-600">{word.definition}</p>
+                  
+                  {mode !== 'oneword' && (
+                    <>
+                      <div className="bg-white rounded-xl p-3 border-l-4 border-purple-500">
+                        <p className="font-bold text-gray-700">Example:</p>
+                        <p className="text-gray-600 italic">{currentWord.example}</p>
                       </div>
-                      <div className="bg-white rounded-xl p-3">
-                        <p className="font-bold">Example:</p>
-                        <p className="text-gray-600 italic">{word.example}</p>
-                      </div>
+                      
+                      {currentWord.mnemonic && (
+                        <div className="bg-white rounded-xl p-3 border-l-4 border-yellow-500">
+                          <p className="font-bold text-gray-700">Memory Trick:</p>
+                          <p className="text-gray-600">{currentWord.mnemonic}</p>
+                        </div>
+                      )}
+                      
+                      {currentWord.usage && (
+                        <div className="bg-white rounded-xl p-3 border-l-4 border-green-500">
+                          <p className="font-bold text-gray-700">Usage:</p>
+                          <p className="text-gray-600">{currentWord.usage}</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {mode === 'oneword' && explanation && (
+                    <div className="bg-white rounded-xl p-3 border-l-4 border-purple-500">
+                      <p className="font-bold text-gray-700">Explanation:</p>
+                      <p className="text-gray-600">{explanation}</p>
                     </div>
+                  )}
+                </div>
 
-                    <button onClick={nextQuestion} className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl">
-                      Next →
-                    </button>
-                  </div>
-                )}
+                <button 
+                  onClick={nextQuestion} 
+                  className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-105 transition-transform"
+                >
+                  Next Question →
+                </button>
               </div>
-            </div>
+            )}
           </div>
-        );
-      }
+        </div>
+      </div>
+    );
+  }
 
-      return null;
-    };
-
-    ReactDOM.render(<LiteraryRidesVocabPro />, document.getElementById('root'));
-  </script>
-</body>
-</html>
+  return null;
+}
