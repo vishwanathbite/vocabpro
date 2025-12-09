@@ -2360,14 +2360,14 @@
 
               <div className="bg-white rounded-3xl p-6 shadow-2xl">
                 <div className="text-center mb-6">
-                  <div className="flex justify-center items-center space-x-2 mb-3">
-                    <h2 className="text-3xl font-black text-gray-800">{q.word || ''}</h2>
-                    {(modeText==='vocab' || modeText==='synonym' || modeText==='antonym') && (
+                  {(modeText==='vocab' || modeText==='synonym' || modeText==='antonym') && (
+                    <div className="flex justify-center items-center space-x-2 mb-3">
+                      <h2 className="text-3xl font-black text-gray-800">{q.word || ''}</h2>
                       <button onClick={()=>speakWord(q.word || '')} className="bg-blue-500 text-white p-2 rounded-full hover:scale-110 transition-transform" aria-label="Pronounce word">
                         <Volume2 width="20" height="20"/>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <p className="text-lg font-bold text-gray-700 mb-2">{question}</p>
                   {(modeText==='vocab' || modeText==='synonym' || modeText==='antonym') && difficulty && (
                     <div className="flex items-center justify-center space-x-2">
