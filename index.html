@@ -2053,7 +2053,7 @@
       // ---------- Render Screens ----------
       if (screen === 'home'){
         return (
-          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pb-40">
+          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pb-64">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-700 via-blue-700 to-indigo-700 shadow-2xl">
               <div className="max-w-4xl mx-auto px-4 py-6">
@@ -2095,32 +2095,33 @@
               </div>
             </div>
 
-            <div className="max-w-md mx-auto p-4">
+            <div className="max-w-4xl mx-auto p-4">
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-4 mb-4 text-center">
                 <h3 className="text-white font-black text-xl mb-1">✨ 100% FREE ✨</h3>
                 <p className="text-green-100 text-sm">Secure • Educational • Always Free</p>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
-                  <Trophy className="mx-auto mb-1 text-yellow-300" width="24" height="24" />
-                  <p className="text-white font-black text-lg">{totalPoints}</p>
-                  <p className="text-xs text-gray-300">Points</p>
+              {/* Stats Cards - Responsive */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-4 text-center hover:scale-105 transition-transform shadow-lg">
+                  <Trophy className="mx-auto mb-2 text-yellow-300" width="28" height="28" />
+                  <p className="text-white font-black text-2xl">{totalPoints}</p>
+                  <p className="text-sm text-gray-300 font-medium">Points</p>
                 </div>
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
-                  <Flame className="mx-auto mb-1 text-orange-400" width="24" height="24" />
-                  <p className="text-white font-black text-lg">{streak}</p>
-                  <p className="text-xs text-gray-300">Streak</p>
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-4 text-center hover:scale-105 transition-transform shadow-lg">
+                  <Flame className="mx-auto mb-2 text-orange-400" width="28" height="28" />
+                  <p className="text-white font-black text-2xl">{streak}</p>
+                  <p className="text-sm text-gray-300 font-medium">Streak</p>
                 </div>
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
-                  <Crown className="mx-auto mb-1 text-yellow-400" width="24" height="24" />
-                  <p className="text-white font-black text-lg">{level}</p>
-                  <p className="text-xs text-gray-300">Level</p>
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-4 text-center hover:scale-105 transition-transform shadow-lg">
+                  <Crown className="mx-auto mb-2 text-yellow-400" width="28" height="28" />
+                  <p className="text-white font-black text-2xl">{level}</p>
+                  <p className="text-sm text-gray-300 font-medium">Level</p>
                 </div>
-                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-3 text-center hover:scale-105 transition-transform">
-                  <UserPlus className="mx-auto mb-1 text-blue-300" width="24" height="24" />
-                  <p className="text-white font-black text-lg">{referralCount}</p>
-                  <p className="text-xs text-gray-300">Referrals</p>
+                <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-4 text-center hover:scale-105 transition-transform shadow-lg">
+                  <UserPlus className="mx-auto mb-2 text-blue-300" width="28" height="28" />
+                  <p className="text-white font-black text-2xl">{referralCount}</p>
+                  <p className="text-sm text-gray-300 font-medium">Referrals</p>
                 </div>
               </div>
 
@@ -2142,31 +2143,41 @@
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <button onClick={()=>startQuiz('vocab')} className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start vocabulary quiz">
-                  <Brain className="mx-auto mb-2 text-white" width="32" height="32" />
-                  <p className="text-white font-black text-sm">Vocabulary</p>
-                  <p className="text-green-100 text-xs">3 Levels</p>
+              {/* Quiz Buttons - Responsive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {/* Vocabulary Quiz */}
+                <button onClick={()=>startQuiz('vocab')} className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-2xl" aria-label="Start vocabulary quiz">
+                  <Brain className="mx-auto mb-3 text-white" width="40" height="40" />
+                  <p className="text-white font-black text-lg mb-1">Vocabulary</p>
+                  <p className="text-green-100 text-sm font-medium">3 Levels • 1344 Words</p>
                 </button>
-                <button onClick={()=>startQuiz('synonym')} className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start synonyms quiz">
-                  <MessageSquare className="mx-auto mb-2 text-white" width="32" height="32" />
-                  <p className="text-white font-black text-sm">Synonyms</p>
-                  <p className="text-blue-100 text-xs">3 Levels</p>
+
+                {/* Synonyms Quiz */}
+                <button onClick={()=>startQuiz('synonym')} className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-6 hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-2xl" aria-label="Start synonyms quiz">
+                  <MessageSquare className="mx-auto mb-3 text-white" width="40" height="40" />
+                  <p className="text-white font-black text-lg mb-1">Synonyms</p>
+                  <p className="text-blue-100 text-sm font-medium">3 Levels • Similar Words</p>
                 </button>
-                <button onClick={()=>startQuiz('antonym')} className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start antonyms quiz">
-                  <Target className="mx-auto mb-2 text-white" width="32" height="32" />
-                  <p className="text-white font-black text-sm">Antonyms</p>
-                  <p className="text-orange-100 text-xs">3 Levels</p>
+
+                {/* Antonyms Quiz */}
+                <button onClick={()=>startQuiz('antonym')} className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-6 hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-2xl" aria-label="Start antonyms quiz">
+                  <Target className="mx-auto mb-3 text-white" width="40" height="40" />
+                  <p className="text-white font-black text-lg mb-1">Antonyms</p>
+                  <p className="text-orange-100 text-sm font-medium">3 Levels • Opposite Words</p>
                 </button>
-                <button onClick={()=>startQuiz('oneword')} className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg" aria-label="Start one-word substitutes quiz">
-                  <List className="mx-auto mb-2 text-white" width="32" height="32" />
-                  <p className="text-white font-black text-sm">One Word</p>
-                  <p className="text-purple-100 text-xs">98 Terms</p>
+
+                {/* One-Word Substitutes */}
+                <button onClick={()=>startQuiz('oneword')} className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-6 hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-2xl" aria-label="Start one-word substitutes quiz">
+                  <List className="mx-auto mb-3 text-white" width="40" height="40" />
+                  <p className="text-white font-black text-lg mb-1">One Word</p>
+                  <p className="text-purple-100 text-sm font-medium">98 Terms • Substitutes</p>
                 </button>
-                <button onClick={()=>startQuiz('acronym')} className="bg-gradient-to-br from-yellow-500 to-amber-600 rounded-2xl p-4 hover:scale-105 transition-transform shadow-lg col-span-2" aria-label="Start acronyms quiz">
-                  <Award className="mx-auto mb-2 text-white" width="32" height="32" />
-                  <p className="text-white font-black text-sm">Acronyms Quiz</p>
-                  <p className="text-yellow-100 text-xs">103 Terms • UPSC/Banking</p>
+
+                {/* Acronyms Quiz - Highlighted */}
+                <button onClick={()=>startQuiz('acronym')} className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl p-6 hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-2xl sm:col-span-2 lg:col-span-1 border-4 border-yellow-200" aria-label="Start acronyms quiz">
+                  <Award className="mx-auto mb-3 text-white drop-shadow-lg" width="40" height="40" />
+                  <p className="text-white font-black text-lg mb-1">Acronyms Quiz</p>
+                  <p className="text-yellow-50 text-sm font-bold">103 Terms • UPSC/Banking</p>
                 </button>
               </div>
             </div>
