@@ -214,7 +214,7 @@ const initializeStats = () => {
     strugglingWordsList: [],
     referrals: 0,
     modesPlayed: 0,
-    modesPl ayedList: [],
+    modesPlayedList: [],
     level: 1,
     earnedBadges: [],
     lastPlayedDate: null,
