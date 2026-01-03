@@ -23,12 +23,12 @@ This project uses a unique dual-file structure for deployment:
 
 Both files contain identical vocabulary databases:
 
-- **Easy vocabulary:** 474 words
-- **Medium vocabulary:** 1,718 words
-- **Hard vocabulary:** 465 words
+- **Easy vocabulary:** 585 words
+- **Medium vocabulary:** 1,873 words
+- **Hard vocabulary:** 491 words
 - **Acronyms:** 103
 - **One-word substitutes:** 98
-- **Total items:** 2,858
+- **Total items:** 3,150
 
 ## 🔄 Keeping Files in Sync
 
@@ -145,7 +145,7 @@ If you add words, update the title in `index.html`:
 <title>Literary Rides VocabPro - [NEW_COUNT] Words - By Dr. Vishwanath Bite</title>
 ```
 
-Current count should be: **2,858 items** (2,657 vocab + 103 acronyms + 98 one-word)
+Current count should be: **3,150 items** (2,949 vocab + 103 acronyms + 98 one-word)
 
 ## 🐛 Common Issues
 

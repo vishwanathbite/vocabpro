@@ -1,12 +1,12 @@
 /**
  * VocabPro - Main Data Index
  * Combines all vocabulary databases (easy, medium, hard)
- * Total: 2,657 vocabulary words (474 easy + 1,718 medium + 465 hard)
+ * Total: 2,949 vocabulary words (585 easy + 1,873 medium + 491 hard)
  * Plus: 103 acronyms, 98 one-word substitutes
- * Grand Total: 2,858 learning items
+ * Grand Total: 3,150 learning items
  */
 
-// Easy Level Vocabulary (474 words)
+// Easy Level Vocabulary (585 words)
 const vocabEasy = [
 {word:"Abolish",definition:"To formally put an end to a system, practice, or institution",pronunciation:"uh-BOL-ish",synonyms:["eliminate","eradicate","terminate","annul"],antonyms:["establish","create","institute","found"],example:"The Indian government decided to abolish the practice of untouchability through Article 17.",mnemonic:"A-POLISH: Remove completely like polishing away dirt",usage:"Used in governance and social reform contexts",exam:"UPSC/SSC",difficulty:"easy"},
 {word:"Abundant",definition:"Existing or available in large quantities; plentiful",pronunciation:"uh-BUN-duhnt",synonyms:["plentiful","ample","copious","profuse"],antonyms:["scarce","sparse","insufficient","meager"],example:"The Western Ghats receive abundant rainfall during monsoon season.",mnemonic:"A-BUN-DANT: Imagine abundant buns at a bakery",usage:"Describes quantity and availability",exam:"SSC/Banking",difficulty:"easy"},

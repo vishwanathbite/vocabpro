@@ -2,18 +2,18 @@
 
 🎯 **Comprehensive vocabulary builder for Indian competitive exams (UPSC, SSC, Banking, Railways)**
 
-Master **2,858 vocabulary items** with a gamified learning experience designed specifically for Indian exam aspirants.
+Master **3,150 vocabulary items** with a gamified learning experience designed specifically for Indian exam aspirants.
 
 ## ✨ Features
 
 ### 📖 Comprehensive Content
-- **2,657 Vocabulary Words:**
-  - Easy: 474 words (foundational vocabulary)
-  - Medium: 1,718 words (intermediate level)
-  - Hard: 465 words (advanced vocabulary)
+- **2,949 Vocabulary Words:**
+  - Easy: 585 words (foundational vocabulary)
+  - Medium: 1,873 words (intermediate level)
+  - Hard: 491 words (advanced vocabulary)
 - **103 Acronyms** with smart deceiving options
 - **98 One-Word Substitutes** for competitive exam patterns
-- **Total: 2,858 learning items**
+- **Total: 3,150 learning items**
 
 ### 🎮 Learning Modes
 - **Vocabulary Quiz:** Match words with definitions
@@ -74,9 +74,9 @@ vocabpro/
 │   ├── screens.js          # Home & Quiz screens
 │   ├── app.js              # Main App component & state
 │   └── data/
-│       ├── vocab-easy.js       # 474 easy words
-│       ├── vocab-medium.js     # 1,718 medium words
-│       ├── vocab-hard.js       # 465 hard words
+│       ├── vocab-easy.js       # 585 easy words
+│       ├── vocab-medium.js     # 1,873 medium words
+│       ├── vocab-hard.js       # 491 hard words
 │       ├── acronyms.js         # 103 acronyms
 │       ├── oneword.js          # 98 one-word substitutes
 │       └── index.js            # Combines all databases
@@ -98,12 +98,12 @@ vocabpro/
 
 | Category | Count | Focus Area |
 |----------|-------|------------|
-| Easy Words | 474 | Foundation building |
-| Medium Words | 1,718 | Core vocabulary |
-| Hard Words | 465 | Advanced learning |
+| Easy Words | 585 | Foundation building |
+| Medium Words | 1,873 | Core vocabulary |
+| Hard Words | 491 | Advanced learning |
 | Acronyms | 103 | Quick recall |
 | One-Word Subs | 98 | Exam patterns |
-| **TOTAL** | **2,858** | **Complete coverage** |
+| **TOTAL** | **3,150** | **Complete coverage** |
 
 ## 🎯 Target Exams
 
@@ -154,7 +154,7 @@ This project is dedicated to helping students prepare for competitive exams. Use
 
 ## 🎯 Roadmap to 5,000+ Words
 
-Currently at **2,858 items** | Goal: **5,000+ comprehensive vocabulary**
+Currently at **3,150 items** | Goal: **5,000+ comprehensive vocabulary**
 
 **Next Milestones:**
 - ✅ Modular architecture implemented (Dec 2024)
