@@ -1,7 +1,9 @@
 /**
  * VocabPro - Main Data Index
  * Combines all vocabulary databases (easy, medium, hard)
- * Total: 2659 vocabulary words, 103 acronyms, 98 one-word substitutes
+ * Total: 2,657 vocabulary words (474 easy + 1,718 medium + 465 hard)
+ * Plus: 103 acronyms, 98 one-word substitutes
+ * Grand Total: 2,858 learning items
  */
 
 // Easy Level Vocabulary (474 words)

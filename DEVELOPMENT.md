@@ -10,7 +10,7 @@ This project uses a unique dual-file structure for deployment:
    - Contains the full application code with all databases
    - Uses ES6 imports from `lucide-react`
    - Intended for future build processes
-   - **Last synced:** 2025-12-26
+   - **Last synced:** 2026-01-03
 
 2. **`index.html`** - Standalone deployment file
    - Self-contained HTML file with embedded React app
@@ -23,12 +23,12 @@ This project uses a unique dual-file structure for deployment:
 
 Both files contain identical vocabulary databases:
 
-- **Easy vocabulary:** ~594 words
-- **Medium vocabulary:** ~450 words
-- **Hard vocabulary:** ~301 words
+- **Easy vocabulary:** 474 words
+- **Medium vocabulary:** 1,718 words
+- **Hard vocabulary:** 465 words
 - **Acronyms:** 103
 - **One-word substitutes:** 98
-- **Total items:** 1,546
+- **Total items:** 2,858
 
 ## 🔄 Keeping Files in Sync
 
@@ -145,7 +145,7 @@ If you add words, update the title in `index.html`:
 <title>Literary Rides VocabPro - [NEW_COUNT] Words - By Dr. Vishwanath Bite</title>
 ```
 
-Current count should be: **1546 items** (1345 vocab + 103 acronyms + 98 one-word)
+Current count should be: **2,858 items** (2,657 vocab + 103 acronyms + 98 one-word)
 
 ## 🐛 Common Issues
 
