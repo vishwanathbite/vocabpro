@@ -2,18 +2,18 @@
 
 🎯 **Comprehensive vocabulary builder for Indian competitive exams (UPSC, SSC, Banking, Railways)**
 
-Master **2,800+ vocabulary items** with a gamified learning experience designed specifically for Indian exam aspirants.
+Master **3,100+ vocabulary items** with a gamified learning experience designed specifically for Indian exam aspirants.
 
 ## ✨ Features
 
 ### 📖 Comprehensive Content
-- **2,661 Vocabulary Words:**
-  - Easy: 849 words (foundational vocabulary)
-  - Medium: 1,515 words (intermediate level)
+- **2,932 Vocabulary Words:**
+  - Easy: 2,287 words (foundational vocabulary)
+  - Medium: 348 words (intermediate level)
   - Hard: 297 words (advanced vocabulary)
 - **103 Acronyms** with smart deceiving options
 - **98 One-Word Substitutes** for competitive exam patterns
-- **Total: 2,862 learning items**
+- **Total: 3,133 learning items**
 
 ### 🎮 Learning Modes
 - **Vocabulary Quiz:** Match words with definitions
@@ -74,8 +74,8 @@ vocabpro/
 │   ├── screens.js          # Home & Quiz screens
 │   ├── app.js              # Main App component & state
 │   └── data/
-│       ├── vocab-easy.js       # 849 easy words
-│       ├── vocab-medium.js     # 1,515 medium words
+│       ├── vocab-easy.js       # 2,287 easy words
+│       ├── vocab-medium.js     # 348 medium words
 │       ├── vocab-hard.js       # 297 hard words
 │       ├── acronyms.js         # 103 acronyms
 │       ├── oneword.js          # 98 one-word substitutes
@@ -98,12 +98,12 @@ vocabpro/
 
 | Category | Count | Focus Area |
 |----------|-------|------------|
-| Easy Words | 849 | Foundation building |
-| Medium Words | 1,515 | Core vocabulary |
+| Easy Words | 2,287 | Foundation building |
+| Medium Words | 348 | Core vocabulary |
 | Hard Words | 297 | Advanced learning |
 | Acronyms | 103 | Quick recall |
 | One-Word Subs | 98 | Exam patterns |
-| **TOTAL** | **2,862** | **Complete coverage** |
+| **TOTAL** | **3,133** | **Complete coverage** |
 
 ## 🎯 Target Exams
 
@@ -154,16 +154,17 @@ This project is dedicated to helping students prepare for competitive exams. Use
 
 ## 🎯 Roadmap to 5,000+ Words
 
-Currently at **2,862 items** | Goal: **5,000+ comprehensive vocabulary**
+Currently at **3,133 items** | Goal: **5,000+ comprehensive vocabulary**
 
 **Next Milestones:**
 - ✅ Modular architecture implemented (Dec 2024)
-- 🔄 Adding 500 more medium-level words (Q1 2025)
-- 📝 Adding 500 more hard-level words (Q2 2025)
-- 🎯 Adding 400 more acronyms (Q2 2025)
-- 📚 Adding 400 more one-word substitutes (Q3 2025)
-- 🎮 Implementing Match Game mode (Q3 2025)
-- 🏆 Adding daily challenges (Q4 2025)
+- ✅ Added 270 new N-Z vocabulary words (Jan 2026)
+- 🔄 Adding 500 more medium-level words (Q1 2026)
+- 📝 Adding 500 more hard-level words (Q2 2026)
+- 🎯 Adding 400 more acronyms (Q2 2026)
+- 📚 Adding 400 more one-word substitutes (Q3 2026)
+- 🎮 Implementing Match Game mode (Q3 2026)
+- 🏆 Adding daily challenges (Q4 2026)
 
 ---
 
