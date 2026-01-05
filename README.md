@@ -7,13 +7,13 @@ Master **3,100+ vocabulary items** with a gamified learning experience designed 
 ## ✨ Features
 
 ### 📖 Comprehensive Content
-- **2,921 Vocabulary Words:**
-  - Easy: 2,276 words (foundational vocabulary)
-  - Medium: 348 words (intermediate level)
-  - Hard: 297 words (advanced vocabulary)
+- **2,929 Vocabulary Words:**
+  - Easy: 1,911 words (foundational vocabulary)
+  - Medium: 553 words (intermediate level)
+  - Hard: 465 words (advanced vocabulary)
 - **103 Acronyms** with smart deceiving options
 - **98 One-Word Substitutes** for competitive exam patterns
-- **Total: 3,122 learning items**
+- **Total: 3,130 learning items**
 
 ### 🎮 Learning Modes
 - **Vocabulary Quiz:** Match words with definitions
@@ -74,9 +74,9 @@ vocabpro/
 │   ├── screens.js          # Home & Quiz screens
 │   ├── app.js              # Main App component & state
 │   └── data/
-│       ├── vocab-easy.js       # 2,276 easy words
-│       ├── vocab-medium.js     # 348 medium words
-│       ├── vocab-hard.js       # 297 hard words
+│       ├── vocab-easy.js       # 744 easy words
+│       ├── vocab-medium.js     # 1,718 medium words
+│       ├── vocab-hard.js       # 465 hard words
 │       ├── acronyms.js         # 103 acronyms
 │       ├── oneword.js          # 98 one-word substitutes
 │       └── index.js            # Combines all databases
@@ -98,12 +98,12 @@ vocabpro/
 
 | Category | Count | Focus Area |
 |----------|-------|------------|
-| Easy Words | 2,276 | Foundation building |
-| Medium Words | 348 | Core vocabulary |
-| Hard Words | 297 | Advanced learning |
+| Easy Words | 1,911 | Foundation building |
+| Medium Words | 553 | Core vocabulary |
+| Hard Words | 465 | Advanced learning |
 | Acronyms | 103 | Quick recall |
 | One-Word Subs | 98 | Exam patterns |
-| **TOTAL** | **3,122** | **Complete coverage** |
+| **TOTAL** | **3,130** | **Complete coverage** |
 
 ## 🎯 Target Exams
 
@@ -154,12 +154,12 @@ This project is dedicated to helping students prepare for competitive exams. Use
 
 ## 🎯 Roadmap to 5,000+ Words
 
-Currently at **3,122 items** | Goal: **5,000+ comprehensive vocabulary**
+Currently at **3,130 items** | Goal: **5,000+ comprehensive vocabulary**
 
 **Next Milestones:**
 - ✅ Modular architecture implemented (Dec 2024)
-- ✅ Added 270 new N-Z vocabulary words (Jan 2026)
-- ✅ Removed 11 duplicate entries for data quality (Jan 2026)
+- ✅ Added 270 new N-Z vocabulary words to active database (Jan 2026)
+- ✅ Synced App.js words with js/data/ files (Jan 2026)
 - 🔄 Adding 500 more medium-level words (Q1 2026)
 - 📝 Adding 500 more hard-level words (Q2 2026)
 - 🎯 Adding 400 more acronyms (Q2 2026)
