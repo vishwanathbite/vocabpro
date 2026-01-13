@@ -13,35 +13,59 @@ const { useState, useEffect, useRef } = React;
 /**
  * Primary button with icon and hover effects
  */
-const PrimaryButton = ({ children, onClick, icon: Icon, className = '', disabled = false }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600
-                text-white rounded-xl font-semibold hover:scale-105 active:scale-95 shadow-lg
-                disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-  >
-    {Icon && <Icon width="20" height="20" />}
-    {children}
-  </button>
-);
+const PrimaryButton = ({ children, onClick, icon: Icon, className = '', disabled = false, type = 'button' }) => {
+  const handleClick = (e) => {
+    if (type !== 'submit') {
+      e.preventDefault();
+    }
+    if (!disabled && onClick) {
+      onClick(e);
+    }
+  };
+
+  return (
+    <button
+      type={type}
+      onClick={handleClick}
+      disabled={disabled}
+      className={`flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600
+                  text-white rounded-xl font-semibold hover:scale-105 active:scale-95 shadow-lg
+                  disabled:opacity-50 disabled:cursor-not-allowed select-none ${className}`}
+      style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+    >
+      {Icon && <Icon width="20" height="20" className="pointer-events-none" />}
+      <span className="pointer-events-none">{children}</span>
+    </button>
+  );
+};
 
 /**
  * Secondary button with outline style
  */
-const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabled = false }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`flex items-center justify-center gap-2 px-6 py-3 bg-white bg-opacity-20
-                border-2 border-white border-opacity-40 text-white rounded-xl font-semibold
-                hover:bg-opacity-30 hover:scale-105 active:scale-95 backdrop-blur-xl
-                disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-  >
-    {Icon && <Icon width="20" height="20" />}
-    {children}
-  </button>
-);
+const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabled = false }) => {
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (!disabled && onClick) {
+      onClick(e);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={disabled}
+      className={`flex items-center justify-center gap-2 px-6 py-3 bg-white bg-opacity-20
+                  border-2 border-white border-opacity-40 text-white rounded-xl font-semibold
+                  hover:bg-opacity-30 hover:scale-105 active:scale-95 backdrop-blur-xl
+                  disabled:opacity-50 disabled:cursor-not-allowed select-none ${className}`}
+      style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+    >
+      {Icon && <Icon width="20" height="20" className="pointer-events-none" />}
+      <span className="pointer-events-none">{children}</span>
+    </button>
+  );
+};
 
 /**
  * Quiz option button (for multiple choice)
@@ -64,16 +88,25 @@ const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, d
     borderColor = 'border-blue-400';
   }
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (!disabled && onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
+    <div
+      onClick={handleClick}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
       className={`w-full px-6 py-4 ${bgColor} backdrop-blur-xl border-2 ${borderColor}
                   text-white rounded-xl font-medium text-left ${hoverClass} active:scale-95
-                  transition-all disabled:cursor-not-allowed`}
+                  select-none ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+      style={{ pointerEvents: 'auto' }}
     >
       {children}
-    </button>
+    </div>
   );
 };
 
@@ -104,26 +137,39 @@ const StatsCard = ({ icon: Icon, title, value, subtitle, color = 'text-white', i
 /**
  * Quiz mode selection card
  */
-const QuizModeCard = ({ icon: Icon, title, description, onClick, color = 'from-purple-600 to-blue-600', locked = false }) => (
-  <button
-    onClick={onClick}
-    disabled={locked}
-    className={`relative bg-gradient-to-br ${color} rounded-xl p-6 shadow-xl
-                hover:scale-105 active:scale-95 transition-all text-left w-full
-                ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-  >
-    {locked && (
-      <div className="absolute top-4 right-4">
-        <Lock width="24" height="24" className="text-white" />
+const QuizModeCard = ({ icon: Icon, title, description, onClick, color = 'from-purple-600 to-blue-600', locked = false }) => {
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!locked && onClick) {
+      onClick();
+    }
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      role="button"
+      tabIndex={locked ? -1 : 0}
+      className={`relative bg-gradient-to-br ${color} rounded-xl p-6 shadow-xl
+                  transform hover:scale-105 active:scale-95 text-left w-full
+                  ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  select-none`}
+      style={{ pointerEvents: 'auto' }}
+    >
+      {locked && (
+        <div className="absolute top-4 right-4">
+          <Lock width="24" height="24" className="text-white" />
+        </div>
+      )}
+      <div className="flex items-center gap-4 mb-3 pointer-events-none">
+        {Icon && <Icon width="32" height="32" className="text-white" />}
+        <h3 className="text-xl font-bold text-white">{title}</h3>
       </div>
-    )}
-    <div className="flex items-center gap-4 mb-3">
-      {Icon && <Icon width="32" height="32" className="text-white" />}
-      <h3 className="text-xl font-bold text-white">{title}</h3>
+      <p className="text-white text-opacity-90 text-sm pointer-events-none">{description}</p>
     </div>
-    <p className="text-white text-opacity-90 text-sm">{description}</p>
-  </button>
-);
+  );
+};
 
 /**
  * Badge card for achievements
@@ -191,39 +237,56 @@ const Modal = ({ children, isOpen, onClose, title, maxWidth = 'max-w-md' }) => {
 /**
  * Difficulty selection modal
  */
-const DifficultyModal = ({ isOpen, onClose, onSelect, mode }) => (
-  <Modal isOpen={isOpen} onClose={onClose} title="Select Difficulty">
-    <div className="space-y-4">
-      <button
-        onClick={() => onSelect('easy')}
-        className="w-full p-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl text-white font-semibold
-                   hover:scale-105 active:scale-95 transition-all"
-      >
-        <div className="text-lg">🌱 Easy</div>
-        <div className="text-sm text-white text-opacity-80">10 points per question</div>
-      </button>
-      <button
-        onClick={() => onSelect('medium')}
-        className="w-full p-4 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl text-white font-semibold
-                   hover:scale-105 active:scale-95 transition-all"
-      >
-        <div className="text-lg">⚡ Medium</div>
-        <div className="text-sm text-white text-opacity-80">15 points per question</div>
-      </button>
-      <button
-        onClick={() => onSelect('hard')}
-        className="w-full p-4 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl text-white font-semibold
-                   hover:scale-105 active:scale-95 transition-all"
-      >
-        <div className="text-lg">🔥 Hard</div>
-        <div className="text-sm text-white text-opacity-80">20 points per question</div>
-      </button>
-      <SecondaryButton onClick={onClose} className="w-full mt-4">
-        Cancel
-      </SecondaryButton>
-    </div>
-  </Modal>
-);
+const DifficultyModal = ({ isOpen, onClose, onSelect, mode }) => {
+  const handleSelect = (difficulty) => (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSelect(difficulty);
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Select Difficulty">
+      <div className="space-y-4">
+        <div
+          onClick={handleSelect('easy')}
+          role="button"
+          tabIndex={0}
+          className="w-full p-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl text-white font-semibold
+                     hover:scale-105 active:scale-95 cursor-pointer select-none"
+          style={{ pointerEvents: 'auto' }}
+        >
+          <div className="text-lg pointer-events-none">🌱 Easy</div>
+          <div className="text-sm text-white text-opacity-80 pointer-events-none">10 points per question</div>
+        </div>
+        <div
+          onClick={handleSelect('medium')}
+          role="button"
+          tabIndex={0}
+          className="w-full p-4 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl text-white font-semibold
+                     hover:scale-105 active:scale-95 cursor-pointer select-none"
+          style={{ pointerEvents: 'auto' }}
+        >
+          <div className="text-lg pointer-events-none">⚡ Medium</div>
+          <div className="text-sm text-white text-opacity-80 pointer-events-none">15 points per question</div>
+        </div>
+        <div
+          onClick={handleSelect('hard')}
+          role="button"
+          tabIndex={0}
+          className="w-full p-4 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl text-white font-semibold
+                     hover:scale-105 active:scale-95 cursor-pointer select-none"
+          style={{ pointerEvents: 'auto' }}
+        >
+          <div className="text-lg pointer-events-none">🔥 Hard</div>
+          <div className="text-sm text-white text-opacity-80 pointer-events-none">20 points per question</div>
+        </div>
+        <SecondaryButton onClick={onClose} className="w-full mt-4">
+          Cancel
+        </SecondaryButton>
+      </div>
+    </Modal>
+  );
+};
 
 /**
  * Authentication Modal (Sign In / Sign Up)

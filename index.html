@@ -47,9 +47,23 @@
       background: rgba(255, 255, 255, 0.5);
     }
 
-    /* Smooth transitions */
-    * {
-      transition: all 0.2s ease-in-out;
+    /* Smooth transitions - only for visual properties */
+    button, a, [role="button"] {
+      transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out,
+                  border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+                  opacity 0.2s ease-in-out;
+    }
+
+    /* Ensure all clickable elements are clickable */
+    button, a, [role="button"], .cursor-pointer {
+      pointer-events: auto !important;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Prevent text selection on interactive elements */
+    button, [role="button"] {
+      user-select: none;
+      -webkit-user-select: none;
     }
   </style>
 </head>
@@ -61,25 +75,32 @@
   <!-- 1. Icons - SVG components -->
   <script type="text/babel" src="js/icons.js"></script>
 
-  <!-- 2. Data - Combined vocabulary database -->
+  <!-- 2. Data - Vocabulary word files (separate for easy editing) -->
+  <script type="text/babel" src="js/data/vocab-easy.js"></script>
+  <script type="text/babel" src="js/data/vocab-medium.js"></script>
+  <script type="text/babel" src="js/data/vocab-hard.js"></script>
+  <script type="text/babel" src="js/data/acronyms.js"></script>
+  <script type="text/babel" src="js/data/oneword.js"></script>
+
+  <!-- 3. Data Index - Combines all vocabulary databases -->
   <script type="text/babel" src="js/data/index.js"></script>
 
-  <!-- 3. Utilities - Helper functions -->
+  <!-- 4. Utilities - Helper functions -->
   <script type="text/babel" src="js/utils.js"></script>
 
-  <!-- 4. Gamification - XP, levels, badges -->
+  <!-- 5. Gamification - XP, levels, badges -->
   <script type="text/babel" src="js/gamification.js"></script>
 
-  <!-- 5. Components - Reusable UI components -->
+  <!-- 6. Components - Reusable UI components -->
   <script type="text/babel" src="js/components.js"></script>
 
-  <!-- 6. Screens - Main screen components -->
+  <!-- 7. Screens - Main screen components -->
   <script type="text/babel" src="js/screens.js"></script>
 
-  <!-- 7. App - Main application component -->
+  <!-- 8. App - Main application component -->
   <script type="text/babel" src="js/app.js"></script>
 
-  <!-- 8. Initialize the app -->
+  <!-- 9. Initialize the app -->
   <script type="text/babel">
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
