@@ -11,6 +11,11 @@ const { useState, useEffect, useRef } = React;
  */
 function App() {
   // ===========================
+  // TOAST NOTIFICATIONS
+  // ===========================
+  const toast = useToast();
+
+  // ===========================
   // STATE MANAGEMENT
   // ===========================
 
@@ -39,6 +44,31 @@ function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
 
+  // Confirm Modal State
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalConfig, setConfirmModalConfig] = useState({});
+
+  // Quiz Complete Modal State
+  const [showQuizCompleteModal, setShowQuizCompleteModal] = useState(false);
+  const [quizResults, setQuizResults] = useState(null);
+
+  // Loading State
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+
+  // Search Modal
+  const [showSearchModal, setShowSearchModal] = useState(false);
+
+  // Flashcard State
+  const [flashcards, setFlashcards] = useState([]);
+
+  // Achievement Notifications
+  const [showAchievement, setShowAchievement] = useState(null);
+  const [showLevelUp, setShowLevelUp] = useState(null);
+  const [showStreakMilestone, setShowStreakMilestone] = useState(null);
+  const [previousBadges, setPreviousBadges] = useState([]);
+  const [previousLevel, setPreviousLevel] = useState(1);
+
   // ===========================
   // INITIALIZATION & PERSISTENCE
   // ===========================
@@ -55,6 +85,8 @@ function App() {
       const user = savedUsers.find(u => u.email === savedCurrentUser.email);
       if (user && user.stats) {
         setStats(user.stats);
+        setPreviousBadges(user.stats.earnedBadges || []);
+        setPreviousLevel(user.stats.level || 1);
       }
     }
 
@@ -106,7 +138,7 @@ function App() {
       // Check if user already exists
       const existing = users.find(u => u.email === formData.email);
       if (existing) {
-        alert('User with this email already exists!');
+        toast.error('User with this email already exists!');
         return;
       }
 
@@ -126,6 +158,7 @@ function App() {
         newUser.stats.totalPoints += 150;
         newUser.stats.referrals = 1;
         removeFromStorage('pendingReferral');
+        toast.success('Referral bonus: +150 points!', 4000);
       }
 
       setUsers(prev => [...prev, newUser]);
@@ -134,7 +167,7 @@ function App() {
       setShowAuthModal(false);
       setShowSignupReminder(false);
 
-      alert(`Welcome, ${formData.firstName}! Your account has been created.`);
+      toast.success(`Welcome, ${formData.firstName}! Your account has been created.`);
     } else {
       // Sign in
       const user = users.find(u => u.email === formData.email && u.password === formData.password);
@@ -142,9 +175,9 @@ function App() {
         setCurrentUser(user);
         setStats(user.stats || initializeStats());
         setShowAuthModal(false);
-        alert(`Welcome back, ${user.firstName}!`);
+        toast.success(`Welcome back, ${user.firstName}!`);
       } else {
-        alert('Invalid email or password!');
+        toast.error('Invalid email or password!');
       }
     }
   };
@@ -162,15 +195,17 @@ function App() {
 
   /**
    * Generate questions based on mode and difficulty
+   * Uses Spaced Repetition System for optimal word selection
    */
-  const generateQuestions = (quizMode, quizDifficulty) => {
+  const generateQuestions = (quizMode, quizDifficulty, useSRS = true) => {
     const count = 10; // Number of questions per quiz
     let generatedQuestions = [];
 
     if (quizMode === 'vocab') {
       // Vocabulary mode: Definition matching
       const words = vocabularyDB[quizDifficulty];
-      const selectedWords = sample(words, count);
+      // Use SRS-optimized selection if enabled
+      const selectedWords = useSRS ? selectSRSOptimizedWords(words, count) : sample(words, count);
 
       generatedQuestions = selectedWords.map(word => {
         const distractors = generateSmartDistractors(word.definition, words, 3);
@@ -181,13 +216,14 @@ function App() {
           options,
           correct: word.definition,
           wordData: word,
-          word: word.word
+          word: word.word,
+          startTime: Date.now()
         };
       });
     } else if (quizMode === 'synonym') {
       // Synonym mode
       const words = vocabularyDB[quizDifficulty];
-      const selectedWords = sample(words, count);
+      const selectedWords = useSRS ? selectSRSOptimizedWords(words, count) : sample(words, count);
 
       generatedQuestions = selectedWords.map(word => {
         const correctSyn = randomItem(word.synonyms);
@@ -200,13 +236,14 @@ function App() {
           options,
           correct: correctSyn,
           wordData: word,
-          word: word.word
+          word: word.word,
+          startTime: Date.now()
         };
       });
     } else if (quizMode === 'antonym') {
       // Antonym mode
       const words = vocabularyDB[quizDifficulty];
-      const selectedWords = sample(words, count);
+      const selectedWords = useSRS ? selectSRSOptimizedWords(words, count) : sample(words, count);
 
       generatedQuestions = selectedWords.map(word => {
         const correctAnt = randomItem(word.antonyms);
@@ -219,12 +256,13 @@ function App() {
           options,
           correct: correctAnt,
           wordData: word,
-          word: word.word
+          word: word.word,
+          startTime: Date.now()
         };
       });
     } else if (quizMode === 'oneword') {
       // One-word substitutes
-      const selectedItems = sample(oneWordDB, count);
+      const selectedItems = useSRS ? selectSRSOptimizedWords(oneWordDB, count) : sample(oneWordDB, count);
 
       generatedQuestions = selectedItems.map(item => {
         const options = shuffleArray(item.options);
@@ -233,12 +271,13 @@ function App() {
           question: item.phrase,
           options,
           correct: item.answer,
-          wordData: item
+          wordData: item,
+          startTime: Date.now()
         };
       });
     } else if (quizMode === 'acronym') {
       // Acronyms
-      const selectedItems = sample(acronymsDB, count);
+      const selectedItems = useSRS ? selectSRSOptimizedWords(acronymsDB, count) : sample(acronymsDB, count);
 
       generatedQuestions = selectedItems.map(item => {
         const options = shuffleArray(item.options);
@@ -247,9 +286,69 @@ function App() {
           question: item.acronym,
           options,
           correct: item.full,
-          wordData: item
+          wordData: item,
+          startTime: Date.now()
         };
       });
+    } else if (quizMode === 'review') {
+      // Review mode - due words across all difficulties
+      const allWords = [...vocabularyDB.easy, ...vocabularyDB.medium, ...vocabularyDB.hard];
+      const dueWords = SRSManager.getDueWords(allWords, count);
+
+      generatedQuestions = dueWords.map(word => {
+        const distractors = generateSmartDistractors(word.definition, allWords, 3);
+        const options = shuffleArray([word.definition, ...distractors]);
+
+        return {
+          question: `What is the meaning of "${word.word}"?`,
+          options,
+          correct: word.definition,
+          wordData: word,
+          word: word.word,
+          startTime: Date.now()
+        };
+      });
+    } else if (quizMode === 'bookmarks') {
+      // Bookmarks mode - practice saved words
+      const bookmarkedWords = BookmarksManager.getForPractice(count);
+      const allWords = [...vocabularyDB.easy, ...vocabularyDB.medium, ...vocabularyDB.hard];
+
+      generatedQuestions = bookmarkedWords.map(word => {
+        // Handle different word types (vocab, acronym, oneword)
+        if (word.word) {
+          // Vocabulary word
+          const distractors = generateSmartDistractors(word.definition, allWords, 3);
+          const options = shuffleArray([word.definition, ...distractors]);
+
+          return {
+            question: `What is the meaning of "${word.word}"?`,
+            options,
+            correct: word.definition,
+            wordData: word,
+            word: word.word,
+            startTime: Date.now()
+          };
+        } else if (word.acronym) {
+          // Acronym
+          return {
+            question: word.acronym,
+            options: shuffleArray(word.options),
+            correct: word.full,
+            wordData: word,
+            startTime: Date.now()
+          };
+        } else if (word.phrase) {
+          // One-word substitute
+          return {
+            question: word.phrase,
+            options: shuffleArray(word.options),
+            correct: word.answer,
+            wordData: word,
+            startTime: Date.now()
+          };
+        }
+        return null;
+      }).filter(q => q !== null);
     }
 
     return generatedQuestions;
@@ -263,16 +362,57 @@ function App() {
     if (['vocab', 'synonym', 'antonym'].includes(quizMode)) {
       setPendingMode(quizMode);
       setShowDifficultyModal(true);
+    } else if (quizMode === 'flashcard') {
+      // Start flashcard mode - show difficulty selection
+      setPendingMode('flashcard');
+      setShowDifficultyModal(true);
     } else {
-      // Start quiz directly for oneword and acronym
+      // Start quiz directly for oneword, acronym, and review modes
       startQuizWithDifficulty(quizMode, null);
     }
   };
 
   /**
+   * Start flashcard mode
+   */
+  const startFlashcardMode = async (flashcardDifficulty) => {
+    setShowDifficultyModal(false);
+    setIsLoading(true);
+    setLoadingMessage('Preparing flashcards...');
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const words = vocabularyDB[flashcardDifficulty];
+    const selectedWords = selectSRSOptimizedWords(words, 15); // 15 flashcards per session
+    setFlashcards(selectedWords);
+    setMode('flashcard');
+    setDifficulty(flashcardDifficulty);
+    setIsLoading(false);
+    setLoadingMessage('');
+    setScreen('flashcard');
+    setPendingMode(null);
+  };
+
+  /**
+   * Handle flashcard session complete
+   */
+  const handleFlashcardComplete = (known, unknown) => {
+    toast.success(`Session complete! ${known} known, ${unknown} to review`);
+    setScreen('home');
+    setFlashcards([]);
+  };
+
+  /**
    * Start quiz with selected difficulty
    */
-  const startQuizWithDifficulty = (quizMode, quizDifficulty) => {
+  const startQuizWithDifficulty = async (quizMode, quizDifficulty) => {
+    setShowDifficultyModal(false);
+    setIsLoading(true);
+    setLoadingMessage('Preparing your quiz...');
+
+    // Small delay for UX (shows loading state)
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     setMode(quizMode);
     setDifficulty(quizDifficulty);
     const newQuestions = generateQuestions(quizMode, quizDifficulty);
@@ -282,8 +422,9 @@ function App() {
     setShowResult(false);
     setIsCorrect(false);
     setSelectedAnswer(null);
+    setIsLoading(false);
+    setLoadingMessage('');
     setScreen('quiz');
-    setShowDifficultyModal(false);
     setPendingMode(null);
   };
 
@@ -291,7 +432,9 @@ function App() {
    * Handle difficulty selection
    */
   const handleDifficultySelect = (selectedDifficulty) => {
-    if (pendingMode) {
+    if (pendingMode === 'flashcard') {
+      startFlashcardMode(selectedDifficulty);
+    } else if (pendingMode) {
       startQuizWithDifficulty(pendingMode, selectedDifficulty);
     }
   };
@@ -302,20 +445,78 @@ function App() {
   const handleAnswer = (answer) => {
     const currentQuestion = questions[currentIndex];
     const correct = answer === currentQuestion.correct;
+    const responseTime = Date.now() - (currentQuestion.startTime || Date.now());
 
     setSelectedAnswer(answer);
     setIsCorrect(correct);
     setShowResult(true);
 
+    // Play sound effect
+    if (correct) {
+      SoundManager.playCorrect();
+    } else {
+      SoundManager.playIncorrect();
+    }
+
+    // Update SRS data for the word
+    const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase;
+    if (wordId) {
+      SRSManager.updateEntry(wordId, correct, responseTime);
+    }
+
     // Update stats
     const difficultyOrMode = difficulty || mode;
     const newStats = updateStats(stats, correct, difficultyOrMode, currentQuestion.word, mode);
+
+    // Check for new achievements
+    const newBadges = getNewBadges(newStats, previousBadges);
+    if (newBadges.length > 0) {
+      // Show the first new badge (queue others for later)
+      setTimeout(() => {
+        SoundManager.playAchievement();
+        setShowAchievement(newBadges[0]);
+        setPreviousBadges(newStats.earnedBadges);
+      }, 500);
+    }
+
+    // Check for level up
+    if (newStats.level > previousLevel) {
+      const levelInfo = getLevelInfo(newStats.totalPoints);
+      setTimeout(() => {
+        SoundManager.playLevelUp();
+        setShowLevelUp(levelInfo);
+        setPreviousLevel(newStats.level);
+      }, newBadges.length > 0 ? 4500 : 500);
+    }
+
+    // Check for streak milestones
+    if (correct && [5, 10, 20, 50].includes(newStats.currentStreak)) {
+      setTimeout(() => {
+        setShowStreakMilestone(newStats.currentStreak);
+      }, 300);
+    }
+
     setStats(newStats);
 
-    // Update session score
+    // Update session score and daily goals
     if (correct) {
       const points = calculatePoints(difficultyOrMode, stats.currentStreak);
       setScore(prev => prev + points);
+
+      // Update daily goals
+      const wasComplete = DailyGoalsManager.isGoalComplete();
+      DailyGoalsManager.updateProgress(1, points);
+      const isNowComplete = DailyGoalsManager.isGoalComplete();
+
+      // Show celebration if goal just completed
+      if (!wasComplete && isNowComplete) {
+        setTimeout(() => {
+          toast.success('Daily Goal Complete! Great work!', 5000);
+        }, 1000);
+      }
+    } else {
+      // Still count the question even if wrong (no points)
+      DailyGoalsManager.updateProgress(1, 0);
     }
   };
 
@@ -339,19 +540,48 @@ function App() {
    * Handle quiz completion
    */
   const handleQuizComplete = () => {
-    alert(`Quiz Complete!\n\nScore: ${score} points\nTotal Points: ${stats.totalPoints}\nLevel: ${stats.level}`);
-    setScreen('home');
+    const correctCount = questions.filter((q, i) => {
+      // This is approximate - we'll track this properly
+      return true;
+    }).length;
+
+    setQuizResults({
+      score,
+      totalPoints: stats.totalPoints,
+      level: stats.level,
+      levelInfo: getLevelInfo(stats.totalPoints),
+      correctAnswers: stats.correctAnswers,
+      totalAnswered: stats.totalAnswered
+    });
+    setShowQuizCompleteModal(true);
     stopSpeech();
+  };
+
+  /**
+   * Close quiz complete modal and go home
+   */
+  const handleCloseQuizComplete = () => {
+    setShowQuizCompleteModal(false);
+    setQuizResults(null);
+    setScreen('home');
   };
 
   /**
    * Handle back to home
    */
   const handleBack = () => {
-    if (confirm('Are you sure you want to exit the quiz? Your progress will be lost.')) {
-      setScreen('home');
-      stopSpeech();
-    }
+    setConfirmModalConfig({
+      title: 'Exit Quiz?',
+      message: 'Are you sure you want to exit? Your current quiz progress will be lost, but earned points are saved.',
+      confirmText: 'Exit Quiz',
+      cancelText: 'Continue',
+      type: 'warning',
+      onConfirm: () => {
+        setScreen('home');
+        stopSpeech();
+      }
+    });
+    setShowConfirmModal(true);
   };
 
   // ===========================
@@ -360,6 +590,33 @@ function App() {
 
   return (
     <>
+      {/* Loading Overlay */}
+      <LoadingOverlay isVisible={isLoading} message={loadingMessage} />
+
+      {/* Achievement Notification */}
+      {showAchievement && (
+        <AchievementNotification
+          badge={showAchievement}
+          onClose={() => setShowAchievement(null)}
+        />
+      )}
+
+      {/* Level Up Notification */}
+      {showLevelUp && (
+        <LevelUpNotification
+          levelInfo={showLevelUp}
+          onClose={() => setShowLevelUp(null)}
+        />
+      )}
+
+      {/* Streak Milestone */}
+      {showStreakMilestone && (
+        <StreakMilestone
+          streak={showStreakMilestone}
+          onClose={() => setShowStreakMilestone(null)}
+        />
+      )}
+
       {screen === 'home' ? (
         <HomeScreen
           user={currentUser}
@@ -367,7 +624,14 @@ function App() {
           onStartQuiz={handleStartQuiz}
           onShowAuth={() => setShowAuthModal(true)}
           onShowShare={() => setShowShareModal(true)}
+          onShowSearch={() => setShowSearchModal(true)}
           onSignOut={handleSignOut}
+        />
+      ) : screen === 'flashcard' ? (
+        <FlashcardScreen
+          cards={flashcards}
+          onBack={handleBack}
+          onComplete={handleFlashcardComplete}
         />
       ) : (
         <QuizScreen
@@ -440,6 +704,62 @@ function App() {
             Maybe Later
           </SecondaryButton>
         </div>
+      </Modal>
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmModalConfig.onConfirm || (() => {})}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        type={confirmModalConfig.type}
+      />
+
+      {/* Quiz Complete Modal */}
+      <Modal
+        isOpen={showQuizCompleteModal}
+        onClose={handleCloseQuizComplete}
+        title="Quiz Complete!"
+        maxWidth="max-w-lg"
+      >
+        {quizResults && (
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-bounce-in">🎉</div>
+            <h3 className="text-2xl font-bold text-white mb-6">Great Job!</h3>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Session Score</p>
+                <p className="text-3xl font-bold text-yellow-400">{quizResults.score}</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Total Points</p>
+                <p className="text-3xl font-bold text-green-400">{quizResults.totalPoints}</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Level</p>
+                <p className="text-2xl font-bold text-white">{quizResults.levelInfo.badge} {quizResults.levelInfo.name}</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Accuracy</p>
+                <p className="text-3xl font-bold text-blue-400">{stats.averageAccuracy.toFixed(0)}%</p>
+              </div>
+            </div>
+
+            <PrimaryButton onClick={handleCloseQuizComplete} className="w-full">
+              Continue Learning
+            </PrimaryButton>
+          </div>
+        )}
       </Modal>
     </>
   );

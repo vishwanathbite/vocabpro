@@ -6,6 +6,12 @@
   <meta name="description" content="Literary Rides VocabPro - Master 5000+ vocabulary words for UPSC, SSC, Banking, Railways exams. Created by Dr. Vishwanath Bite">
   <meta name="keywords" content="vocabulary, UPSC, SSC, Banking, competitive exams, English learning, word power">
   <meta name="author" content="Dr. Vishwanath Bite">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VocabPro">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
   <title>Literary Rides VocabPro - Master 5000+ Words for Competitive Exams</title>
 
   <!-- React + ReactDOM (UMD) -->
@@ -65,6 +71,88 @@
       user-select: none;
       -webkit-user-select: none;
     }
+
+    /* Toast animations */
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slide-out {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes bounce-in {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+    }
+
+    .animate-slide-in {
+      animation: slide-in 0.3s ease-out forwards;
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out forwards;
+    }
+
+    .animate-bounce-in {
+      animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+
+    .animate-pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    /* Flashcard flip styles */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* Line clamp for search results */
+    .line-clamp-1 {
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +179,15 @@
   <!-- 5. Gamification - XP, levels, badges -->
   <script type="text/babel" src="js/gamification.js"></script>
 
+  <!-- 5.5. Spaced Repetition System -->
+  <script type="text/babel" src="js/srs.js"></script>
+
+  <!-- 5.6. Bookmarks System -->
+  <script type="text/babel" src="js/bookmarks.js"></script>
+
+  <!-- 5.7. Daily Goals System -->
+  <script type="text/babel" src="js/dailygoals.js"></script>
+
   <!-- 6. Components - Reusable UI components -->
   <script type="text/babel" src="js/components.js"></script>
 
@@ -103,7 +200,26 @@
   <!-- 9. Initialize the app -->
   <script type="text/babel">
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    );
+  </script>
+
+  <!-- 10. Register Service Worker for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registered successfully');
+          })
+          .catch(function(error) {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
   </script>
 </body>
 </html>

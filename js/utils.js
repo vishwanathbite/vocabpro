@@ -105,11 +105,12 @@ const buildAntonymPool = (allWords, currentAntonyms) => {
  * Text-to-speech function
  * Speaks the given text with US English pronunciation at slower rate
  * @param {string} text - Text to speak
+ * @returns {boolean} - True if speech started, false if not supported
  */
 const speakWord = (text) => {
   if (!('speechSynthesis' in window)) {
-    alert('Text-to-speech is not supported in your browser');
-    return;
+    console.warn('Text-to-speech is not supported in this browser');
+    return false;
   }
 
   try {
@@ -121,8 +122,10 @@ const speakWord = (text) => {
     utterance.lang = 'en-US';
 
     window.speechSynthesis.speak(utterance);
+    return true;
   } catch (error) {
     console.error('Speech synthesis error:', error);
+    return false;
   }
 };
 
@@ -245,18 +248,21 @@ const getUrlParam = (param) => {
 /**
  * Share content using Web Share API or fallback to clipboard
  * @param {Object} shareData - Data to share {title, text, url}
+ * @returns {Object} - {success: boolean, method: 'share'|'clipboard'}
  */
 const shareContent = async (shareData) => {
   try {
     if (navigator.share) {
       await navigator.share(shareData);
+      return { success: true, method: 'share' };
     } else {
       // Fallback: Copy to clipboard
       await navigator.clipboard.writeText(shareData.url || shareData.text);
-      alert('Link copied to clipboard!');
+      return { success: true, method: 'clipboard' };
     }
   } catch (error) {
     console.error('Error sharing:', error);
+    return { success: false, method: null };
   }
 };
 
@@ -383,6 +389,276 @@ const capitalize = (str) => {
  */
 const formatNumber = (num) => {
   return num.toLocaleString('en-IN');
+};
+
+// ===========================
+// SOUND EFFECTS SYSTEM
+// ===========================
+
+/**
+ * Sound Effects Manager using Web Audio API
+ * Creates synthesized sounds without external files
+ */
+const SoundManager = {
+  audioContext: null,
+  enabled: true,
+
+  /**
+   * Initialize audio context (must be called after user interaction)
+   */
+  init: () => {
+    if (!SoundManager.audioContext) {
+      SoundManager.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return SoundManager.audioContext;
+  },
+
+  /**
+   * Check if sound is enabled
+   */
+  isEnabled: () => {
+    const saved = loadFromStorage('vocabProSoundEnabled', true);
+    SoundManager.enabled = saved;
+    return saved;
+  },
+
+  /**
+   * Toggle sound on/off
+   */
+  toggle: () => {
+    SoundManager.enabled = !SoundManager.enabled;
+    saveToStorage('vocabProSoundEnabled', SoundManager.enabled);
+    return SoundManager.enabled;
+  },
+
+  /**
+   * Play a tone
+   */
+  playTone: (frequency, duration, type = 'sine', volume = 0.3) => {
+    if (!SoundManager.enabled) return;
+
+    try {
+      const ctx = SoundManager.init();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.value = frequency;
+      oscillator.type = type;
+
+      gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn('Sound playback failed:', e);
+    }
+  },
+
+  /**
+   * Play correct answer sound (happy ascending tones)
+   */
+  playCorrect: () => {
+    if (!SoundManager.enabled) return;
+
+    try {
+      const ctx = SoundManager.init();
+
+      // Play a pleasant ascending arpeggio
+      [523.25, 659.25, 783.99].forEach((freq, i) => {
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);
+        }, i * 80);
+      });
+    } catch (e) {
+      console.warn('Sound playback failed:', e);
+    }
+  },
+
+  /**
+   * Play incorrect answer sound (descending tone)
+   */
+  playIncorrect: () => {
+    if (!SoundManager.enabled) return;
+
+    try {
+      const ctx = SoundManager.init();
+
+      // Play a short descending tone
+      [349.23, 293.66].forEach((freq, i) => {
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'triangle';
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        }, i * 100);
+      });
+    } catch (e) {
+      console.warn('Sound playback failed:', e);
+    }
+  },
+
+  /**
+   * Play level up sound (triumphant)
+   */
+  playLevelUp: () => {
+    if (!SoundManager.enabled) return;
+
+    try {
+      const ctx = SoundManager.init();
+
+      // Triumphant fanfare
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, i) => {
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.25, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        }, i * 120);
+      });
+    } catch (e) {
+      console.warn('Sound playback failed:', e);
+    }
+  },
+
+  /**
+   * Play achievement sound
+   */
+  playAchievement: () => {
+    if (!SoundManager.enabled) return;
+
+    try {
+      const ctx = SoundManager.init();
+
+      // Magical achievement sound
+      const notes = [659.25, 783.99, 987.77, 1174.66, 1318.51];
+      notes.forEach((freq, i) => {
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        }, i * 80);
+      });
+    } catch (e) {
+      console.warn('Sound playback failed:', e);
+    }
+  },
+
+  /**
+   * Play click sound
+   */
+  playClick: () => {
+    if (!SoundManager.enabled) return;
+    SoundManager.playTone(800, 0.05, 'sine', 0.1);
+  }
+};
+
+// ===========================
+// WORD OF THE DAY
+// ===========================
+
+/**
+ * Get Word of the Day based on date
+ * Uses a deterministic algorithm so everyone sees the same word
+ * @returns {Object} - Word object for today
+ */
+const getWordOfTheDay = () => {
+  const allWords = [...vocabularyDB.easy, ...vocabularyDB.medium, ...vocabularyDB.hard];
+
+  // Create a seed based on today's date
+  const today = new Date();
+  const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < dateString.length; i++) {
+    const char = dateString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+
+  // Use absolute value and mod to get index
+  const index = Math.abs(hash) % allWords.length;
+  const word = allWords[index];
+
+  // Check if user has seen this word today
+  const lastSeenKey = 'vocabProWOTD';
+  const lastSeen = loadFromStorage(lastSeenKey);
+
+  const wotdData = {
+    word,
+    date: dateString,
+    isNew: !lastSeen || lastSeen.date !== dateString
+  };
+
+  // Mark as seen
+  saveToStorage(lastSeenKey, { date: dateString, wordId: word.word });
+
+  return wotdData;
+};
+
+/**
+ * Get a streak-based motivational quote
+ * @param {number} streak - Current streak
+ * @returns {string} - Motivational message
+ */
+const getDailyMotivation = (streak) => {
+  const quotes = [
+    "Every word you learn is a step towards mastery!",
+    "Consistency is the key to vocabulary success.",
+    "Today's practice is tomorrow's confidence.",
+    "Small daily improvements lead to stunning results.",
+    "Your vocabulary is your intellectual toolkit.",
+    "Learning never exhausts the mind.",
+    "Words are the building blocks of expression.",
+    "Each word mastered is a victory achieved.",
+    "The limits of your language are the limits of your world.",
+    "Knowledge of words is knowledge of things."
+  ];
+
+  // Add streak-specific messages
+  if (streak >= 10) {
+    return "Incredible streak! You're unstoppable! 🔥";
+  } else if (streak >= 5) {
+    return "Amazing! Keep that streak going! ⚡";
+  } else if (streak >= 3) {
+    return "Great momentum! Stay consistent! ✨";
+  }
+
+  const index = new Date().getDate() % quotes.length;
+  return quotes[index];
 };
 
 // Export note: In browser environment with Babel, these functions are automatically available globally
