@@ -109,7 +109,6 @@ const buildAntonymPool = (allWords, currentAntonyms) => {
  */
 const speakWord = (text) => {
   if (!('speechSynthesis' in window)) {
-    console.warn('Text-to-speech is not supported in this browser');
     return false;
   }
 
@@ -124,7 +123,6 @@ const speakWord = (text) => {
     window.speechSynthesis.speak(utterance);
     return true;
   } catch (error) {
-    console.error('Speech synthesis error:', error);
     return false;
   }
 };
@@ -143,15 +141,62 @@ const stopSpeech = () => {
 // ===========================
 
 /**
- * Save data to localStorage
+ * Check if localStorage is available
+ * @returns {boolean} - True if localStorage is available
+ */
+const isStorageAvailable = () => {
+  try {
+    const test = '__storage_test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// In-memory fallback for when localStorage is unavailable
+const memoryStorage = {};
+
+/**
+ * Save data to localStorage with quota handling
  * @param {string} key - Storage key
  * @param {*} data - Data to store (will be JSON stringified)
+ * @returns {boolean} - True if saved successfully
  */
 const saveToStorage = (key, data) => {
   try {
+    if (!isStorageAvailable()) {
+      memoryStorage[key] = data;
+      return true;
+    }
     localStorage.setItem(key, JSON.stringify(data));
+    return true;
   } catch (error) {
-    console.error('Error saving to localStorage:', error);
+    // Handle quota exceeded
+    if (error.name === 'QuotaExceededError' || error.code === 22) {
+      // Try to clear old data and retry
+      try {
+        // Remove old quiz history to free space
+        const history = localStorage.getItem('vocabProQuizHistory');
+        if (history) {
+          const parsed = JSON.parse(history);
+          if (parsed.length > 20) {
+            localStorage.setItem('vocabProQuizHistory', JSON.stringify(parsed.slice(0, 20)));
+          }
+        }
+        // Try again
+        localStorage.setItem(key, JSON.stringify(data));
+        return true;
+      } catch (retryError) {
+        // Fall back to memory storage
+        memoryStorage[key] = data;
+        return false;
+      }
+    }
+    // Fall back to memory storage
+    memoryStorage[key] = data;
+    return false;
   }
 };
 
@@ -163,10 +208,27 @@ const saveToStorage = (key, data) => {
  */
 const loadFromStorage = (key, defaultValue = null) => {
   try {
+    // Check memory storage first (for fallback scenarios)
+    if (memoryStorage[key] !== undefined) {
+      return memoryStorage[key];
+    }
+
+    if (!isStorageAvailable()) {
+      return defaultValue;
+    }
+
     const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : defaultValue;
+    if (!stored) return defaultValue;
+
+    // Try to parse JSON
+    try {
+      return JSON.parse(stored);
+    } catch (parseError) {
+      // If parsing fails, return default value and clean up corrupted data
+      localStorage.removeItem(key);
+      return defaultValue;
+    }
   } catch (error) {
-    console.error('Error loading from localStorage:', error);
     return defaultValue;
   }
 };
@@ -177,9 +239,12 @@ const loadFromStorage = (key, defaultValue = null) => {
  */
 const removeFromStorage = (key) => {
   try {
-    localStorage.removeItem(key);
+    delete memoryStorage[key];
+    if (isStorageAvailable()) {
+      localStorage.removeItem(key);
+    }
   } catch (error) {
-    console.error('Error removing from localStorage:', error);
+    // Silently fail
   }
 };
 
@@ -188,9 +253,12 @@ const removeFromStorage = (key) => {
  */
 const clearStorage = () => {
   try {
-    localStorage.clear();
+    Object.keys(memoryStorage).forEach(key => delete memoryStorage[key]);
+    if (isStorageAvailable()) {
+      localStorage.clear();
+    }
   } catch (error) {
-    console.error('Error clearing localStorage:', error);
+    // Silently fail
   }
 };
 
@@ -261,7 +329,6 @@ const shareContent = async (shareData) => {
       return { success: true, method: 'clipboard' };
     }
   } catch (error) {
-    console.error('Error sharing:', error);
     return { success: false, method: null };
   }
 };
@@ -454,7 +521,7 @@ const SoundManager = {
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + duration);
     } catch (e) {
-      console.warn('Sound playback failed:', e);
+      // Sound playback failed silently
     }
   },
 
@@ -483,7 +550,7 @@ const SoundManager = {
         }, i * 80);
       });
     } catch (e) {
-      console.warn('Sound playback failed:', e);
+      // Sound playback failed silently
     }
   },
 
@@ -512,7 +579,7 @@ const SoundManager = {
         }, i * 100);
       });
     } catch (e) {
-      console.warn('Sound playback failed:', e);
+      // Sound playback failed silently
     }
   },
 
@@ -542,7 +609,7 @@ const SoundManager = {
         }, i * 120);
       });
     } catch (e) {
-      console.warn('Sound playback failed:', e);
+      // Sound playback failed silently
     }
   },
 
@@ -572,7 +639,7 @@ const SoundManager = {
         }, i * 80);
       });
     } catch (e) {
-      console.warn('Sound playback failed:', e);
+      // Sound playback failed silently
     }
   },
 

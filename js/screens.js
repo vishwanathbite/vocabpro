@@ -684,7 +684,7 @@ const QuizScreen = ({
           </div>
 
           {/* Options */}
-          <div className="space-y-4">
+          <div className="space-y-4" role="group" aria-label="Answer options">
             {currentQuestion.options.map((option, index) => (
               <OptionButton
                 key={index}
@@ -693,6 +693,7 @@ const QuizScreen = ({
                 isCorrect={showResult && option === currentQuestion.correct}
                 isIncorrect={showResult && selectedAnswer === option && option !== currentQuestion.correct}
                 disabled={showResult}
+                optionIndex={index}
               >
                 {option}
               </OptionButton>

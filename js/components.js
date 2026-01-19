@@ -4,7 +4,70 @@
  * Reusable React components for cards, buttons, modals, etc.
  */
 
-const { useState, useEffect, useRef, createContext, useContext, useCallback } = React;
+const { useState, useEffect, useRef, createContext, useContext, useCallback, Component } = React;
+
+// ===========================
+// ERROR BOUNDARY COMPONENT
+// ===========================
+
+/**
+ * Error Boundary - catches JavaScript errors in child components
+ * Must be a class component as per React requirements
+ */
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Error caught by boundary - could be logged to an error reporting service
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, error: null });
+    // Optionally reload the page
+    if (this.props.onReset) {
+      this.props.onReset();
+    }
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20 max-w-md text-center">
+            <div className="text-6xl mb-4">😅</div>
+            <h2 className="text-2xl font-bold text-white mb-2">Oops! Something went wrong</h2>
+            <p className="text-white text-opacity-70 mb-6">
+              We encountered an unexpected error. Don't worry, your progress is saved!
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={this.handleReset}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full px-6 py-3 bg-white bg-opacity-20 border-2 border-white border-opacity-40 text-white rounded-xl font-semibold hover:bg-opacity-30 transition-all"
+              >
+                Reload App
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // ===========================
 // TOAST NOTIFICATION SYSTEM
@@ -68,7 +131,12 @@ const useToast = () => {
  */
 const ToastContainer = ({ toasts, onRemove }) => {
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    <div
+      className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+    >
       {toasts.map(toast => (
         <Toast key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -412,22 +480,26 @@ const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabl
 /**
  * Quiz option button (for multiple choice)
  */
-const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled }) => {
+const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex }) => {
   let bgColor = 'bg-white bg-opacity-10';
   let borderColor = 'border-white border-opacity-30';
   let hoverClass = 'hover:bg-opacity-20 hover:scale-105';
+  let ariaLabel = `Option ${optionIndex !== undefined ? String.fromCharCode(65 + optionIndex) : ''}: ${children}`;
 
   if (isCorrect) {
     bgColor = 'bg-green-500 bg-opacity-30';
     borderColor = 'border-green-400';
     hoverClass = '';
+    ariaLabel += ' (Correct answer)';
   } else if (isIncorrect) {
     bgColor = 'bg-red-500 bg-opacity-30';
     borderColor = 'border-red-400';
     hoverClass = '';
+    ariaLabel += ' (Incorrect)';
   } else if (isSelected) {
     bgColor = 'bg-blue-500 bg-opacity-30';
     borderColor = 'border-blue-400';
+    ariaLabel += ' (Selected)';
   }
 
   const handleClick = (e) => {
@@ -437,16 +509,33 @@ const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, d
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick(e);
+    }
+  };
+
   return (
     <div
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       role="button"
       tabIndex={disabled ? -1 : 0}
+      aria-label={ariaLabel}
+      aria-pressed={isSelected}
+      aria-disabled={disabled}
       className={`w-full px-6 py-4 ${bgColor} backdrop-blur-xl border-2 ${borderColor}
                   text-white rounded-xl font-medium text-left ${hoverClass} active:scale-95
-                  select-none ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                  select-none ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
+                  focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent`}
       style={{ pointerEvents: 'auto' }}
     >
+      {optionIndex !== undefined && (
+        <span className="inline-block w-6 h-6 mr-3 rounded-full bg-white bg-opacity-20 text-center text-sm leading-6">
+          {String.fromCharCode(65 + optionIndex)}
+        </span>
+      )}
       {children}
     </div>
   );
@@ -529,8 +618,15 @@ const BadgeCard = ({ badge, earned = false }) => (
 /**
  * Progress bar component
  */
-const ProgressBar = ({ progress, color = 'bg-blue-500', height = 'h-2' }) => (
-  <div className={`w-full ${height} bg-white bg-opacity-20 rounded-full overflow-hidden`}>
+const ProgressBar = ({ progress, color = 'bg-blue-500', height = 'h-2', label = 'Progress' }) => (
+  <div
+    className={`w-full ${height} bg-white bg-opacity-20 rounded-full overflow-hidden`}
+    role="progressbar"
+    aria-valuenow={Math.round(progress)}
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label={label}
+  >
     <div
       className={`${height} ${color} rounded-full transition-all duration-300`}
       style={{ width: `${Math.min(progress, 100)}%` }}
@@ -899,7 +995,7 @@ const ShareModal = ({ isOpen, onClose, referralCode, totalPoints }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Copy failed:', error);
+      // Copy failed - could fall back to a different method
     }
   };
 

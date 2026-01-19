@@ -198,7 +198,6 @@ const BookmarksManager = {
 
       return newBookmarks.length;
     } catch (error) {
-      console.error('Error importing bookmarks:', error);
       return 0;
     }
   }

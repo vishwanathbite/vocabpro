@@ -31,6 +31,7 @@ function App() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0); // Track actual correct answers
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -474,6 +475,7 @@ function App() {
     setQuestions(newQuestions);
     setCurrentIndex(0);
     setScore(0);
+    setCorrectCount(0); // Reset correct count
     setShowResult(false);
     setIsCorrect(false);
     setSelectedAnswer(null);
@@ -555,6 +557,7 @@ function App() {
 
     // Update session score and daily goals
     if (correct) {
+      setCorrectCount(prev => prev + 1); // Track actual correct count
       const points = calculatePoints(difficultyOrMode, stats.currentStreak);
       setScore(prev => prev + points);
 
@@ -595,27 +598,28 @@ function App() {
    * Handle quiz completion
    */
   const handleQuizComplete = () => {
-    // Calculate session stats
-    const sessionCorrect = score > 0 ? Math.round(score / (difficulty === 'hard' ? 20 : difficulty === 'medium' ? 15 : 10)) : 0;
     const sessionTotal = questions.length;
 
-    // Save to quiz history
+    // Save to quiz history with accurate correct count
     QuizHistoryManager.addQuiz({
       mode: mode,
       difficulty: difficulty,
       questionsTotal: sessionTotal,
-      questionsCorrect: Math.min(sessionCorrect, sessionTotal),
+      questionsCorrect: correctCount,
       score: score,
       words: questions.map(q => q.word || q.wordData?.acronym || q.wordData?.phrase).filter(Boolean)
     });
 
     setQuizResults({
       score,
+      correctCount,
+      totalQuestions: sessionTotal,
       totalPoints: stats.totalPoints,
       level: stats.level,
       levelInfo: getLevelInfo(stats.totalPoints),
       correctAnswers: stats.correctAnswers,
-      totalAnswered: stats.totalAnswered
+      totalAnswered: stats.totalAnswered,
+      accuracy: sessionTotal > 0 ? Math.round((correctCount / sessionTotal) * 100) : 0
     });
     setShowQuizCompleteModal(true);
     stopSpeech();
@@ -824,25 +828,34 @@ function App() {
       >
         {quizResults && (
           <div className="text-center">
-            <div className="text-6xl mb-4 animate-bounce-in">🎉</div>
-            <h3 className="text-2xl font-bold text-white mb-6">Great Job!</h3>
+            <div className="text-6xl mb-4 animate-bounce-in">
+              {quizResults.accuracy >= 80 ? '🎉' : quizResults.accuracy >= 60 ? '👍' : '💪'}
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              {quizResults.accuracy >= 80 ? 'Excellent!' : quizResults.accuracy >= 60 ? 'Good Job!' : 'Keep Practicing!'}
+            </h3>
+            <p className="text-white text-opacity-70 mb-6">
+              {quizResults.correctCount}/{quizResults.totalQuestions} correct answers
+            </p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <p className="text-white text-opacity-70 text-sm">Session Score</p>
-                <p className="text-3xl font-bold text-yellow-400">{quizResults.score}</p>
-              </div>
-              <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <p className="text-white text-opacity-70 text-sm">Total Points</p>
-                <p className="text-3xl font-bold text-green-400">{quizResults.totalPoints}</p>
-              </div>
-              <div className="bg-white bg-opacity-10 rounded-xl p-4">
-                <p className="text-white text-opacity-70 text-sm">Level</p>
-                <p className="text-2xl font-bold text-white">{quizResults.levelInfo.badge} {quizResults.levelInfo.name}</p>
+                <p className="text-white text-opacity-70 text-sm">Score</p>
+                <p className="text-3xl font-bold text-yellow-400">+{quizResults.score}</p>
               </div>
               <div className="bg-white bg-opacity-10 rounded-xl p-4">
                 <p className="text-white text-opacity-70 text-sm">Accuracy</p>
-                <p className="text-3xl font-bold text-blue-400">{stats.averageAccuracy.toFixed(0)}%</p>
+                <p className={`text-3xl font-bold ${quizResults.accuracy >= 80 ? 'text-green-400' : quizResults.accuracy >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {quizResults.accuracy}%
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Total Points</p>
+                <p className="text-2xl font-bold text-green-400">{quizResults.totalPoints}</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Level</p>
+                <p className="text-xl font-bold text-white">{quizResults.levelInfo.badge} {quizResults.levelInfo.name}</p>
               </div>
             </div>
 
