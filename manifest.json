@@ -1,0 +1,37 @@
+{
+  "name": "Literary Rides VocabPro",
+  "short_name": "VocabPro",
+  "description": "Master 5000+ vocabulary words for UPSC, SSC, Banking, Railways exams",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "books"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Start Quiz",
+      "short_name": "Quiz",
+      "description": "Start a vocabulary quiz",
+      "url": "/?mode=quiz"
+    },
+    {
+      "name": "Flashcards",
+      "short_name": "Cards",
+      "description": "Practice with flashcards",
+      "url": "/?mode=flashcard"
+    }
+  ]
+}

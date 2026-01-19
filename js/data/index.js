@@ -18,11 +18,13 @@ const vocabularyDB = {
   hard: vocabHard
 };
 
-// Log database statistics for debugging
-console.log('VocabPro Database Loaded:');
-console.log(`- Easy: ${vocabEasy.length} words`);
-console.log(`- Medium: ${vocabMedium.length} words`);
-console.log(`- Hard: ${vocabHard.length} words`);
-console.log(`- Acronyms: ${acronymsDB.length} items`);
-console.log(`- One-Word Substitutes: ${oneWordDB.length} items`);
-console.log(`- Total: ${vocabEasy.length + vocabMedium.length + vocabHard.length} vocabulary words`);
+// Database statistics (available via getDatabaseStats())
+const getDatabaseStats = () => ({
+  easy: vocabEasy.length,
+  medium: vocabMedium.length,
+  hard: vocabHard.length,
+  acronyms: acronymsDB.length,
+  oneWord: oneWordDB.length,
+  totalVocabulary: vocabEasy.length + vocabMedium.length + vocabHard.length,
+  totalItems: vocabEasy.length + vocabMedium.length + vocabHard.length + acronymsDB.length + oneWordDB.length
+});

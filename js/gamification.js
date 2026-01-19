@@ -309,4 +309,131 @@ const getPerformanceGrade = (accuracy) => {
   return { grade: 'F', color: 'text-red-500', message: 'Keep Practicing!' };
 };
 
+// ===========================
+// STREAK PROTECTION SYSTEM
+// ===========================
+
+/**
+ * Streak Protection Manager
+ * Allows users to protect their streak with shields
+ */
+const StreakProtection = {
+  storageKey: 'vocabProStreakProtection',
+
+  /**
+   * Load streak protection data
+   */
+  loadData: () => {
+    return loadFromStorage('vocabProStreakProtection', {
+      shields: 1,  // Start with 1 free shield
+      lastUsed: null,
+      lastEarned: null,
+      totalUsed: 0
+    });
+  },
+
+  /**
+   * Save streak protection data
+   */
+  saveData: (data) => {
+    saveToStorage('vocabProStreakProtection', data);
+  },
+
+  /**
+   * Get available shields count
+   */
+  getShields: () => {
+    const data = StreakProtection.loadData();
+
+    // Award a new shield weekly (if they have less than 3)
+    const now = new Date();
+    const lastEarned = data.lastEarned ? new Date(data.lastEarned) : null;
+
+    if (!lastEarned || (now - lastEarned) > 7 * 24 * 60 * 60 * 1000) {
+      if (data.shields < 3) {
+        data.shields += 1;
+        data.lastEarned = now.toISOString();
+        StreakProtection.saveData(data);
+      }
+    }
+
+    return data.shields;
+  },
+
+  /**
+   * Use a shield to protect streak
+   * @returns {boolean} - True if shield was used successfully
+   */
+  useShield: () => {
+    const data = StreakProtection.loadData();
+
+    if (data.shields > 0) {
+      data.shields -= 1;
+      data.lastUsed = new Date().toISOString();
+      data.totalUsed += 1;
+      StreakProtection.saveData(data);
+      return true;
+    }
+
+    return false;
+  },
+
+  /**
+   * Add shields (e.g., as a reward)
+   * @param {number} count - Number of shields to add
+   */
+  addShields: (count) => {
+    const data = StreakProtection.loadData();
+    data.shields = Math.min(data.shields + count, 5); // Max 5 shields
+    StreakProtection.saveData(data);
+    return data.shields;
+  },
+
+  /**
+   * Check if streak should be reset or protected
+   * @param {Object} stats - User stats
+   * @param {string} lastPlayedDate - Last played date ISO string
+   * @returns {Object} - {protected: boolean, shieldsRemaining: number}
+   */
+  checkStreak: (stats, lastPlayedDate) => {
+    if (!lastPlayedDate) return { protected: false, shieldsRemaining: 0 };
+
+    const lastPlayed = new Date(lastPlayedDate);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Check if last played was today or yesterday
+    const lastPlayedDay = lastPlayed.toDateString();
+    const todayStr = today.toDateString();
+    const yesterdayStr = yesterday.toDateString();
+
+    if (lastPlayedDay === todayStr || lastPlayedDay === yesterdayStr) {
+      // Streak is safe
+      return { protected: false, shieldsRemaining: StreakProtection.getShields() };
+    }
+
+    // Streak at risk - check if we can use a shield
+    const data = StreakProtection.loadData();
+    if (data.shields > 0) {
+      // Check if already used a shield today
+      if (data.lastUsed) {
+        const lastUsedDate = new Date(data.lastUsed).toDateString();
+        if (lastUsedDate === todayStr) {
+          // Already used a shield today
+          return { protected: true, shieldsRemaining: data.shields };
+        }
+      }
+
+      return {
+        protected: false,
+        shieldsRemaining: data.shields,
+        canProtect: true
+      };
+    }
+
+    return { protected: false, shieldsRemaining: 0, canProtect: false };
+  }
+};
+
 // Export note: In browser environment with Babel, these are automatically available globally
