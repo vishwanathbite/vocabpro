@@ -981,8 +981,8 @@ const SettingsScreen = ({ onBack, onToast }) => {
   const handleGoalPreset = (preset) => {
     const newSettings = SettingsManager.set('dailyGoalPreset', preset);
     setSettings(newSettings);
-    DailyGoalsManager.setGoal(preset);
-    onToast && onToast(`Daily goal set to ${DailyGoalsManager.GOAL_PRESETS[preset].name}`);
+    DailyGoalsManager.setGoalPreset(preset);
+    onToast && onToast(`Daily goal set to ${DAILY_GOAL_PRESETS[preset].name}`);
   };
 
   const handleResetProgress = () => {
@@ -1072,7 +1072,7 @@ const SettingsScreen = ({ onBack, onToast }) => {
             Daily Goal
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {Object.entries(DailyGoalsManager.GOAL_PRESETS).map(([key, preset]) => (
+            {Object.entries(DAILY_GOAL_PRESETS).map(([key, preset]) => (
               <button
                 key={key}
                 onClick={() => handleGoalPreset(key)}
