@@ -20,9 +20,12 @@ function App() {
   // ===========================
 
   // Screen & Navigation
-  const [screen, setScreen] = useState('home'); // 'home' or 'quiz'
+  const [screen, setScreen] = useState('home'); // 'home', 'quiz', 'flashcard', 'settings', 'history', 'analytics', 'onboarding'
   const [mode, setMode] = useState(null); // 'vocab', 'synonym', 'antonym', 'oneword', 'acronym'
   const [difficulty, setDifficulty] = useState(null); // 'easy', 'medium', 'hard'
+
+  // Settings
+  const [appSettings, setAppSettings] = useState(SettingsManager.getSettings());
 
   // Quiz State
   const [questions, setQuestions] = useState([]);
@@ -128,6 +131,58 @@ function App() {
   useEffect(() => {
     return () => stopSpeech();
   }, []);
+
+  // Check onboarding status
+  useEffect(() => {
+    if (!OnboardingManager.isCompleted()) {
+      setScreen('onboarding');
+    }
+  }, []);
+
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    if (!appSettings.keyboardShortcutsEnabled) return;
+
+    const handleKeyDown = (e) => {
+      // Don't handle shortcuts when typing in inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (screen === 'quiz' && questions.length > 0) {
+        const shortcuts = KeyboardShortcuts.quiz;
+        const key = e.key;
+
+        if (shortcuts[key]) {
+          e.preventDefault();
+          const action = shortcuts[key];
+
+          if (action.action === 'selectOption' && !showResult) {
+            const option = questions[currentIndex]?.options[action.option];
+            if (option) handleAnswer(option);
+          } else if ((action.action === 'next') && showResult) {
+            handleNext();
+          } else if (action.action === 'back') {
+            handleBack();
+          } else if (action.action === 'pronounce') {
+            const word = questions[currentIndex]?.word;
+            if (word) speakWord(word);
+          } else if (action.action === 'toggleSound') {
+            const newEnabled = SoundManager.toggle();
+            toast.info(newEnabled ? 'Sound enabled' : 'Sound disabled');
+          }
+        }
+      } else if (screen === 'flashcard' && flashcards.length > 0) {
+        // Flashcard shortcuts are handled in the FlashcardScreen component
+      } else if (screen === 'home') {
+        if (e.key === '/') {
+          e.preventDefault();
+          setShowSearchModal(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [screen, showResult, questions, currentIndex, appSettings.keyboardShortcutsEnabled]);
 
   // ===========================
   // AUTHENTICATION HANDLERS
@@ -540,10 +595,19 @@ function App() {
    * Handle quiz completion
    */
   const handleQuizComplete = () => {
-    const correctCount = questions.filter((q, i) => {
-      // This is approximate - we'll track this properly
-      return true;
-    }).length;
+    // Calculate session stats
+    const sessionCorrect = score > 0 ? Math.round(score / (difficulty === 'hard' ? 20 : difficulty === 'medium' ? 15 : 10)) : 0;
+    const sessionTotal = questions.length;
+
+    // Save to quiz history
+    QuizHistoryManager.addQuiz({
+      mode: mode,
+      difficulty: difficulty,
+      questionsTotal: sessionTotal,
+      questionsCorrect: Math.min(sessionCorrect, sessionTotal),
+      score: score,
+      words: questions.map(q => q.word || q.wordData?.acronym || q.wordData?.phrase).filter(Boolean)
+    });
 
     setQuizResults({
       score,
@@ -617,7 +681,29 @@ function App() {
         />
       )}
 
-      {screen === 'home' ? (
+      {screen === 'onboarding' ? (
+        <OnboardingScreen
+          onComplete={() => setScreen('home')}
+          onSkip={() => setScreen('home')}
+        />
+      ) : screen === 'settings' ? (
+        <SettingsScreen
+          onBack={() => {
+            setAppSettings(SettingsManager.getSettings());
+            setScreen('home');
+          }}
+          onToast={(msg) => toast.success(msg)}
+        />
+      ) : screen === 'history' ? (
+        <QuizHistoryScreen
+          onBack={() => setScreen('home')}
+        />
+      ) : screen === 'analytics' ? (
+        <AnalyticsDashboard
+          stats={stats}
+          onBack={() => setScreen('home')}
+        />
+      ) : screen === 'home' ? (
         <HomeScreen
           user={currentUser}
           stats={stats}
@@ -625,7 +711,12 @@ function App() {
           onShowAuth={() => setShowAuthModal(true)}
           onShowShare={() => setShowShareModal(true)}
           onShowSearch={() => setShowSearchModal(true)}
+          onShowSettings={() => setScreen('settings')}
+          onShowHistory={() => setScreen('history')}
+          onShowAnalytics={() => setScreen('analytics')}
           onSignOut={handleSignOut}
+          showWordOfDay={appSettings.showWordOfDay}
+          showDailyGoals={appSettings.showDailyGoals}
         />
       ) : screen === 'flashcard' ? (
         <FlashcardScreen

@@ -153,6 +153,121 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+
+    /* Mobile-first responsive improvements */
+    @media (max-width: 640px) {
+      /* Smaller padding on mobile */
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      /* Stack header items better */
+      header .flex {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      /* Smaller quiz options */
+      .quiz-option {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      /* Better modal sizing */
+      .modal-content {
+        margin: 0.5rem;
+        max-height: 90vh;
+      }
+
+      /* Smaller toast notifications */
+      .toast {
+        max-width: calc(100vw - 2rem);
+        font-size: 0.875rem;
+      }
+
+      /* Compact stats cards */
+      .stats-grid > div {
+        padding: 0.75rem;
+      }
+
+      /* Better flashcard sizing */
+      .flashcard {
+        min-height: 280px;
+      }
+    }
+
+    /* Touch-friendly improvements */
+    @media (hover: none) {
+      /* Larger touch targets */
+      button, [role="button"], a {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      /* Remove hover effects on touch devices */
+      button:hover, [role="button"]:hover {
+        transform: none;
+      }
+
+      /* Only apply scale on active */
+      button:active, [role="button"]:active {
+        transform: scale(0.95);
+      }
+    }
+
+    /* Safe area padding for notched devices */
+    @supports (padding: env(safe-area-inset-bottom)) {
+      footer {
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+      }
+
+      .fixed.bottom-0 {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+    /* Reduce motion for accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+      button, [role="button"] {
+        border: 2px solid currentColor;
+      }
+    }
+
+    /* Better text rendering */
+    body {
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Prevent zoom on input focus (iOS) */
+    input, select, textarea {
+      font-size: 16px;
+    }
+
+    /* Better focus visibility */
+    button:focus-visible, [role="button"]:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid #3B82F6;
+      outline-offset: 2px;
+    }
+
+    /* Hide scrollbar but allow scrolling */
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -187,6 +302,9 @@
 
   <!-- 5.7. Daily Goals System -->
   <script type="text/babel" src="js/dailygoals.js"></script>
+
+  <!-- 5.8. Settings, History & Onboarding -->
+  <script type="text/babel" src="js/settings.js"></script>
 
   <!-- 6. Components - Reusable UI components -->
   <script type="text/babel" src="js/components.js"></script>
