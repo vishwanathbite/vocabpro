@@ -311,6 +311,13 @@ const SRSManager = {
    */
   clearAll: () => {
     SRSManager.saveData({});
+  },
+
+  /**
+   * Reset all SRS data (alias for clearAll)
+   */
+  reset: () => {
+    SRSManager.clearAll();
   }
 };
 

@@ -268,6 +268,71 @@
     .hide-scrollbar::-webkit-scrollbar {
       display: none;
     }
+
+    /* Tablet-specific improvements (768px - 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      /* Better grid layouts for tablets */
+      .grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      /* Larger touch targets on tablets */
+      button, [role="button"] {
+        min-height: 48px;
+        padding: 0.75rem 1.25rem;
+      }
+
+      /* Better modal width on tablets */
+      .modal-content {
+        max-width: 600px;
+        margin: 1rem auto;
+      }
+
+      /* Improved card spacing */
+      .space-y-4 > * + * {
+        margin-top: 1.25rem;
+      }
+    }
+
+    /* Large tablets and small laptops (1024px - 1280px) */
+    @media (min-width: 1024px) and (max-width: 1280px) {
+      .container {
+        max-width: 960px;
+      }
+    }
+
+    /* Portrait tablet optimization */
+    @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+      /* Stack quiz modes in 2 columns */
+      .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      /* Larger flashcard */
+      .flashcard {
+        min-height: 350px;
+      }
+    }
+
+    /* Landscape tablet optimization */
+    @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+      /* Use 3 columns in landscape */
+      .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      /* Shorter flashcard in landscape */
+      .flashcard {
+        min-height: 280px;
+      }
+    }
+
+    /* Fix for iOS Safari 100vh issue */
+    @supports (-webkit-touch-callout: none) {
+      .min-h-screen {
+        min-height: -webkit-fill-available;
+      }
+    }
   </style>
 </head>
 <body>
