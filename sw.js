@@ -3,25 +3,28 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'vocabpro-v1';
+const CACHE_NAME = 'vocabpro-v2';
+
+// Use relative paths for GitHub Pages compatibility
 const CACHE_URLS = [
-  '/',
-  '/index.html',
-  '/js/icons.js',
-  '/js/utils.js',
-  '/js/gamification.js',
-  '/js/srs.js',
-  '/js/bookmarks.js',
-  '/js/dailygoals.js',
-  '/js/components.js',
-  '/js/screens.js',
-  '/js/app.js',
-  '/js/data/index.js',
-  '/js/data/vocab-easy.js',
-  '/js/data/vocab-medium.js',
-  '/js/data/vocab-hard.js',
-  '/js/data/acronyms.js',
-  '/js/data/oneword.js'
+  './',
+  './index.html',
+  './js/icons.js',
+  './js/utils.js',
+  './js/gamification.js',
+  './js/srs.js',
+  './js/bookmarks.js',
+  './js/dailygoals.js',
+  './js/settings.js',
+  './js/components.js',
+  './js/screens.js',
+  './js/app.js',
+  './js/data/index.js',
+  './js/data/vocab-easy.js',
+  './js/data/vocab-medium.js',
+  './js/data/vocab-hard.js',
+  './js/data/acronyms.js',
+  './js/data/oneword.js'
 ];
 
 // External CDN resources
@@ -37,7 +40,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Caching app shell');
         // Cache local files
         return cache.addAll(CACHE_URLS);
       })
@@ -53,7 +55,7 @@ self.addEventListener('install', (event) => {
                   }
                 })
                 .catch(() => {
-                  console.log('Could not cache:', url);
+                  // Could not cache CDN resource
                 });
             })
           );
@@ -70,7 +72,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -116,7 +117,7 @@ self.addEventListener('fetch', (event) => {
           .catch(() => {
             // Offline fallback for HTML pages
             if (event.request.destination === 'document') {
-              return caches.match('/index.html');
+              return caches.match('./index.html');
             }
           });
       })
@@ -132,7 +133,6 @@ self.addEventListener('sync', (event) => {
 
 async function syncProgress() {
   // Sync any pending data when back online
-  console.log('Syncing progress...');
 }
 
 // Push notification support (for future use)

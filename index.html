@@ -336,7 +336,16 @@
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Loading state shown until React loads -->
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);">
+      <div style="text-align: center; color: white;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+        <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">VocabPro</h1>
+        <p style="opacity: 0.7;">Loading...</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Load modules in correct order -->
 
@@ -382,21 +391,38 @@
 
   <!-- 9. Initialize the app -->
   <script type="text/babel">
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-      <ErrorBoundary>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </ErrorBoundary>
-    );
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <ErrorBoundary>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </ErrorBoundary>
+      );
+    } catch (error) {
+      document.getElementById('root').innerHTML = `
+        <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%); padding: 20px;">
+          <div style="text-align: center; color: white; max-width: 400px;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+            <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">App Error</h1>
+            <p style="opacity: 0.7; margin-bottom: 1rem;">Something went wrong loading VocabPro.</p>
+            <p style="opacity: 0.5; font-size: 0.875rem; word-break: break-all;">${error.message}</p>
+            <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 12px 24px; background: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              Reload
+            </button>
+          </div>
+        </div>
+      `;
+    }
   </script>
 
   <!-- 10. Register Service Worker for PWA -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js').catch(function() {
+        // Use relative path for GitHub Pages compatibility
+        navigator.serviceWorker.register('./sw.js').catch(function() {
           // Service worker registration failed - app will work without offline support
         });
       });
