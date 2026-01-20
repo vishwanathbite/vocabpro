@@ -3,7 +3,7 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'vocabpro-v2';
+const CACHE_NAME = 'vocabpro-v3';
 
 // Use relative paths for GitHub Pages compatibility
 const CACHE_URLS = [
