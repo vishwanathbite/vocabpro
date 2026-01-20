@@ -3,7 +3,7 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'vocabpro-v3';
+const CACHE_NAME = 'vocabpro-v4';
 
 // Use relative paths for GitHub Pages compatibility
 const CACHE_URLS = [
@@ -19,12 +19,12 @@ const CACHE_URLS = [
   './js/components.js',
   './js/screens.js',
   './js/app.js',
-  './js/data/index.js',
-  './js/data/vocab-easy.js',
-  './js/data/vocab-medium.js',
-  './js/data/vocab-hard.js',
-  './js/data/acronyms.js',
-  './js/data/oneword.js'
+  './js/data/index.js?v=3',
+  './js/data/vocab-easy.js?v=3',
+  './js/data/vocab-medium.js?v=3',
+  './js/data/vocab-hard.js?v=3',
+  './js/data/acronyms.js?v=3',
+  './js/data/oneword.js?v=3'
 ];
 
 // External CDN resources
