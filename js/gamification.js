@@ -209,8 +209,10 @@ const initializeStats = () => {
     currentStreak: 0,
     maxStreak: 0,
     masteredWords: 0,
+    learningWords: 0,
     strugglingWords: 0,
     masteredWordsList: [],
+    learningWordsList: [],
     strugglingWordsList: [],
     referrals: 0,
     modesPlayed: 0,
@@ -253,21 +255,51 @@ const updateStats = (stats, isCorrect, difficulty, word, mode) => {
 
   // Update word mastery tracking
   if (word) {
+    // Initialize lists if they don't exist (for backwards compatibility)
+    if (!newStats.learningWordsList) {
+      newStats.learningWordsList = [];
+    }
+
     if (isCorrect) {
-      // Add to mastered words if not already there
-      if (!newStats.masteredWordsList.includes(word)) {
-        newStats.masteredWordsList.push(word);
-        newStats.masteredWords = newStats.masteredWordsList.length;
-      }
-      // Remove from struggling words
+      // Remove from struggling words if present
       newStats.strugglingWordsList = newStats.strugglingWordsList.filter(w => w !== word);
+
+      // Check if word is already mastered
+      if (!newStats.masteredWordsList.includes(word)) {
+        // Check if word is in learning phase
+        if (newStats.learningWordsList.includes(word)) {
+          // Promote from learning to mastered
+          newStats.learningWordsList = newStats.learningWordsList.filter(w => w !== word);
+          newStats.masteredWordsList.push(word);
+        } else {
+          // First time correct - add to learning
+          newStats.learningWordsList.push(word);
+        }
+      }
     } else {
-      // Add to struggling words if not in mastered
-      if (!newStats.masteredWordsList.includes(word) && !newStats.strugglingWordsList.includes(word)) {
+      // Incorrect answer
+      // Remove from mastered if it was there (demote)
+      if (newStats.masteredWordsList.includes(word)) {
+        newStats.masteredWordsList = newStats.masteredWordsList.filter(w => w !== word);
+        newStats.learningWordsList.push(word);
+      }
+      // If in learning, move to struggling
+      else if (newStats.learningWordsList.includes(word)) {
+        newStats.learningWordsList = newStats.learningWordsList.filter(w => w !== word);
+        if (!newStats.strugglingWordsList.includes(word)) {
+          newStats.strugglingWordsList.push(word);
+        }
+      }
+      // If completely new and wrong, add to struggling
+      else if (!newStats.strugglingWordsList.includes(word)) {
         newStats.strugglingWordsList.push(word);
-        newStats.strugglingWords = newStats.strugglingWordsList.length;
       }
     }
+
+    // Update counts
+    newStats.masteredWords = newStats.masteredWordsList.length;
+    newStats.learningWords = newStats.learningWordsList.length;
+    newStats.strugglingWords = newStats.strugglingWordsList.length;
   }
 
   // Track mode usage
