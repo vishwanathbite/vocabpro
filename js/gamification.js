@@ -256,8 +256,14 @@ const updateStats = (stats, isCorrect, difficulty, word, mode) => {
   // Update word mastery tracking
   if (word) {
     // Initialize lists if they don't exist (for backwards compatibility)
+    if (!newStats.masteredWordsList) {
+      newStats.masteredWordsList = [];
+    }
     if (!newStats.learningWordsList) {
       newStats.learningWordsList = [];
+    }
+    if (!newStats.strugglingWordsList) {
+      newStats.strugglingWordsList = [];
     }
 
     if (isCorrect) {
