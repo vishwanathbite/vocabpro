@@ -349,45 +349,45 @@
 
   <!-- Load modules in correct order -->
 
-  <!-- 1. Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js"></script>
+  <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
+  <!-- These are plain JavaScript, no JSX, load synchronously -->
+  <script src="js/data/vocab-easy.js?v=6"></script>
+  <script src="js/data/vocab-medium.js?v=6"></script>
+  <script src="js/data/vocab-hard.js?v=6"></script>
+  <script src="js/data/acronyms.js?v=6"></script>
+  <script src="js/data/oneword.js?v=6"></script>
+  <script src="js/data/index.js?v=6"></script>
 
-  <!-- 2. Data - Vocabulary word files (loaded as regular JS for sync execution) -->
-  <script src="js/data/vocab-easy.js?v=5"></script>
-  <script src="js/data/vocab-medium.js?v=5"></script>
-  <script src="js/data/vocab-hard.js?v=5"></script>
-  <script src="js/data/acronyms.js?v=5"></script>
-  <script src="js/data/oneword.js?v=5"></script>
+  <!-- 2. Now load Babel-processed scripts (async, but data is already available) -->
+  <!-- Icons - SVG components -->
+  <script type="text/babel" src="js/icons.js?v=6"></script>
 
-  <!-- 3. Data Index - Combines all vocabulary databases -->
-  <script src="js/data/index.js?v=5"></script>
+  <!-- 3. Utilities - Helper functions -->
+  <script type="text/babel" src="js/utils.js?v=6"></script>
 
-  <!-- 4. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js"></script>
+  <!-- 4. Gamification - XP, levels, badges -->
+  <script type="text/babel" src="js/gamification.js?v=6"></script>
 
-  <!-- 5. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js"></script>
+  <!-- 5. Spaced Repetition System -->
+  <script type="text/babel" src="js/srs.js?v=6"></script>
 
-  <!-- 5.5. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js"></script>
+  <!-- 6. Bookmarks System -->
+  <script type="text/babel" src="js/bookmarks.js?v=6"></script>
 
-  <!-- 5.6. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js"></script>
+  <!-- 7. Daily Goals System -->
+  <script type="text/babel" src="js/dailygoals.js?v=6"></script>
 
-  <!-- 5.7. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js"></script>
+  <!-- 8. Settings, History & Onboarding -->
+  <script type="text/babel" src="js/settings.js?v=6"></script>
 
-  <!-- 5.8. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js"></script>
+  <!-- 9. Components - Reusable UI components -->
+  <script type="text/babel" src="js/components.js?v=6"></script>
 
-  <!-- 6. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js"></script>
+  <!-- 10. Screens - Main screen components -->
+  <script type="text/babel" src="js/screens.js?v=6"></script>
 
-  <!-- 7. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js"></script>
-
-  <!-- 8. App - Main application component -->
-  <script type="text/babel" src="js/app.js"></script>
+  <!-- 11. App - Main application component -->
+  <script type="text/babel" src="js/app.js?v=6"></script>
 
   <!-- 9. Initialize the app -->
   <script type="text/babel">
