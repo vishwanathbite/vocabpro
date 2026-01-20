@@ -764,33 +764,44 @@ const FlashcardScreen = ({
   };
 
   const handleKnow = () => {
-    setKnownCards(prev => [...prev, currentCard]);
     // Update SRS
     const wordId = currentCard.word || currentCard.acronym || currentCard.phrase;
     if (wordId) {
       SRSManager.updateEntry(wordId, true, 3000);
     }
-    nextCard();
+
+    // Check if this is the last card
+    if (currentIndex >= cards.length - 1) {
+      // Session complete - include current card in count
+      setIsFlipped(false);
+      onComplete(knownCards.length + 1, unknownCards.length);
+    } else {
+      setKnownCards(prev => [...prev, currentCard]);
+      nextCard();
+    }
   };
 
   const handleDontKnow = () => {
-    setUnknownCards(prev => [...prev, currentCard]);
     // Update SRS
     const wordId = currentCard.word || currentCard.acronym || currentCard.phrase;
     if (wordId) {
       SRSManager.updateEntry(wordId, false, 5000);
     }
-    nextCard();
+
+    // Check if this is the last card
+    if (currentIndex >= cards.length - 1) {
+      // Session complete - include current card in count
+      setIsFlipped(false);
+      onComplete(knownCards.length, unknownCards.length + 1);
+    } else {
+      setUnknownCards(prev => [...prev, currentCard]);
+      nextCard();
+    }
   };
 
   const nextCard = () => {
     setIsFlipped(false);
-    if (currentIndex < cards.length - 1) {
-      setTimeout(() => setCurrentIndex(prev => prev + 1), 200);
-    } else {
-      // Session complete
-      onComplete(knownCards.length, unknownCards.length);
-    }
+    setTimeout(() => setCurrentIndex(prev => prev + 1), 200);
   };
 
   if (!currentCard) {
