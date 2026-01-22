@@ -347,51 +347,101 @@
     </div>
   </div>
 
+  <!-- Force clear old caches on load -->
+  <script>
+    // Clear all old service worker caches to ensure fresh content
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        names.forEach(function(name) {
+          if (name !== 'vocabpro-v10') {
+            caches.delete(name);
+          }
+        });
+      });
+    }
+  </script>
+
   <!-- Load modules in correct order -->
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=6"></script>
-  <script src="js/data/vocab-medium.js?v=6"></script>
-  <script src="js/data/vocab-hard.js?v=6"></script>
-  <script src="js/data/acronyms.js?v=6"></script>
-  <script src="js/data/oneword.js?v=6"></script>
-  <script src="js/data/index.js?v=6"></script>
+  <script src="js/data/vocab-easy.js?v=10"></script>
+  <script src="js/data/vocab-medium.js?v=10"></script>
+  <script src="js/data/vocab-hard.js?v=10"></script>
+  <script src="js/data/acronyms.js?v=10"></script>
+  <script src="js/data/oneword.js?v=10"></script>
+  <script src="js/data/index.js?v=10"></script>
+
+  <!-- Verify data loaded correctly -->
+  <script>
+    window.VocabProDataLoaded = {
+      vocabEasy: typeof vocabEasy !== 'undefined' && Array.isArray(vocabEasy) && vocabEasy.length > 0,
+      vocabMedium: typeof vocabMedium !== 'undefined' && Array.isArray(vocabMedium) && vocabMedium.length > 0,
+      vocabHard: typeof vocabHard !== 'undefined' && Array.isArray(vocabHard) && vocabHard.length > 0,
+      acronymsDB: typeof acronymsDB !== 'undefined' && Array.isArray(acronymsDB) && acronymsDB.length > 0,
+      oneWordDB: typeof oneWordDB !== 'undefined' && Array.isArray(oneWordDB) && oneWordDB.length > 0,
+      vocabularyDB: typeof vocabularyDB !== 'undefined' && vocabularyDB.easy && vocabularyDB.medium && vocabularyDB.hard
+    };
+
+    // Log data loading status
+    var allLoaded = Object.values(window.VocabProDataLoaded).every(function(v) { return v; });
+    if (!allLoaded) {
+      console.error('VocabPro: Some data files failed to load', window.VocabProDataLoaded);
+    }
+  </script>
 
   <!-- 2. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=6"></script>
+  <script type="text/babel" src="js/icons.js?v=10"></script>
 
   <!-- 3. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=6"></script>
+  <script type="text/babel" src="js/utils.js?v=10"></script>
 
   <!-- 4. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=6"></script>
+  <script type="text/babel" src="js/gamification.js?v=10"></script>
 
   <!-- 5. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=6"></script>
+  <script type="text/babel" src="js/srs.js?v=10"></script>
 
   <!-- 6. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=6"></script>
+  <script type="text/babel" src="js/bookmarks.js?v=10"></script>
 
   <!-- 7. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=6"></script>
+  <script type="text/babel" src="js/dailygoals.js?v=10"></script>
 
   <!-- 8. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=6"></script>
+  <script type="text/babel" src="js/settings.js?v=10"></script>
 
   <!-- 9. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=6"></script>
+  <script type="text/babel" src="js/components.js?v=10"></script>
 
   <!-- 10. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=6"></script>
+  <script type="text/babel" src="js/screens.js?v=10"></script>
 
   <!-- 11. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=6"></script>
+  <script type="text/babel" src="js/app.js?v=10"></script>
 
-  <!-- 9. Initialize the app -->
+  <!-- 12. Initialize the app with comprehensive error handling -->
   <script type="text/babel">
-    try {
+    // Wait for all scripts to be ready
+    const initApp = () => {
+      // Verify all required globals exist
+      const requiredGlobals = [
+        'React', 'ReactDOM', 'ErrorBoundary', 'ToastProvider', 'App',
+        'vocabularyDB', 'acronymsDB', 'oneWordDB'
+      ];
+
+      const missing = requiredGlobals.filter(name => typeof window[name] === 'undefined');
+
+      if (missing.length > 0) {
+        throw new Error('Missing required modules: ' + missing.join(', '));
+      }
+
+      // Verify data is loaded
+      if (!vocabularyDB.easy || vocabularyDB.easy.length === 0) {
+        throw new Error('Vocabulary data failed to load. Please refresh the page.');
+      }
+
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(
         <ErrorBoundary>
@@ -400,15 +450,23 @@
           </ToastProvider>
         </ErrorBoundary>
       );
+    };
+
+    try {
+      initApp();
     } catch (error) {
+      console.error('VocabPro initialization error:', error);
       document.getElementById('root').innerHTML = `
         <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%); padding: 20px;">
           <div style="text-align: center; color: white; max-width: 400px;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
             <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">App Error</h1>
             <p style="opacity: 0.7; margin-bottom: 1rem;">Something went wrong loading VocabPro.</p>
-            <p style="opacity: 0.5; font-size: 0.875rem; word-break: break-all;">${error.message}</p>
-            <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 12px 24px; background: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            <p style="opacity: 0.5; font-size: 0.875rem; word-break: break-all; margin-bottom: 1rem;">${error.message}</p>
+            <button onclick="clearCachesAndReload()" style="margin-top: 1rem; padding: 12px 24px; background: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px;">
+              Clear Cache & Reload
+            </button>
+            <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 12px 24px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer;">
               Reload
             </button>
           </div>
@@ -417,13 +475,40 @@
     }
   </script>
 
-  <!-- 10. Register Service Worker for PWA -->
+  <!-- 13. Register Service Worker for PWA and cache clearing helper -->
   <script>
+    // Helper function to clear all caches and reload
+    window.clearCachesAndReload = async function() {
+      try {
+        // Unregister all service workers
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+          }
+        }
+
+        // Clear all caches
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+
+        // Clear localStorage (optional - preserves user data)
+        // localStorage.clear();
+
+        // Force reload from server
+        window.location.reload(true);
+      } catch (e) {
+        window.location.reload(true);
+      }
+    };
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         // Use relative path for GitHub Pages compatibility
-        navigator.serviceWorker.register('./sw.js').catch(function() {
-          // Service worker registration failed - app will work without offline support
+        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+          console.log('Service worker registration failed:', err);
         });
       });
     }
