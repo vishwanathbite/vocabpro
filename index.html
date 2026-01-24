@@ -21,23 +21,8 @@
   <!-- In-browser Babel so we can use JSX in one file -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- TailwindCSS CDN with fallback -->
-  <script>
-    // TailwindCSS loader with fallback
-    window.tailwindLoaded = false;
-    window.onTailwindError = function() {
-      if (!window.tailwindLoaded) {
-        console.warn('TailwindCSS CDN failed, loading from alternate source');
-        var s = document.createElement('script');
-        s.src = 'https://unpkg.com/tailwindcss@3.4.1/lib/index.min.js';
-        s.onerror = function() {
-          console.warn('Tailwind fallback also failed - app will work with basic styles');
-        };
-        document.head.appendChild(s);
-      }
-    };
-  </script>
-  <script src="https://cdn.tailwindcss.com" crossorigin="anonymous" onerror="onTailwindError()" onload="tailwindLoaded=true"></script>
+  <!-- TailwindCSS via Twind - No CORS issues -->
+  <script src="https://cdn.jsdelivr.net/npm/@twind/cdn@1.0.7/cdn.global.js" crossorigin></script>
 
   <style>
     body {
@@ -368,7 +353,7 @@
     if ('caches' in window) {
       caches.keys().then(function(names) {
         names.forEach(function(name) {
-          if (name !== 'vocabpro-v14') {
+          if (name !== 'vocabpro-v15') {
             caches.delete(name);
           }
         });
@@ -389,12 +374,12 @@
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=14" onerror="onScriptError('vocab-easy.js')"></script>
-  <script src="js/data/vocab-medium.js?v=14" onerror="onScriptError('vocab-medium.js')"></script>
-  <script src="js/data/vocab-hard.js?v=14" onerror="onScriptError('vocab-hard.js')"></script>
-  <script src="js/data/acronyms.js?v=14" onerror="onScriptError('acronyms.js')"></script>
-  <script src="js/data/oneword.js?v=14" onerror="onScriptError('oneword.js')"></script>
-  <script src="js/data/index.js?v=14" onerror="onScriptError('index.js')"></script>
+  <script src="js/data/vocab-easy.js?v=15" onerror="onScriptError('vocab-easy.js')"></script>
+  <script src="js/data/vocab-medium.js?v=15" onerror="onScriptError('vocab-medium.js')"></script>
+  <script src="js/data/vocab-hard.js?v=15" onerror="onScriptError('vocab-hard.js')"></script>
+  <script src="js/data/acronyms.js?v=15" onerror="onScriptError('acronyms.js')"></script>
+  <script src="js/data/oneword.js?v=15" onerror="onScriptError('oneword.js')"></script>
+  <script src="js/data/index.js?v=15" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly -->
   <script>
@@ -416,34 +401,34 @@
 
   <!-- 2. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=14"></script>
+  <script type="text/babel" src="js/icons.js?v=15"></script>
 
   <!-- 3. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=14"></script>
+  <script type="text/babel" src="js/utils.js?v=15"></script>
 
   <!-- 4. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=14"></script>
+  <script type="text/babel" src="js/gamification.js?v=15"></script>
 
   <!-- 5. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=14"></script>
+  <script type="text/babel" src="js/srs.js?v=15"></script>
 
   <!-- 6. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=14"></script>
+  <script type="text/babel" src="js/bookmarks.js?v=15"></script>
 
   <!-- 7. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=14"></script>
+  <script type="text/babel" src="js/dailygoals.js?v=15"></script>
 
   <!-- 8. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=14"></script>
+  <script type="text/babel" src="js/settings.js?v=15"></script>
 
   <!-- 9. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=14"></script>
+  <script type="text/babel" src="js/components.js?v=15"></script>
 
   <!-- 10. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=14"></script>
+  <script type="text/babel" src="js/screens.js?v=15"></script>
 
   <!-- 11. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=14"></script>
+  <script type="text/babel" src="js/app.js?v=15"></script>
 
   <!-- 12. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">
