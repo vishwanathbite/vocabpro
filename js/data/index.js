@@ -11,6 +11,8 @@
  */
 
 // Defensive check - ensure data files loaded correctly
+// Note: We only log errors here, we don't try to redeclare variables
+// because the data files use 'const' declarations
 if (typeof vocabEasy === 'undefined') {
   console.error('VocabPro Error: vocab-easy.js failed to load');
 }
@@ -36,21 +38,18 @@ const vocabularyDB = {
   hard: typeof vocabHard !== 'undefined' ? vocabHard : []
 };
 
-// Fallback for acronyms and oneword if not defined
-if (typeof acronymsDB === 'undefined') {
-  var acronymsDB = [];
-}
-if (typeof oneWordDB === 'undefined') {
-  var oneWordDB = [];
-}
+// Note: acronymsDB and oneWordDB are defined in their respective files
+// We don't redeclare them here to avoid "already declared" errors
 
 // Database statistics (available via getDatabaseStats())
 const getDatabaseStats = () => ({
   easy: vocabularyDB.easy.length,
   medium: vocabularyDB.medium.length,
   hard: vocabularyDB.hard.length,
-  acronyms: acronymsDB.length,
-  oneWord: oneWordDB.length,
+  acronyms: typeof acronymsDB !== 'undefined' ? acronymsDB.length : 0,
+  oneWord: typeof oneWordDB !== 'undefined' ? oneWordDB.length : 0,
   totalVocabulary: vocabularyDB.easy.length + vocabularyDB.medium.length + vocabularyDB.hard.length,
-  totalItems: vocabularyDB.easy.length + vocabularyDB.medium.length + vocabularyDB.hard.length + acronymsDB.length + oneWordDB.length
+  totalItems: vocabularyDB.easy.length + vocabularyDB.medium.length + vocabularyDB.hard.length +
+              (typeof acronymsDB !== 'undefined' ? acronymsDB.length : 0) +
+              (typeof oneWordDB !== 'undefined' ? oneWordDB.length : 0)
 });
