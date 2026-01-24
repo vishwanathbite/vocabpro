@@ -3,28 +3,28 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'vocabpro-v14';
+const CACHE_NAME = 'vocabpro-v15';
 
 // Use relative paths for GitHub Pages compatibility
 const CACHE_URLS = [
   './',
   './index.html',
-  './js/icons.js?v=14',
-  './js/utils.js?v=14',
-  './js/gamification.js?v=14',
-  './js/srs.js?v=14',
-  './js/bookmarks.js?v=14',
-  './js/dailygoals.js?v=14',
-  './js/settings.js?v=14',
-  './js/components.js?v=14',
-  './js/screens.js?v=14',
-  './js/app.js?v=14',
-  './js/data/index.js?v=14',
-  './js/data/vocab-easy.js?v=14',
-  './js/data/vocab-medium.js?v=14',
-  './js/data/vocab-hard.js?v=14',
-  './js/data/acronyms.js?v=14',
-  './js/data/oneword.js?v=14'
+  './js/icons.js?v=15',
+  './js/utils.js?v=15',
+  './js/gamification.js?v=15',
+  './js/srs.js?v=15',
+  './js/bookmarks.js?v=15',
+  './js/dailygoals.js?v=15',
+  './js/settings.js?v=15',
+  './js/components.js?v=15',
+  './js/screens.js?v=15',
+  './js/app.js?v=15',
+  './js/data/index.js?v=15',
+  './js/data/vocab-easy.js?v=15',
+  './js/data/vocab-medium.js?v=15',
+  './js/data/vocab-hard.js?v=15',
+  './js/data/acronyms.js?v=15',
+  './js/data/oneword.js?v=15'
 ];
 
 // External CDN resources
@@ -32,7 +32,7 @@ const CDN_URLS = [
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js',
-  'https://cdn.tailwindcss.com'
+  'https://cdn.jsdelivr.net/npm/@twind/cdn@1.0.7/cdn.global.js'
 ];
 
 // Install event - cache all resources
