@@ -469,24 +469,49 @@ const formatNumber = (num) => {
 const SoundManager = {
   audioContext: null,
   enabled: true,
+  _initialized: false,
 
   /**
    * Initialize audio context (must be called after user interaction)
    */
   init: () => {
-    if (!SoundManager.audioContext) {
-      SoundManager.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+      if (!SoundManager.audioContext) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          SoundManager.audioContext = new AudioContext();
+        }
+      }
+      // Resume suspended audio context (required after user interaction on some browsers)
+      if (SoundManager.audioContext && SoundManager.audioContext.state === 'suspended') {
+        SoundManager.audioContext.resume();
+      }
+      return SoundManager.audioContext;
+    } catch (e) {
+      console.warn('Failed to initialize audio context:', e);
+      return null;
     }
-    return SoundManager.audioContext;
+  },
+
+  /**
+   * Load and apply saved sound settings
+   */
+  loadSettings: () => {
+    if (!SoundManager._initialized) {
+      SoundManager.enabled = loadFromStorage('vocabProSoundEnabled', true);
+      SoundManager._initialized = true;
+    }
+    return SoundManager.enabled;
   },
 
   /**
    * Check if sound is enabled
    */
   isEnabled: () => {
-    const saved = loadFromStorage('vocabProSoundEnabled', true);
-    SoundManager.enabled = saved;
-    return saved;
+    if (!SoundManager._initialized) {
+      SoundManager.loadSettings();
+    }
+    return SoundManager.enabled;
   },
 
   /**

@@ -17,7 +17,7 @@ const { useState, useEffect, useRef, createContext, useContext, useCallback, Com
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null, retryCount: 0 };
   }
 
   static getDerivedStateFromError(error) {
@@ -25,33 +25,80 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Error caught by boundary - could be logged to an error reporting service
+    // Log the error for debugging
+    console.error('ErrorBoundary caught an error:', error);
+    console.error('Error info:', errorInfo);
+    this.setState({ errorInfo });
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null });
-    // Optionally reload the page
+    this.setState(prevState => ({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: prevState.retryCount + 1
+    }));
     if (this.props.onReset) {
       this.props.onReset();
     }
   };
 
+  handleClearCacheAndReload = async () => {
+    try {
+      // Clear service worker caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
+      // Unregister service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => reg.unregister()));
+      }
+      // Reload
+      window.location.reload();
+    } catch (e) {
+      console.warn('Error clearing caches:', e);
+      window.location.reload();
+    }
+  };
+
   render() {
     if (this.state.hasError) {
+      const errorMessage = this.state.error?.message || 'Unknown error';
+      const showRetryWarning = this.state.retryCount >= 2;
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
           <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20 max-w-md text-center">
-            <div className="text-6xl mb-4">😅</div>
-            <h2 className="text-2xl font-bold text-white mb-2">Oops! Something went wrong</h2>
-            <p className="text-white text-opacity-70 mb-6">
-              We encountered an unexpected error. Don't worry, your progress is saved!
+            <div className="text-6xl mb-4">{showRetryWarning ? '🔧' : '😅'}</div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              {showRetryWarning ? 'Persistent Error' : 'Oops! Something went wrong'}
+            </h2>
+            <p className="text-white text-opacity-70 mb-4">
+              {showRetryWarning
+                ? 'The error keeps occurring. Try clearing the cache or reloading the app.'
+                : "We encountered an unexpected error. Don't worry, your progress is saved!"}
             </p>
+            {errorMessage && (
+              <p className="text-white text-opacity-50 text-sm mb-6 font-mono bg-black bg-opacity-20 rounded-lg p-2 break-all">
+                {errorMessage.slice(0, 150)}{errorMessage.length > 150 ? '...' : ''}
+              </p>
+            )}
             <div className="space-y-3">
+              {!showRetryWarning && (
+                <button
+                  onClick={this.handleReset}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+                >
+                  Try Again
+                </button>
+              )}
               <button
-                onClick={this.handleReset}
-                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+                onClick={this.handleClearCacheAndReload}
+                className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
               >
-                Try Again
+                Clear Cache & Reload
               </button>
               <button
                 onClick={() => window.location.reload()}
