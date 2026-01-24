@@ -3,28 +3,28 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'vocabpro-v12';
+const CACHE_NAME = 'vocabpro-v13';
 
 // Use relative paths for GitHub Pages compatibility
 const CACHE_URLS = [
   './',
   './index.html',
-  './js/icons.js?v=12',
-  './js/utils.js?v=12',
-  './js/gamification.js?v=12',
-  './js/srs.js?v=12',
-  './js/bookmarks.js?v=12',
-  './js/dailygoals.js?v=12',
-  './js/settings.js?v=12',
-  './js/components.js?v=12',
-  './js/screens.js?v=12',
-  './js/app.js?v=12',
-  './js/data/index.js?v=12',
-  './js/data/vocab-easy.js?v=12',
-  './js/data/vocab-medium.js?v=12',
-  './js/data/vocab-hard.js?v=12',
-  './js/data/acronyms.js?v=12',
-  './js/data/oneword.js?v=12'
+  './js/icons.js?v=13',
+  './js/utils.js?v=13',
+  './js/gamification.js?v=13',
+  './js/srs.js?v=13',
+  './js/bookmarks.js?v=13',
+  './js/dailygoals.js?v=13',
+  './js/settings.js?v=13',
+  './js/components.js?v=13',
+  './js/screens.js?v=13',
+  './js/app.js?v=13',
+  './js/data/index.js?v=13',
+  './js/data/vocab-easy.js?v=13',
+  './js/data/vocab-medium.js?v=13',
+  './js/data/vocab-hard.js?v=13',
+  './js/data/acronyms.js?v=13',
+  './js/data/oneword.js?v=13'
 ];
 
 // External CDN resources
