@@ -257,13 +257,26 @@ function App() {
     const count = 10; // Number of questions per quiz
     let generatedQuestions = [];
 
+    // Defensive check for vocabularyDB
+    if (typeof vocabularyDB === 'undefined') {
+      console.error('vocabularyDB is not defined');
+      return [];
+    }
+
     if (quizMode === 'vocab') {
       // Vocabulary mode: Definition matching
-      const words = vocabularyDB[quizDifficulty];
+      const words = vocabularyDB[quizDifficulty] || [];
+      if (words.length === 0) {
+        console.warn(`No words found for difficulty: ${quizDifficulty}`);
+        return [];
+      }
       // Use SRS-optimized selection if enabled
-      const selectedWords = useSRS ? selectSRSOptimizedWords(words, count) : sample(words, count);
+      const selectedWords = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(words, count)
+        : sample(words, count);
 
       generatedQuestions = selectedWords.map(word => {
+        if (!word || !word.word || !word.definition) return null;
         const distractors = generateSmartDistractors(word.definition, words, 3);
         const options = shuffleArray([word.definition, ...distractors]);
 
@@ -275,14 +288,22 @@ function App() {
           word: word.word,
           startTime: Date.now()
         };
-      });
+      }).filter(q => q !== null);
     } else if (quizMode === 'synonym') {
       // Synonym mode
-      const words = vocabularyDB[quizDifficulty];
-      const selectedWords = useSRS ? selectSRSOptimizedWords(words, count) : sample(words, count);
+      const words = vocabularyDB[quizDifficulty] || [];
+      if (words.length === 0) {
+        console.warn(`No words found for difficulty: ${quizDifficulty}`);
+        return [];
+      }
+      const selectedWords = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(words, count)
+        : sample(words, count);
 
       generatedQuestions = selectedWords.map(word => {
+        if (!word || !word.word || !word.synonyms || word.synonyms.length === 0) return null;
         const correctSyn = randomItem(word.synonyms);
+        if (!correctSyn) return null;
         const allSynonyms = buildSynonymPool(words, word.synonyms);
         const distractors = sample(allSynonyms, 3, new Set([correctSyn]));
         const options = shuffleArray([correctSyn, ...distractors]);
@@ -295,14 +316,22 @@ function App() {
           word: word.word,
           startTime: Date.now()
         };
-      });
+      }).filter(q => q !== null);
     } else if (quizMode === 'antonym') {
       // Antonym mode
-      const words = vocabularyDB[quizDifficulty];
-      const selectedWords = useSRS ? selectSRSOptimizedWords(words, count) : sample(words, count);
+      const words = vocabularyDB[quizDifficulty] || [];
+      if (words.length === 0) {
+        console.warn(`No words found for difficulty: ${quizDifficulty}`);
+        return [];
+      }
+      const selectedWords = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(words, count)
+        : sample(words, count);
 
       generatedQuestions = selectedWords.map(word => {
+        if (!word || !word.word || !word.antonyms || word.antonyms.length === 0) return null;
         const correctAnt = randomItem(word.antonyms);
+        if (!correctAnt) return null;
         const allAntonyms = buildAntonymPool(words, word.antonyms);
         const distractors = sample(allAntonyms, 3, new Set([correctAnt]));
         const options = shuffleArray([correctAnt, ...distractors]);
@@ -315,13 +344,20 @@ function App() {
           word: word.word,
           startTime: Date.now()
         };
-      });
+      }).filter(q => q !== null);
     } else if (quizMode === 'oneword') {
       // One-word substitutes
-      const selectedItems = useSRS ? selectSRSOptimizedWords(oneWordDB, count) : sample(oneWordDB, count);
+      if (typeof oneWordDB === 'undefined' || !Array.isArray(oneWordDB) || oneWordDB.length === 0) {
+        console.warn('oneWordDB is not defined or empty');
+        return [];
+      }
+      const selectedItems = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(oneWordDB, count)
+        : sample(oneWordDB, count);
 
       generatedQuestions = selectedItems.map(item => {
-        const options = shuffleArray(item.options);
+        if (!item || !item.phrase || !item.options || !item.answer) return null;
+        const options = shuffleArray([...item.options]);
 
         return {
           question: item.phrase,
@@ -330,13 +366,20 @@ function App() {
           wordData: item,
           startTime: Date.now()
         };
-      });
+      }).filter(q => q !== null);
     } else if (quizMode === 'acronym') {
       // Acronyms
-      const selectedItems = useSRS ? selectSRSOptimizedWords(acronymsDB, count) : sample(acronymsDB, count);
+      if (typeof acronymsDB === 'undefined' || !Array.isArray(acronymsDB) || acronymsDB.length === 0) {
+        console.warn('acronymsDB is not defined or empty');
+        return [];
+      }
+      const selectedItems = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(acronymsDB, count)
+        : sample(acronymsDB, count);
 
       generatedQuestions = selectedItems.map(item => {
-        const options = shuffleArray(item.options);
+        if (!item || !item.acronym || !item.options || !item.full) return null;
+        const options = shuffleArray([...item.options]);
 
         return {
           question: item.acronym,
@@ -345,13 +388,25 @@ function App() {
           wordData: item,
           startTime: Date.now()
         };
-      });
+      }).filter(q => q !== null);
     } else if (quizMode === 'review') {
       // Review mode - due words across all difficulties
-      const allWords = [...vocabularyDB.easy, ...vocabularyDB.medium, ...vocabularyDB.hard];
-      const dueWords = SRSManager.getDueWords(allWords, count);
+      const easyWords = vocabularyDB.easy || [];
+      const mediumWords = vocabularyDB.medium || [];
+      const hardWords = vocabularyDB.hard || [];
+      const allWords = [...easyWords, ...mediumWords, ...hardWords];
+
+      if (allWords.length === 0) {
+        console.warn('No vocabulary words available for review');
+        return [];
+      }
+
+      const dueWords = typeof SRSManager !== 'undefined' && SRSManager.getDueWords
+        ? SRSManager.getDueWords(allWords, count)
+        : sample(allWords, count);
 
       generatedQuestions = dueWords.map(word => {
+        if (!word || !word.word || !word.definition) return null;
         const distractors = generateSmartDistractors(word.definition, allWords, 3);
         const options = shuffleArray([word.definition, ...distractors]);
 
@@ -363,15 +418,27 @@ function App() {
           word: word.word,
           startTime: Date.now()
         };
-      });
+      }).filter(q => q !== null);
     } else if (quizMode === 'bookmarks') {
       // Bookmarks mode - practice saved words
-      const bookmarkedWords = BookmarksManager.getForPractice(count);
-      const allWords = [...vocabularyDB.easy, ...vocabularyDB.medium, ...vocabularyDB.hard];
+      const bookmarkedWords = typeof BookmarksManager !== 'undefined' && BookmarksManager.getForPractice
+        ? BookmarksManager.getForPractice(count)
+        : [];
+
+      if (bookmarkedWords.length === 0) {
+        console.warn('No bookmarked words available');
+        return [];
+      }
+
+      const easyWords = vocabularyDB.easy || [];
+      const mediumWords = vocabularyDB.medium || [];
+      const hardWords = vocabularyDB.hard || [];
+      const allWords = [...easyWords, ...mediumWords, ...hardWords];
 
       generatedQuestions = bookmarkedWords.map(word => {
+        if (!word) return null;
         // Handle different word types (vocab, acronym, oneword)
-        if (word.word) {
+        if (word.word && word.definition) {
           // Vocabulary word
           const distractors = generateSmartDistractors(word.definition, allWords, 3);
           const options = shuffleArray([word.definition, ...distractors]);
@@ -384,20 +451,20 @@ function App() {
             word: word.word,
             startTime: Date.now()
           };
-        } else if (word.acronym) {
+        } else if (word.acronym && word.options && word.full) {
           // Acronym
           return {
             question: word.acronym,
-            options: shuffleArray(word.options),
+            options: shuffleArray([...word.options]),
             correct: word.full,
             wordData: word,
             startTime: Date.now()
           };
-        } else if (word.phrase) {
+        } else if (word.phrase && word.options && word.answer) {
           // One-word substitute
           return {
             question: word.phrase,
-            options: shuffleArray(word.options),
+            options: shuffleArray([...word.options]),
             correct: word.answer,
             wordData: word,
             startTime: Date.now()
@@ -407,7 +474,8 @@ function App() {
       }).filter(q => q !== null);
     }
 
-    return generatedQuestions;
+    // Ensure we always return a valid array
+    return generatedQuestions || [];
   };
 
   /**

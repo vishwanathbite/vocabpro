@@ -421,25 +421,49 @@
   <!-- 11. App - Main application component -->
   <script type="text/babel" src="js/app.js?v=10"></script>
 
-  <!-- 12. Initialize the app with comprehensive error handling -->
+  <!-- 12. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">
-    // Wait for all scripts to be ready
+    // Required globals that must be available before app can start
+    const REQUIRED_GLOBALS = [
+      'React', 'ReactDOM', 'ErrorBoundary', 'ToastProvider', 'App',
+      'vocabularyDB', 'acronymsDB', 'oneWordDB', 'SoundManager',
+      'SettingsManager', 'BookmarksManager', 'SRSManager', 'DailyGoalsManager',
+      'QuizHistoryManager', 'OnboardingManager', 'getLevelInfo', 'updateStats',
+      'initializeStats', 'shuffleArray', 'sample', 'speakWord', 'loadFromStorage',
+      'saveToStorage', 'generateSmartDistractors', 'selectSRSOptimizedWords',
+      'StreakProtection', 'getEarnedBadges', 'getNewBadges', 'calculatePoints',
+      'getLevelProgress', 'getStreakEmoji'
+    ];
+
+    // Check if all required modules are loaded
+    const checkModulesLoaded = () => {
+      const missing = REQUIRED_GLOBALS.filter(name => typeof window[name] === 'undefined');
+      return { allLoaded: missing.length === 0, missing };
+    };
+
+    // Initialize the app
     const initApp = () => {
-      // Verify all required globals exist
-      const requiredGlobals = [
-        'React', 'ReactDOM', 'ErrorBoundary', 'ToastProvider', 'App',
-        'vocabularyDB', 'acronymsDB', 'oneWordDB'
-      ];
+      const { allLoaded, missing } = checkModulesLoaded();
 
-      const missing = requiredGlobals.filter(name => typeof window[name] === 'undefined');
-
-      if (missing.length > 0) {
+      if (!allLoaded) {
         throw new Error('Missing required modules: ' + missing.join(', '));
       }
 
       // Verify data is loaded
       if (!vocabularyDB.easy || vocabularyDB.easy.length === 0) {
         throw new Error('Vocabulary data failed to load. Please refresh the page.');
+      }
+
+      // Initialize SoundManager with saved settings
+      SoundManager.enabled = SoundManager.isEnabled();
+
+      // Clean up old daily goals history
+      if (typeof DailyGoalsManager !== 'undefined' && DailyGoalsManager.cleanupHistory) {
+        try {
+          DailyGoalsManager.cleanupHistory();
+        } catch (e) {
+          console.warn('Failed to cleanup daily goals history:', e);
+        }
       }
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -450,12 +474,41 @@
           </ToastProvider>
         </ErrorBoundary>
       );
+
+      console.log('VocabPro initialized successfully');
     };
 
-    try {
-      initApp();
-    } catch (error) {
-      console.error('VocabPro initialization error:', error);
+    // Retry initialization with exponential backoff
+    let initAttempts = 0;
+    const MAX_INIT_ATTEMPTS = 10;
+    const INIT_RETRY_DELAY = 100; // Start with 100ms
+
+    const tryInitApp = () => {
+      initAttempts++;
+
+      try {
+        const { allLoaded, missing } = checkModulesLoaded();
+
+        if (!allLoaded) {
+          if (initAttempts < MAX_INIT_ATTEMPTS) {
+            // Exponential backoff: 100ms, 200ms, 400ms, etc.
+            const delay = INIT_RETRY_DELAY * Math.pow(1.5, initAttempts - 1);
+            console.log(`VocabPro: Waiting for modules (attempt ${initAttempts}/${MAX_INIT_ATTEMPTS})... Missing: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '...' : ''}`);
+            setTimeout(tryInitApp, delay);
+            return;
+          }
+          throw new Error('Missing required modules after ' + MAX_INIT_ATTEMPTS + ' attempts: ' + missing.join(', '));
+        }
+
+        initApp();
+      } catch (error) {
+        console.error('VocabPro initialization error:', error);
+        showErrorScreen(error);
+      }
+    };
+
+    // Show error screen with recovery options
+    const showErrorScreen = (error) => {
       document.getElementById('root').innerHTML = `
         <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%); padding: 20px;">
           <div style="text-align: center; color: white; max-width: 400px;">
@@ -472,7 +525,10 @@
           </div>
         </div>
       `;
-    }
+    };
+
+    // Start initialization with retry logic
+    tryInitApp();
   </script>
 
   <!-- 13. Register Service Worker for PWA and cache clearing helper -->
