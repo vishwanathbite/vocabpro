@@ -129,22 +129,33 @@ const calculateNextReview = (entry, quality) => {
 
 /**
  * SRS Manager - handles all SRS operations
+ * Uses centralized StorageManager for persistence
  */
 const SRSManager = {
-  storageKey: 'vocabProSRS',
+  storageKey: 'vocabProSRS', // Legacy key for reference
 
   /**
-   * Load all SRS data from storage
+   * Load all SRS data from centralized storage
    */
   loadData: () => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return state.srs || {};
+    }
     return loadFromStorage('vocabProSRS', {});
   },
 
   /**
-   * Save SRS data to storage
+   * Save SRS data to centralized storage
    */
   saveData: (data) => {
-    saveToStorage('vocabProSRS', data);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.srs = data;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage('vocabProSRS', data);
+    }
   },
 
   /**
