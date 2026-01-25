@@ -386,4 +386,6 @@ const selectSRSOptimizedWords = (words, count = 10, mode = 'vocab') => {
   return shuffleArray(selected);
 };
 
-// Export note: In browser environment with Babel, these are automatically available globally
+// Expose all exports to window for global access
+window.SRSManager = SRSManager;
+window.selectSRSOptimizedWords = selectSRSOptimizedWords;

@@ -238,4 +238,6 @@ const DailyGoalsManager = {
   }
 };
 
-// Export note: In browser environment, DailyGoalsManager is globally available
+// Expose to window for global access
+window.DAILY_GOAL_PRESETS = DAILY_GOAL_PRESETS;
+window.DailyGoalsManager = DailyGoalsManager;

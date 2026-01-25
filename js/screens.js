@@ -1842,4 +1842,10 @@ const OnboardingScreen = ({ onComplete, onSkip }) => {
   );
 };
 
-// Export note: In browser environment with Babel, these are automatically available globally
+// Expose to window for global access
+window.HomeScreen = HomeScreen;
+window.QuizScreen = QuizScreen;
+window.FlashcardScreen = FlashcardScreen;
+window.SettingsScreen = SettingsScreen;
+window.QuizHistoryScreen = QuizHistoryScreen;
+window.OnboardingScreen = OnboardingScreen;

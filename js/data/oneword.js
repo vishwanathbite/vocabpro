@@ -104,3 +104,6 @@ const oneWordDB = [
       {phrase:"A place for keeping birds",answer:"Aviary",options:["Aviary","Apiary","Aquarium","Zoo"],explanation:"From Latin 'avis' (bird).",exam:"SSC/Banking"},
       {phrase:"A place for keeping fish",answer:"Aquarium",options:["Aquarium","Aviary","Tank","Pond"],explanation:"From Latin 'aquarius' (of water).",exam:"SSC/Banking"}
     ];
+
+// Expose to global scope for other scripts
+window.oneWordDB = oneWordDB;

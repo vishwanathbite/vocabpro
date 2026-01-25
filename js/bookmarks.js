@@ -214,4 +214,5 @@ const BookmarksManager = {
   }
 };
 
-// Export note: In browser environment with Babel, BookmarksManager is automatically available globally
+// Expose to window for global access
+window.BookmarksManager = BookmarksManager;

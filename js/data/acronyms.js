@@ -109,3 +109,6 @@ const acronymsDB = [
       {acronym:"FIR",full:"First Information Report",options:["First Information Report","Federal Investigation Report","Formal Inquiry Record","Filed Incident Report"],category:"Law",exam:"SSC"},
       {acronym:"MOU",full:"Memorandum of Understanding",options:["Memorandum of Understanding","Ministry of Urban affairs","Multiple Operational Units","Mutual Organizational Unity"],category:"General",exam:"UPSC/Banking/SSC"}
     ];
+
+// Expose to global scope for other scripts
+window.acronymsDB = acronymsDB;
