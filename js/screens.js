@@ -975,6 +975,8 @@ const FlashcardScreen = ({
 const SettingsScreen = ({ onBack, onToast }) => {
   const [settings, setSettings] = useState(SettingsManager.getSettings());
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleToggle = (key) => {
     const newValue = !settings[key];
@@ -1001,8 +1003,79 @@ const SettingsScreen = ({ onBack, onToast }) => {
   };
 
   const confirmReset = () => {
-    clearStorage();
+    if (typeof StorageManager !== 'undefined') {
+      StorageManager.resetState(true);
+    } else {
+      clearStorage();
+    }
     window.location.reload();
+  };
+
+  // Backup/Restore handlers
+  const handleExportBackup = () => {
+    try {
+      const jsonData = typeof StorageManager !== 'undefined'
+        ? StorageManager.exportStateToJSON()
+        : JSON.stringify({ settings: SettingsManager.getSettings() }, null, 2);
+
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vocabpro-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      onToast && onToast('Backup downloaded successfully!', 'success');
+    } catch (error) {
+      console.error('Export failed:', error);
+      onToast && onToast('Failed to export backup', 'error');
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportBackup = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const jsonString = e.target?.result;
+        if (typeof StorageManager !== 'undefined') {
+          const result = StorageManager.importStateFromJSON(jsonString);
+          if (result.success) {
+            onToast && onToast('Backup restored! Reloading...', 'success');
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            onToast && onToast(result.error || 'Invalid backup file', 'error');
+            setIsImporting(false);
+          }
+        } else {
+          onToast && onToast('Storage not available', 'error');
+          setIsImporting(false);
+        }
+      } catch (error) {
+        console.error('Import failed:', error);
+        onToast && onToast('Failed to import backup', 'error');
+        setIsImporting(false);
+      }
+    };
+
+    reader.onerror = () => {
+      onToast && onToast('Failed to read file', 'error');
+      setIsImporting(false);
+    };
+
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
   };
 
   const SettingToggle = ({ label, description, checked, onChange, icon: Icon }) => (
@@ -1158,28 +1231,72 @@ const SettingsScreen = ({ onBack, onToast }) => {
           )}
         </div>
 
+        {/* Backup & Restore */}
+        <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20 mb-6">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Save width="20" height="20" className="text-blue-400" />
+            Backup & Restore
+          </h3>
+          <p className="text-white text-opacity-70 text-sm mb-4">
+            Export your progress to a file or restore from a previous backup.
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={handleExportBackup}
+              className="w-full py-3 px-4 min-h-[48px] bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg text-white font-medium hover:from-blue-600 hover:to-indigo-600 transition-all flex items-center justify-center gap-2"
+            >
+              <Save width="18" height="18" />
+              Export Backup
+            </button>
+            <button
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="w-full py-3 px-4 min-h-[48px] bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white font-medium hover:bg-opacity-20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isImporting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <ArrowLeft width="18" height="18" className="rotate-90" />
+                  Import Backup
+                </>
+              )}
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportBackup}
+              accept=".json"
+              className="hidden"
+            />
+          </div>
+        </div>
+
         {/* Data Management */}
         <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20 mb-6">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Save width="20" height="20" className="text-red-400" />
+            <RotateCcw width="20" height="20" className="text-red-400" />
             Data Management
           </h3>
           <div className="space-y-3">
             <button
-              onClick={() => QuizHistoryManager.clearHistory()}
-              className="w-full py-3 px-4 bg-white bg-opacity-10 rounded-lg text-white hover:bg-opacity-20 transition-all text-left"
+              onClick={() => { QuizHistoryManager.clearHistory(); onToast && onToast('Quiz history cleared'); }}
+              className="w-full py-3 px-4 min-h-[48px] bg-white bg-opacity-10 rounded-lg text-white hover:bg-opacity-20 transition-all text-left"
             >
               Clear Quiz History
             </button>
             <button
               onClick={() => { SRSManager.reset(); onToast && onToast('Learning data reset'); }}
-              className="w-full py-3 px-4 bg-white bg-opacity-10 rounded-lg text-white hover:bg-opacity-20 transition-all text-left"
+              className="w-full py-3 px-4 min-h-[48px] bg-white bg-opacity-10 rounded-lg text-white hover:bg-opacity-20 transition-all text-left"
             >
               Reset Learning Progress
             </button>
             <button
               onClick={handleResetProgress}
-              className="w-full py-3 px-4 bg-red-500 bg-opacity-20 border border-red-400 rounded-lg text-red-300 hover:bg-opacity-30 transition-all text-left"
+              className="w-full py-3 px-4 min-h-[48px] bg-red-500 bg-opacity-20 border border-red-400 rounded-lg text-red-300 hover:bg-opacity-30 transition-all text-left"
             >
               Reset All Data
             </button>
@@ -1190,11 +1307,14 @@ const SettingsScreen = ({ onBack, onToast }) => {
         <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20">
           <h3 className="text-lg font-bold text-white mb-4">About VocabPro</h3>
           <div className="space-y-2 text-white text-opacity-70">
-            <p>Version: 2.0.0</p>
+            <p>Version: 2.1.0</p>
             <p>Created by Dr. Vishwanath Bite</p>
             <p>Literary Rides</p>
             <p className="text-sm mt-4">
               Master vocabulary for UPSC, SSC, Banking, Railways & State PSC exams
+            </p>
+            <p className="text-xs mt-2 text-white text-opacity-50">
+              Works offline after first load
             </p>
           </div>
         </div>
