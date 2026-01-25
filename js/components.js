@@ -13,11 +13,62 @@ const { useState, useEffect, useRef, createContext, useContext, useCallback, Com
 /**
  * Error Boundary - catches JavaScript errors in child components
  * Must be a class component as per React requirements
+ * Enhanced with global error handling and data reset option
  */
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null, retryCount: 0 };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: 0,
+      showResetConfirm: false
+    };
+
+    // Set up global error handlers
+    this.setupGlobalErrorHandlers();
+  }
+
+  setupGlobalErrorHandlers() {
+    // Store last error for logging
+    window._lastError = null;
+
+    // Global error handler for uncaught errors
+    window.onerror = (message, source, lineno, colno, error) => {
+      console.error('Global error:', { message, source, lineno, colno, error });
+      window._lastError = { message, source, lineno, colno, error, timestamp: new Date().toISOString() };
+
+      // Log to storage for debugging
+      try {
+        if (typeof StorageManager !== 'undefined') {
+          const state = StorageManager.loadState();
+          state._lastError = window._lastError;
+          StorageManager.saveStateSync(state);
+        }
+      } catch (e) { /* ignore */ }
+
+      return false; // Let the error propagate
+    };
+
+    // Global handler for unhandled promise rejections
+    window.onunhandledrejection = (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      window._lastError = {
+        message: event.reason?.message || 'Unhandled promise rejection',
+        error: event.reason,
+        timestamp: new Date().toISOString()
+      };
+
+      // Log to storage for debugging
+      try {
+        if (typeof StorageManager !== 'undefined') {
+          const state = StorageManager.loadState();
+          state._lastError = window._lastError;
+          StorageManager.saveStateSync(state);
+        }
+      } catch (e) { /* ignore */ }
+    };
   }
 
   static getDerivedStateFromError(error) {
@@ -29,6 +80,20 @@ class ErrorBoundary extends Component {
     console.error('ErrorBoundary caught an error:', error);
     console.error('Error info:', errorInfo);
     this.setState({ errorInfo });
+
+    // Log to storage
+    try {
+      if (typeof StorageManager !== 'undefined') {
+        const state = StorageManager.loadState();
+        state._lastError = {
+          message: error?.message,
+          stack: error?.stack?.slice(0, 500),
+          componentStack: errorInfo?.componentStack?.slice(0, 500),
+          timestamp: new Date().toISOString()
+        };
+        StorageManager.saveStateSync(state);
+      }
+    } catch (e) { /* ignore */ }
   }
 
   handleReset = () => {
@@ -36,7 +101,8 @@ class ErrorBoundary extends Component {
       hasError: false,
       error: null,
       errorInfo: null,
-      retryCount: prevState.retryCount + 1
+      retryCount: prevState.retryCount + 1,
+      showResetConfirm: false
     }));
     if (this.props.onReset) {
       this.props.onReset();
@@ -63,6 +129,27 @@ class ErrorBoundary extends Component {
     }
   };
 
+  handleResetLocalData = () => {
+    if (!this.state.showResetConfirm) {
+      this.setState({ showResetConfirm: true });
+      return;
+    }
+
+    try {
+      // Reset app state using StorageManager
+      if (typeof StorageManager !== 'undefined') {
+        StorageManager.resetState(true);
+      }
+      // Also clear legacy keys just in case
+      localStorage.clear();
+      // Reload
+      window.location.reload();
+    } catch (e) {
+      console.error('Failed to reset data:', e);
+      window.location.reload();
+    }
+  };
+
   render() {
     if (this.state.hasError) {
       const errorMessage = this.state.error?.message || 'Unknown error';
@@ -70,18 +157,18 @@ class ErrorBoundary extends Component {
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20 max-w-md text-center">
-            <div className="text-6xl mb-4">{showRetryWarning ? '🔧' : '😅'}</div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white border-opacity-20 max-w-md w-full text-center">
+            <div className="text-5xl sm:text-6xl mb-4">{showRetryWarning ? '🔧' : '😅'}</div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
               {showRetryWarning ? 'Persistent Error' : 'Oops! Something went wrong'}
             </h2>
-            <p className="text-white text-opacity-70 mb-4">
+            <p className="text-white text-opacity-70 mb-4 text-sm sm:text-base">
               {showRetryWarning
-                ? 'The error keeps occurring. Try clearing the cache or reloading the app.'
+                ? 'The error keeps occurring. Try clearing the cache or resetting app data.'
                 : "We encountered an unexpected error. Don't worry, your progress is saved!"}
             </p>
             {errorMessage && (
-              <p className="text-white text-opacity-50 text-sm mb-6 font-mono bg-black bg-opacity-20 rounded-lg p-2 break-all">
+              <p className="text-white text-opacity-50 text-xs sm:text-sm mb-6 font-mono bg-black bg-opacity-20 rounded-lg p-2 break-all">
                 {errorMessage.slice(0, 150)}{errorMessage.length > 150 ? '...' : ''}
               </p>
             )}
@@ -89,23 +176,38 @@ class ErrorBoundary extends Component {
               {!showRetryWarning && (
                 <button
                   onClick={this.handleReset}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+                  className="w-full px-6 py-3 min-h-[48px] bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
                 >
                   Try Again
                 </button>
               )}
               <button
+                onClick={() => window.location.reload()}
+                className="w-full px-6 py-3 min-h-[48px] bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+              >
+                Reload App
+              </button>
+              <button
                 onClick={this.handleClearCacheAndReload}
-                className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+                className="w-full px-6 py-3 min-h-[48px] bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
               >
                 Clear Cache & Reload
               </button>
               <button
-                onClick={() => window.location.reload()}
-                className="w-full px-6 py-3 bg-white bg-opacity-20 border-2 border-white border-opacity-40 text-white rounded-xl font-semibold hover:bg-opacity-30 transition-all"
+                onClick={this.handleResetLocalData}
+                className={`w-full px-6 py-3 min-h-[48px] ${
+                  this.state.showResetConfirm
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-white bg-opacity-20 border-2 border-white border-opacity-40 hover:bg-opacity-30'
+                } text-white rounded-xl font-semibold transition-all`}
               >
-                Reload App
+                {this.state.showResetConfirm ? 'Confirm: Reset All Data' : 'Reset Local Data'}
               </button>
+              {this.state.showResetConfirm && (
+                <p className="text-red-300 text-xs">
+                  Warning: This will delete all your progress, bookmarks, and settings!
+                </p>
+              )}
             </div>
           </div>
         </div>
