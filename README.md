@@ -44,6 +44,7 @@ Master **3,100+ vocabulary items** with a gamified learning experience designed 
 - **Works Offline:** After first load, no internet needed
 - **No Server:** Zero data collection or tracking
 - **Mobile Responsive:** Works on all devices
+- **Backup & Restore:** Export/import your progress anytime
 
 ## 🚀 Quick Start
 
@@ -88,11 +89,94 @@ vocabpro/
 
 - **React 18** (UMD build via CDN)
 - **Babel Standalone** (JSX transformation in browser)
-- **TailwindCSS** (Styling via CDN)
+- **TailwindCSS via Twind** (No CORS issues)
 - **LocalStorage API** (Progress persistence)
 - **Web Speech API** (Text-to-speech)
+- **Service Worker** (Offline-first caching)
 
 **No build process required** - runs directly in the browser!
+
+## 📴 Offline Functionality
+
+VocabPro is a Progressive Web App (PWA) that works offline after the first load.
+
+### How Offline Mode Works
+
+1. **First Load:** The app loads from the network and caches all critical assets
+2. **Subsequent Loads:** The app loads instantly from cache, even without internet
+3. **Background Updates:** When online, the app silently updates cached assets
+
+### What Works Offline
+- All vocabulary quizzes and flashcards
+- Settings and preferences
+- Progress tracking and statistics
+- Bookmarks and SRS learning data
+
+### Service Worker Caching Strategy
+- **Local Assets:** Cache-first with background refresh
+- **CDN Resources:** Network-first with cache fallback
+- **Navigation:** Always serves cached `index.html` when offline
+
+### Updating the Cache
+
+When deploying updates, increment `CACHE_VERSION` in `sw.js`:
+
+```javascript
+const CACHE_VERSION = 16;  // Increment this number
+const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
+```
+
+Also update the version query strings in `index.html`:
+```html
+<script src="js/app.js?v=16"></script>  <!-- Match the version -->
+```
+
+## 💾 Backup & Restore
+
+VocabPro stores all data locally in your browser. You can export and import your progress.
+
+### Exporting a Backup
+
+1. Go to **Settings** (gear icon)
+2. Find the **Backup & Restore** section
+3. Click **Export Backup**
+4. A `.json` file will download to your device
+
+### Importing a Backup
+
+1. Go to **Settings**
+2. Click **Import Backup**
+3. Select your backup `.json` file
+4. The app will reload with your restored data
+
+### What's Included in Backups
+- All settings and preferences
+- Quiz history and statistics
+- SRS learning progress
+- Bookmarks and notes
+- Daily goals history
+- Earned badges and level progress
+
+### Data Storage Architecture
+
+All app state is stored in a single versioned key:
+```
+VOCABPRO_STATE_V1 (localStorage)
+├── settings
+├── srs (spaced repetition data)
+├── bookmarks
+├── dailyGoals
+├── quizHistory
+├── onboarding
+├── streakProtection
+└── stats
+```
+
+The storage layer includes:
+- **Schema versioning** for safe migrations
+- **Automatic legacy data migration**
+- **Corruption recovery** with graceful fallbacks
+- **Quota management** (auto-cleanup when storage is full)
 
 ## 📊 Vocabulary Statistics
 
@@ -156,10 +240,15 @@ This project is dedicated to helping students prepare for competitive exams. Use
 
 Currently at **3,130 items** | Goal: **5,000+ comprehensive vocabulary**
 
-**Next Milestones:**
+**Completed Milestones:**
 - ✅ Modular architecture implemented (Dec 2024)
 - ✅ Added 270 new N-Z vocabulary words to active database (Jan 2026)
 - ✅ Synced App.js words with js/data/ files (Jan 2026)
+- ✅ Upgraded to offline-first PWA with robust caching (Jan 2026)
+- ✅ Added backup/restore functionality (Jan 2026)
+- ✅ Centralized storage layer with versioning (Jan 2026)
+
+**Upcoming Milestones:**
 - 🔄 Adding 500 more medium-level words (Q1 2026)
 - 📝 Adding 500 more hard-level words (Q2 2026)
 - 🎯 Adding 400 more acronyms (Q2 2026)
