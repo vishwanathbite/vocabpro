@@ -53,3 +53,7 @@ const getDatabaseStats = () => ({
               (typeof acronymsDB !== 'undefined' ? acronymsDB.length : 0) +
               (typeof oneWordDB !== 'undefined' ? oneWordDB.length : 0)
 });
+
+// Expose to global scope for other scripts (const doesn't auto-add to window)
+window.vocabularyDB = vocabularyDB;
+window.getDatabaseStats = getDatabaseStats;
