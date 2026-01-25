@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 16 - Robust offline-first caching
+ * Version 18 - Robust offline-first caching with window exports fix
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 17;
+const CACHE_VERSION = 18;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
