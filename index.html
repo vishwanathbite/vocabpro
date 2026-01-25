@@ -216,6 +216,37 @@
       }
     }
 
+    /* Ensure all interactive elements have proper tap targets */
+    button, [role="button"] {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Quiz option buttons - ensure readable and tappable */
+    .quiz-option-btn {
+      min-height: 52px;
+      padding: 0.875rem 1rem;
+    }
+
+    /* Prevent horizontal overflow on mobile */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    /* Better button spacing on mobile */
+    @media (max-width: 640px) {
+      .space-y-3 > * + * {
+        margin-top: 0.875rem;
+      }
+
+      /* Ensure modal buttons are properly sized */
+      .modal-content button {
+        min-height: 48px;
+        font-size: 1rem;
+      }
+    }
+
     /* Safe area padding for notched devices */
     @supports (padding: env(safe-area-inset-bottom)) {
       footer {
@@ -353,7 +384,7 @@
     if ('caches' in window) {
       caches.keys().then(function(names) {
         names.forEach(function(name) {
-          if (name !== 'vocabpro-v15') {
+          if (name !== 'vocabpro-v16') {
             caches.delete(name);
           }
         });
@@ -374,12 +405,12 @@
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=15" onerror="onScriptError('vocab-easy.js')"></script>
-  <script src="js/data/vocab-medium.js?v=15" onerror="onScriptError('vocab-medium.js')"></script>
-  <script src="js/data/vocab-hard.js?v=15" onerror="onScriptError('vocab-hard.js')"></script>
-  <script src="js/data/acronyms.js?v=15" onerror="onScriptError('acronyms.js')"></script>
-  <script src="js/data/oneword.js?v=15" onerror="onScriptError('oneword.js')"></script>
-  <script src="js/data/index.js?v=15" onerror="onScriptError('index.js')"></script>
+  <script src="js/data/vocab-easy.js?v=16" onerror="onScriptError('vocab-easy.js')"></script>
+  <script src="js/data/vocab-medium.js?v=16" onerror="onScriptError('vocab-medium.js')"></script>
+  <script src="js/data/vocab-hard.js?v=16" onerror="onScriptError('vocab-hard.js')"></script>
+  <script src="js/data/acronyms.js?v=16" onerror="onScriptError('acronyms.js')"></script>
+  <script src="js/data/oneword.js?v=16" onerror="onScriptError('oneword.js')"></script>
+  <script src="js/data/index.js?v=16" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly -->
   <script>
@@ -399,43 +430,46 @@
     }
   </script>
 
-  <!-- 2. Now load Babel-processed scripts (async, but data is already available) -->
+  <!-- 2. Storage layer - must load before other modules -->
+  <script src="js/storage.js?v=16" onerror="onScriptError('storage.js')"></script>
+
+  <!-- 3. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=15"></script>
+  <script type="text/babel" src="js/icons.js?v=16"></script>
 
-  <!-- 3. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=15"></script>
+  <!-- 4. Utilities - Helper functions -->
+  <script type="text/babel" src="js/utils.js?v=16"></script>
 
-  <!-- 4. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=15"></script>
+  <!-- 5. Gamification - XP, levels, badges -->
+  <script type="text/babel" src="js/gamification.js?v=16"></script>
 
-  <!-- 5. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=15"></script>
+  <!-- 6. Spaced Repetition System -->
+  <script type="text/babel" src="js/srs.js?v=16"></script>
 
-  <!-- 6. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=15"></script>
+  <!-- 7. Bookmarks System -->
+  <script type="text/babel" src="js/bookmarks.js?v=16"></script>
 
-  <!-- 7. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=15"></script>
+  <!-- 8. Daily Goals System -->
+  <script type="text/babel" src="js/dailygoals.js?v=16"></script>
 
-  <!-- 8. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=15"></script>
+  <!-- 9. Settings, History & Onboarding -->
+  <script type="text/babel" src="js/settings.js?v=16"></script>
 
-  <!-- 9. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=15"></script>
+  <!-- 10. Components - Reusable UI components -->
+  <script type="text/babel" src="js/components.js?v=16"></script>
 
-  <!-- 10. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=15"></script>
+  <!-- 11. Screens - Main screen components -->
+  <script type="text/babel" src="js/screens.js?v=16"></script>
 
-  <!-- 11. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=15"></script>
+  <!-- 12. App - Main application component -->
+  <script type="text/babel" src="js/app.js?v=16"></script>
 
-  <!-- 12. Initialize the app with comprehensive error handling and retry logic -->
+  <!-- 13. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">
     // Required globals that must be available before app can start
     const REQUIRED_GLOBALS = [
       'React', 'ReactDOM', 'ErrorBoundary', 'ToastProvider', 'App',
-      'vocabularyDB', 'acronymsDB', 'oneWordDB', 'SoundManager',
+      'vocabularyDB', 'acronymsDB', 'oneWordDB', 'SoundManager', 'StorageManager',
       'SettingsManager', 'BookmarksManager', 'SRSManager', 'DailyGoalsManager',
       'QuizHistoryManager', 'OnboardingManager', 'getLevelInfo', 'updateStats',
       'initializeStats', 'shuffleArray', 'sample', 'speakWord', 'loadFromStorage',
@@ -540,7 +574,7 @@
     tryInitApp();
   </script>
 
-  <!-- 13. Register Service Worker for PWA and cache clearing helper -->
+  <!-- 14. Register Service Worker for PWA and cache clearing helper -->
   <script>
     // Helper function to clear all caches and reload
     window.clearCachesAndReload = async function() {
