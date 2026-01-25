@@ -384,7 +384,7 @@
     if ('caches' in window) {
       caches.keys().then(function(names) {
         names.forEach(function(name) {
-          if (name !== 'vocabpro-v16') {
+          if (name !== 'vocabpro-v17') {
             caches.delete(name);
           }
         });
@@ -405,12 +405,12 @@
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=16" onerror="onScriptError('vocab-easy.js')"></script>
-  <script src="js/data/vocab-medium.js?v=16" onerror="onScriptError('vocab-medium.js')"></script>
-  <script src="js/data/vocab-hard.js?v=16" onerror="onScriptError('vocab-hard.js')"></script>
-  <script src="js/data/acronyms.js?v=16" onerror="onScriptError('acronyms.js')"></script>
-  <script src="js/data/oneword.js?v=16" onerror="onScriptError('oneword.js')"></script>
-  <script src="js/data/index.js?v=16" onerror="onScriptError('index.js')"></script>
+  <script src="js/data/vocab-easy.js?v=17" onerror="onScriptError('vocab-easy.js')"></script>
+  <script src="js/data/vocab-medium.js?v=17" onerror="onScriptError('vocab-medium.js')"></script>
+  <script src="js/data/vocab-hard.js?v=17" onerror="onScriptError('vocab-hard.js')"></script>
+  <script src="js/data/acronyms.js?v=17" onerror="onScriptError('acronyms.js')"></script>
+  <script src="js/data/oneword.js?v=17" onerror="onScriptError('oneword.js')"></script>
+  <script src="js/data/index.js?v=17" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly -->
   <script>
@@ -431,38 +431,38 @@
   </script>
 
   <!-- 2. Storage layer - must load before other modules -->
-  <script src="js/storage.js?v=16" onerror="onScriptError('storage.js')"></script>
+  <script src="js/storage.js?v=17" onerror="onScriptError('storage.js')"></script>
 
   <!-- 3. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=16"></script>
+  <script type="text/babel" src="js/icons.js?v=17"></script>
 
   <!-- 4. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=16"></script>
+  <script type="text/babel" src="js/utils.js?v=17"></script>
 
   <!-- 5. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=16"></script>
+  <script type="text/babel" src="js/gamification.js?v=17"></script>
 
   <!-- 6. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=16"></script>
+  <script type="text/babel" src="js/srs.js?v=17"></script>
 
   <!-- 7. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=16"></script>
+  <script type="text/babel" src="js/bookmarks.js?v=17"></script>
 
   <!-- 8. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=16"></script>
+  <script type="text/babel" src="js/dailygoals.js?v=17"></script>
 
   <!-- 9. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=16"></script>
+  <script type="text/babel" src="js/settings.js?v=17"></script>
 
   <!-- 10. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=16"></script>
+  <script type="text/babel" src="js/components.js?v=17"></script>
 
   <!-- 11. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=16"></script>
+  <script type="text/babel" src="js/screens.js?v=17"></script>
 
   <!-- 12. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=16"></script>
+  <script type="text/babel" src="js/app.js?v=17"></script>
 
   <!-- 13. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">
