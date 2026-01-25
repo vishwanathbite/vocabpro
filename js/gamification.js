@@ -354,27 +354,43 @@ const getPerformanceGrade = (accuracy) => {
 /**
  * Streak Protection Manager
  * Allows users to protect their streak with shields
+ * Uses centralized StorageManager for persistence
  */
 const StreakProtection = {
-  storageKey: 'vocabProStreakProtection',
+  storageKey: 'vocabProStreakProtection', // Legacy key for reference
 
   /**
-   * Load streak protection data
+   * Default streak protection data
    */
-  loadData: () => {
-    return loadFromStorage('vocabProStreakProtection', {
-      shields: 1,  // Start with 1 free shield
-      lastUsed: null,
-      lastEarned: null,
-      totalUsed: 0
-    });
+  defaultData: {
+    shields: 1,  // Start with 1 free shield
+    lastUsed: null,
+    lastEarned: null,
+    totalUsed: 0
   },
 
   /**
-   * Save streak protection data
+   * Load streak protection data from centralized storage
+   */
+  loadData: () => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return { ...StreakProtection.defaultData, ...state.streakProtection };
+    }
+    return loadFromStorage('vocabProStreakProtection', StreakProtection.defaultData);
+  },
+
+  /**
+   * Save streak protection data to centralized storage
    */
   saveData: (data) => {
-    saveToStorage('vocabProStreakProtection', data);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.streakProtection = data;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage('vocabProStreakProtection', data);
+    }
   },
 
   /**

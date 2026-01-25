@@ -10,9 +10,10 @@
 
 /**
  * Settings Manager - handles all app preferences
+ * Uses centralized StorageManager for persistence
  */
 const SettingsManager = {
-  STORAGE_KEY: 'vocabProSettings',
+  STORAGE_KEY: 'vocabProSettings', // Legacy key for reference
 
   /**
    * Default settings
@@ -32,9 +33,14 @@ const SettingsManager = {
   },
 
   /**
-   * Get all settings
+   * Get all settings from centralized storage
    */
   getSettings: () => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return { ...SettingsManager.defaults, ...state.settings };
+    }
+    // Fallback for backward compatibility
     const saved = loadFromStorage(SettingsManager.STORAGE_KEY, {});
     return { ...SettingsManager.defaults, ...saved };
   },
@@ -53,7 +59,14 @@ const SettingsManager = {
   set: (key, value) => {
     const settings = SettingsManager.getSettings();
     settings[key] = value;
-    saveToStorage(SettingsManager.STORAGE_KEY, settings);
+
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.settings = settings;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(SettingsManager.STORAGE_KEY, settings);
+    }
 
     // Apply setting immediately if applicable
     if (key === 'soundEnabled') {
@@ -69,7 +82,15 @@ const SettingsManager = {
   setMultiple: (updates) => {
     const settings = SettingsManager.getSettings();
     Object.assign(settings, updates);
-    saveToStorage(SettingsManager.STORAGE_KEY, settings);
+
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.settings = settings;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(SettingsManager.STORAGE_KEY, settings);
+    }
+
     return settings;
   },
 
@@ -77,7 +98,13 @@ const SettingsManager = {
    * Reset to defaults
    */
   reset: () => {
-    saveToStorage(SettingsManager.STORAGE_KEY, SettingsManager.defaults);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.settings = { ...SettingsManager.defaults };
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(SettingsManager.STORAGE_KEY, SettingsManager.defaults);
+    }
     return SettingsManager.defaults;
   },
 
@@ -95,7 +122,15 @@ const SettingsManager = {
     try {
       const imported = JSON.parse(jsonString);
       const merged = { ...SettingsManager.defaults, ...imported };
-      saveToStorage(SettingsManager.STORAGE_KEY, merged);
+
+      if (typeof StorageManager !== 'undefined') {
+        const state = StorageManager.loadState();
+        state.settings = merged;
+        StorageManager.saveState(state);
+      } else {
+        saveToStorage(SettingsManager.STORAGE_KEY, merged);
+      }
+
       return { success: true, settings: merged };
     } catch (e) {
       return { success: false, error: 'Invalid settings format' };
@@ -109,15 +144,20 @@ const SettingsManager = {
 
 /**
  * Quiz History Manager - tracks completed quizzes
+ * Uses centralized StorageManager for persistence
  */
 const QuizHistoryManager = {
-  STORAGE_KEY: 'vocabProQuizHistory',
+  STORAGE_KEY: 'vocabProQuizHistory', // Legacy key for reference
   MAX_HISTORY: 50, // Keep last 50 quizzes
 
   /**
-   * Get all quiz history
+   * Get all quiz history from centralized storage
    */
   getHistory: () => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return state.quizHistory || [];
+    }
     return loadFromStorage(QuizHistoryManager.STORAGE_KEY, []);
   },
 
@@ -149,7 +189,14 @@ const QuizHistoryManager = {
       history.splice(QuizHistoryManager.MAX_HISTORY);
     }
 
-    saveToStorage(QuizHistoryManager.STORAGE_KEY, history);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.quizHistory = history;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(QuizHistoryManager.STORAGE_KEY, history);
+    }
+
     return entry;
   },
 
@@ -253,7 +300,13 @@ const QuizHistoryManager = {
    * Clear all history
    */
   clearHistory: () => {
-    saveToStorage(QuizHistoryManager.STORAGE_KEY, []);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.quizHistory = [];
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(QuizHistoryManager.STORAGE_KEY, []);
+    }
   }
 };
 
@@ -263,20 +316,30 @@ const QuizHistoryManager = {
 
 /**
  * Onboarding Manager - handles first-time user experience
+ * Uses centralized StorageManager for persistence
  */
 const OnboardingManager = {
-  STORAGE_KEY: 'vocabProOnboarding',
+  STORAGE_KEY: 'vocabProOnboarding', // Legacy key for reference
 
   /**
-   * Get onboarding status
+   * Default onboarding status
+   */
+  defaultStatus: {
+    completed: false,
+    step: 0,
+    skipped: false,
+    completedAt: null
+  },
+
+  /**
+   * Get onboarding status from centralized storage
    */
   getStatus: () => {
-    return loadFromStorage(OnboardingManager.STORAGE_KEY, {
-      completed: false,
-      step: 0,
-      skipped: false,
-      completedAt: null
-    });
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return { ...OnboardingManager.defaultStatus, ...state.onboarding };
+    }
+    return loadFromStorage(OnboardingManager.STORAGE_KEY, OnboardingManager.defaultStatus);
   },
 
   /**
@@ -293,7 +356,15 @@ const OnboardingManager = {
   setStep: (step) => {
     const status = OnboardingManager.getStatus();
     status.step = step;
-    saveToStorage(OnboardingManager.STORAGE_KEY, status);
+
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.onboarding = status;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(OnboardingManager.STORAGE_KEY, status);
+    }
+
     return status;
   },
 
@@ -307,7 +378,15 @@ const OnboardingManager = {
       skipped: false,
       completedAt: new Date().toISOString()
     };
-    saveToStorage(OnboardingManager.STORAGE_KEY, status);
+
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.onboarding = status;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(OnboardingManager.STORAGE_KEY, status);
+    }
+
     return status;
   },
 
@@ -321,7 +400,15 @@ const OnboardingManager = {
       skipped: true,
       completedAt: new Date().toISOString()
     };
-    saveToStorage(OnboardingManager.STORAGE_KEY, status);
+
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.onboarding = status;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage(OnboardingManager.STORAGE_KEY, status);
+    }
+
     return status;
   },
 
@@ -329,7 +416,13 @@ const OnboardingManager = {
    * Reset onboarding (for testing or re-show)
    */
   reset: () => {
-    removeFromStorage(OnboardingManager.STORAGE_KEY);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.onboarding = { ...OnboardingManager.defaultStatus };
+      StorageManager.saveState(state);
+    } else {
+      removeFromStorage(OnboardingManager.STORAGE_KEY);
+    }
     return OnboardingManager.getStatus();
   },
 

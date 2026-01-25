@@ -684,6 +684,7 @@ const SoundManager = {
 /**
  * Get Word of the Day based on date
  * Uses a deterministic algorithm so everyone sees the same word
+ * Uses centralized StorageManager for persistence
  * @returns {Object} - Word object for today
  */
 const getWordOfTheDay = () => {
@@ -705,9 +706,14 @@ const getWordOfTheDay = () => {
   const index = Math.abs(hash) % allWords.length;
   const word = allWords[index];
 
-  // Check if user has seen this word today
-  const lastSeenKey = 'vocabProWOTD';
-  const lastSeen = loadFromStorage(lastSeenKey);
+  // Check if user has seen this word today using centralized storage
+  let lastSeen = null;
+  if (typeof StorageManager !== 'undefined') {
+    const state = StorageManager.loadState();
+    lastSeen = state.wordOfTheDay;
+  } else {
+    lastSeen = loadFromStorage('vocabProWOTD');
+  }
 
   const wotdData = {
     word,
@@ -716,7 +722,14 @@ const getWordOfTheDay = () => {
   };
 
   // Mark as seen
-  saveToStorage(lastSeenKey, { date: dateString, wordId: word.word });
+  const newWotd = { date: dateString, wordId: word.word };
+  if (typeof StorageManager !== 'undefined') {
+    const state = StorageManager.loadState();
+    state.wordOfTheDay = newWotd;
+    StorageManager.saveState(state);
+  } else {
+    saveToStorage('vocabProWOTD', newWotd);
+  }
 
   return wotdData;
 };

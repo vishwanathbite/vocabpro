@@ -10,24 +10,35 @@
 
 /**
  * Bookmarks Manager - handles all bookmark operations
+ * Uses centralized StorageManager for persistence
  */
 const BookmarksManager = {
-  storageKey: 'vocabProBookmarks',
+  storageKey: 'vocabProBookmarks', // Legacy key for reference
 
   /**
-   * Load all bookmarks from storage
+   * Load all bookmarks from centralized storage
    * @returns {Array} - Array of bookmarked word objects
    */
   loadBookmarks: () => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return state.bookmarks || [];
+    }
     return loadFromStorage('vocabProBookmarks', []);
   },
 
   /**
-   * Save bookmarks to storage
+   * Save bookmarks to centralized storage
    * @param {Array} bookmarks - Array of bookmark objects
    */
   saveBookmarks: (bookmarks) => {
-    saveToStorage('vocabProBookmarks', bookmarks);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.bookmarks = bookmarks;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage('vocabProBookmarks', bookmarks);
+    }
   },
 
   /**

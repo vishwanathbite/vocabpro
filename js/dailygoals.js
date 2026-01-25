@@ -22,7 +22,16 @@ const DEFAULT_GOAL = DAILY_GOAL_PRESETS.regular;
 // ===========================
 
 const DailyGoalsManager = {
-  storageKey: 'vocabProDailyGoals',
+  storageKey: 'vocabProDailyGoals', // Legacy key for reference
+
+  /**
+   * Default daily goals data
+   */
+  defaultData: {
+    goalPreset: 'regular',
+    customGoal: null,
+    history: {}
+  },
 
   /**
    * Get today's date string
@@ -33,21 +42,27 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Load daily goals data
+   * Load daily goals data from centralized storage
    */
   loadData: () => {
-    return loadFromStorage('vocabProDailyGoals', {
-      goalPreset: 'regular',
-      customGoal: null,
-      history: {}
-    });
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return { ...DailyGoalsManager.defaultData, ...state.dailyGoals };
+    }
+    return loadFromStorage('vocabProDailyGoals', DailyGoalsManager.defaultData);
   },
 
   /**
-   * Save daily goals data
+   * Save daily goals data to centralized storage
    */
   saveData: (data) => {
-    saveToStorage('vocabProDailyGoals', data);
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.dailyGoals = data;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage('vocabProDailyGoals', data);
+    }
   },
 
   /**
