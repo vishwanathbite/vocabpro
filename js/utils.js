@@ -139,12 +139,20 @@ const stopSpeech = () => {
 // ===========================
 // LOCAL STORAGE UTILITIES
 // ===========================
+// Note: These functions use StorageManager from storage.js for availability checks.
+// They are kept for backward compatibility with modules that use them directly.
+
+// In-memory fallback for when localStorage is unavailable
+const memoryStorage = {};
 
 /**
- * Check if localStorage is available
- * @returns {boolean} - True if localStorage is available
+ * Helper to check storage availability (uses StorageManager if available)
  */
-const isStorageAvailable = () => {
+const checkStorageAvailable = () => {
+  if (typeof StorageManager !== 'undefined' && StorageManager.isStorageAvailable) {
+    return StorageManager.isStorageAvailable();
+  }
+  // Fallback check
   try {
     const test = '__storage_test__';
     localStorage.setItem(test, test);
@@ -155,9 +163,6 @@ const isStorageAvailable = () => {
   }
 };
 
-// In-memory fallback for when localStorage is unavailable
-const memoryStorage = {};
-
 /**
  * Save data to localStorage with quota handling
  * @param {string} key - Storage key
@@ -166,7 +171,7 @@ const memoryStorage = {};
  */
 const saveToStorage = (key, data) => {
   try {
-    if (!isStorageAvailable()) {
+    if (!checkStorageAvailable()) {
       memoryStorage[key] = data;
       return true;
     }
@@ -213,7 +218,7 @@ const loadFromStorage = (key, defaultValue = null) => {
       return memoryStorage[key];
     }
 
-    if (!isStorageAvailable()) {
+    if (!checkStorageAvailable()) {
       return defaultValue;
     }
 
@@ -240,7 +245,7 @@ const loadFromStorage = (key, defaultValue = null) => {
 const removeFromStorage = (key) => {
   try {
     delete memoryStorage[key];
-    if (isStorageAvailable()) {
+    if (checkStorageAvailable()) {
       localStorage.removeItem(key);
     }
   } catch (error) {
@@ -254,7 +259,7 @@ const removeFromStorage = (key) => {
 const clearStorage = () => {
   try {
     Object.keys(memoryStorage).forEach(key => delete memoryStorage[key]);
-    if (isStorageAvailable()) {
+    if (checkStorageAvailable()) {
       localStorage.clear();
     }
   } catch (error) {
