@@ -522,4 +522,8 @@ const KeyboardShortcuts = {
   }
 };
 
-// Export note: In browser environment with Babel, these are automatically available globally
+// Expose to window for global access
+window.SettingsManager = SettingsManager;
+window.QuizHistoryManager = QuizHistoryManager;
+window.OnboardingManager = OnboardingManager;
+window.KEYBOARD_SHORTCUTS = KEYBOARD_SHORTCUTS;

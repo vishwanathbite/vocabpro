@@ -937,4 +937,5 @@ function App() {
   );
 }
 
-// Export note: In browser environment with Babel, App is automatically available globally
+// Expose to window for global access
+window.App = App;

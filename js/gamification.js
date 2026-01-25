@@ -490,4 +490,15 @@ const StreakProtection = {
   }
 };
 
-// Export note: In browser environment with Babel, these are automatically available globally
+// Expose all exports to window for global access
+window.LEVEL_CONFIG = LEVEL_CONFIG;
+window.getLevelInfo = getLevelInfo;
+window.getLevelProgress = getLevelProgress;
+window.BADGES = BADGES;
+window.getEarnedBadges = getEarnedBadges;
+window.getNewBadges = getNewBadges;
+window.getStreakEmoji = getStreakEmoji;
+window.calculatePoints = calculatePoints;
+window.initializeStats = initializeStats;
+window.updateStats = updateStats;
+window.StreakProtection = StreakProtection;

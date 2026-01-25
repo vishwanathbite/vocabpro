@@ -1430,4 +1430,9 @@ const LevelBadge = ({ level, totalPoints = 0 }) => {
   );
 };
 
-// Export note: In browser environment with Babel, these are automatically available globally
+// Expose to window for global access
+window.ErrorBoundary = ErrorBoundary;
+window.ToastContext = ToastContext;
+window.ToastProvider = ToastProvider;
+window.useToast = useToast;
+window.LevelBadge = LevelBadge;

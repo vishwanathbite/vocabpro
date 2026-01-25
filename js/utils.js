@@ -771,4 +771,17 @@ const getDailyMotivation = (streak) => {
   return quotes[index];
 };
 
-// Export note: In browser environment with Babel, these functions are automatically available globally
+// Expose all exports to window for global access
+window.shuffleArray = shuffleArray;
+window.sample = sample;
+window.generateSmartDistractors = generateSmartDistractors;
+window.speakWord = speakWord;
+window.saveToStorage = saveToStorage;
+window.loadFromStorage = loadFromStorage;
+window.removeFromStorage = removeFromStorage;
+window.clearStorage = clearStorage;
+window.generateReferralCode = generateReferralCode;
+window.isValidEmail = isValidEmail;
+window.getWordOfTheDay = getWordOfTheDay;
+window.getDailyMotivation = getDailyMotivation;
+window.SoundManager = SoundManager;
