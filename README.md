@@ -1,263 +1,232 @@
 # 📚 Literary Rides VocabPro
 
-🎯 **Comprehensive vocabulary builder for Indian competitive exams (UPSC, SSC, Banking, Railways)**
+**Free vocabulary builder for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways**
 
-Master **3,100+ vocabulary items** with a gamified learning experience designed specifically for Indian exam aspirants.
+Master **5,000+ vocabulary items** with spaced repetition, 5 quiz modes, flashcards, gamification, and full offline support. Built by an educator, for students. Always free.
+
+🔗 **[Try VocabPro Now →](https://vishwanathbite.github.io/vocabpro/)**
+
+---
+
+## 📊 Content Library
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| Easy Words | 1,000 | Foundational vocabulary for all exams |
+| Medium Words | 1,709 | Intermediate vocabulary for SSC/Banking |
+| Hard Words | 1,501 | Advanced vocabulary for UPSC/CAT |
+| Acronyms | 300 | Common acronyms with smart distractors |
+| One-Word Substitutes | 500 | Phrase-to-word patterns for exam MCQs |
+| **Total** | **5,010** | **Comprehensive exam-ready coverage** |
+
+Every item includes: definition, pronunciation, synonyms, antonyms, mnemonic, example sentence with Indian exam context, and exam relevance tag.
+
+---
 
 ## ✨ Features
 
-### 📖 Comprehensive Content
-- **2,929 Vocabulary Words:**
-  - Easy: 1,911 words (foundational vocabulary)
-  - Medium: 553 words (intermediate level)
-  - Hard: 465 words (advanced vocabulary)
-- **103 Acronyms** with smart deceiving options
-- **98 One-Word Substitutes** for competitive exam patterns
-- **Total: 3,130 learning items**
+### Learning Modes
+- **Vocabulary Quiz** — Match words with definitions across 3 difficulty levels
+- **Synonyms Quiz** — Find similar meanings
+- **Antonyms Quiz** — Find opposite meanings
+- **One-Word Substitutes** — Replace phrases with single words
+- **Acronyms Quiz** — Expand common acronyms
+- **Flashcard Mode** — Card-flip learning with swipe navigation
 
-### 🎮 Learning Modes
-- **Vocabulary Quiz:** Match words with definitions
-- **Synonyms:** Find similar meanings
-- **Antonyms:** Find opposite meanings
-- **One-Word Substitutes:** Replace phrases with single words
-- **Acronyms:** Expand common acronyms
-- **Match Game:** Coming soon!
+### Spaced Repetition (SM-2)
+- Algorithm tracks what you know and what you struggle with
+- 8 review intervals from 1 day to 365 days
+- Words you get wrong appear more frequently
+- Optimized word selection prioritizes due reviews
 
-### 🏆 Gamification System
-- **10 Level Progression:** From Beginner to Legend
-- **XP Points System:** 10-20 points per question based on difficulty
-- **Streak System:** Build momentum with consecutive correct answers
-- **25+ Achievements & Badges:** Unlock as you progress
-- **Progress Tracking:** Mastered words, struggling words, accuracy stats
-- **Referral Rewards:** Earn 150 bonus points for sharing
+### Gamification
+- **10 Levels** — Beginner to Legend progression
+- **25 Badges** — Unlock achievements as you learn
+- **XP Points** — 10-20 points per question based on difficulty
+- **Streaks** — Build momentum with consecutive correct answers
+- **Daily Goals** — 4 preset difficulty levels to choose from
 
-### 🎯 Learning Features
-- **Text-to-Speech:** Pronunciation support for all words
-- **Smart Distractors:** Intelligent wrong options for better learning
-- **Mnemonics:** Memory tricks for every word
-- **Indian Context Examples:** Culturally relevant usage examples
-- **Exam Relevance Tags:** UPSC, SSC, Banking, Railways markers
+### Offline & PWA
+- Works 100% offline after first load
+- Install as an app on phone or desktop
+- Service worker with cache-first strategy
+- Background updates when online
 
-### 🔒 Privacy & Accessibility
-- **100% Free:** No ads, no subscriptions, always free
-- **Privacy-First:** All data stored locally in your browser
-- **Works Offline:** After first load, no internet needed
-- **No Server:** Zero data collection or tracking
-- **Mobile Responsive:** Works on all devices
-- **Backup & Restore:** Export/import your progress anytime
+### Data Safety
+- All progress stored locally in your browser
+- Full JSON backup and restore
+- No server, no tracking, no accounts required
+- Optional multi-user support via local storage
 
-## 🚀 Quick Start
+---
 
-### For Users
-1. Visit the [deployed site](#) or open `index.html` in a browser
-2. Start learning immediately - no signup required
-3. (Optional) Create an account to save progress across sessions
+## 🎯 Target Exams
 
-### For Developers
-```bash
-# Clone the repository
-git clone [your-repo-url]
+All content is curated with Indian exam context:
+- **UPSC** (Civil Services Prelims & Mains)
+- **SSC CGL/CHSL** (Staff Selection Commission)
+- **Banking** (IBPS PO/Clerk, SBI, RBI)
+- **CAT/MAT** (MBA entrance)
+- **Railways** (RRB NTPC, Group D)
+- **State PSC** exams
 
-# Open in browser (no build process needed!)
-open index.html
-```
+---
+
+## 🛠️ Technology
+
+- **React 18** — UMD build via CDN
+- **Babel Standalone** — In-browser JSX compilation
+- **Twind** — TailwindCSS-compatible styling (no CORS issues)
+- **localStorage** — Progress persistence
+- **Web Speech API** — Text-to-speech pronunciation
+- **Service Worker** — Offline-first PWA caching
+
+No build process needed — runs directly in the browser.
+
+---
 
 ## 📁 Project Structure
 
 ```
 vocabpro/
-├── index.html              # HTML shell - loads all scripts
+├── index.html                # App shell (loads all scripts)
+├── sw.js                     # Service Worker (offline caching)
+├── manifest.json             # PWA manifest
+├── robots.txt                # Search engine crawling rules
+├── sitemap.xml               # Sitemap for Google Search Console
 ├── js/
-│   ├── icons.js            # SVG icon components
-│   ├── utils.js            # Helper functions, speech, storage
-│   ├── gamification.js     # XP, levels, badges, streaks
-│   ├── components.js       # Reusable UI components
-│   ├── screens.js          # Home & Quiz screens
-│   ├── app.js              # Main App component & state
+│   ├── storage.js            # Centralized storage layer
+│   ├── icons.js              # SVG icon components
+│   ├── utils.js              # Helper functions, speech, utilities
+│   ├── gamification.js       # XP, levels, badges, streaks
+│   ├── srs.js                # Spaced repetition (SM-2) engine
+│   ├── bookmarks.js          # Bookmarks system
+│   ├── dailygoals.js         # Daily goals tracking
+│   ├── settings.js           # Settings, history, onboarding
+│   ├── components.js         # Reusable UI components
+│   ├── screens.js            # Home, quiz, and flashcard screens
+│   ├── app.js                # Main App component & state
 │   └── data/
-│       ├── vocab-easy.js       # 744 easy words
-│       ├── vocab-medium.js     # 1,718 medium words
-│       ├── vocab-hard.js       # 465 hard words
-│       ├── acronyms.js         # 103 acronyms
-│       ├── oneword.js          # 98 one-word substitutes
-│       └── index.js            # Combines all databases
-├── README.md               # This file
-└── DEVELOPMENT.md          # Developer documentation
+│       ├── vocab-easy.js     # 1,000 easy words
+│       ├── vocab-medium.js   # 1,709 medium words
+│       ├── vocab-hard.js     # 1,501 hard words
+│       ├── acronyms.js       # 300 acronyms
+│       ├── oneword.js        # 500 one-word substitutes
+│       └── index.js          # Data aggregator & stats
+└── README.md
 ```
 
-## 🛠️ Technology Stack
+---
 
-- **React 18** (UMD build via CDN)
-- **Babel Standalone** (JSX transformation in browser)
-- **TailwindCSS via Twind** (No CORS issues)
-- **LocalStorage API** (Progress persistence)
-- **Web Speech API** (Text-to-speech)
-- **Service Worker** (Offline-first caching)
+## 🚀 Getting Started
 
-**No build process required** - runs directly in the browser!
+### For Students
+1. Visit **[vishwanathbite.github.io/vocabpro](https://vishwanathbite.github.io/vocabpro/)**
+2. Start learning — no signup needed
+3. Install as app (tap "Add to Home Screen" on mobile)
+4. Your progress saves automatically in your browser
 
-## 📴 Offline Functionality
-
-VocabPro is a Progressive Web App (PWA) that works offline after the first load.
-
-### How Offline Mode Works
-
-1. **First Load:** The app loads from the network and caches all critical assets
-2. **Subsequent Loads:** The app loads instantly from cache, even without internet
-3. **Background Updates:** When online, the app silently updates cached assets
-
-### What Works Offline
-- All vocabulary quizzes and flashcards
-- Settings and preferences
-- Progress tracking and statistics
-- Bookmarks and SRS learning data
-
-### Service Worker Caching Strategy
-- **Local Assets:** Cache-first with background refresh
-- **CDN Resources:** Network-first with cache fallback
-- **Navigation:** Always serves cached `index.html` when offline
-
-### Updating the Cache
-
-When deploying updates, increment `CACHE_VERSION` in `sw.js`:
-
-```javascript
-const CACHE_VERSION = 16;  // Increment this number
-const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
+### For Developers
+```bash
+git clone https://github.com/vishwanathbite/vocabpro.git
+cd vocabpro
+# Open index.html in any browser — no build step needed
 ```
 
-Also update the version query strings in `index.html`:
-```html
-<script src="js/app.js?v=16"></script>  <!-- Match the version -->
-```
+---
 
 ## 💾 Backup & Restore
 
-VocabPro stores all data locally in your browser. You can export and import your progress.
-
-### Exporting a Backup
+All data lives in your browser. Export anytime:
 
 1. Go to **Settings** (gear icon)
-2. Find the **Backup & Restore** section
-3. Click **Export Backup**
-4. A `.json` file will download to your device
+2. Click **Export Backup** — downloads a `.json` file
+3. To restore: click **Import Backup** and select your file
 
-### Importing a Backup
+Backups include: settings, quiz history, SRS progress, bookmarks, daily goals, badges, and level data.
 
-1. Go to **Settings**
-2. Click **Import Backup**
-3. Select your backup `.json` file
-4. The app will reload with your restored data
+---
 
-### What's Included in Backups
-- All settings and preferences
-- Quiz history and statistics
-- SRS learning progress
-- Bookmarks and notes
-- Daily goals history
-- Earned badges and level progress
+## 📴 Offline Mode
 
-### Data Storage Architecture
+VocabPro is a Progressive Web App:
 
-All app state is stored in a single versioned key:
-```
-VOCABPRO_STATE_V1 (localStorage)
-├── settings
-├── srs (spaced repetition data)
-├── bookmarks
-├── dailyGoals
-├── quizHistory
-├── onboarding
-├── streakProtection
-└── stats
+- **First visit:** App loads from network, caches all assets
+- **Subsequent visits:** Loads instantly from cache, even without internet
+- **Updates:** When online, silently refreshes cached assets in background
+
+Everything works offline — quizzes, flashcards, settings, progress tracking.
+
+### Updating the Cache (for developers)
+
+Increment `CACHE_VERSION` in `sw.js` and version query strings in `index.html`:
+```javascript
+const CACHE_VERSION = 18;
+const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 ```
 
-The storage layer includes:
-- **Schema versioning** for safe migrations
-- **Automatic legacy data migration**
-- **Corruption recovery** with graceful fallbacks
-- **Quota management** (auto-cleanup when storage is full)
+---
 
-## 📊 Vocabulary Statistics
+## 📈 Roadmap
 
-| Category | Count | Focus Area |
-|----------|-------|------------|
-| Easy Words | 1,911 | Foundation building |
-| Medium Words | 553 | Core vocabulary |
-| Hard Words | 465 | Advanced learning |
-| Acronyms | 103 | Quick recall |
-| One-Word Subs | 98 | Exam patterns |
-| **TOTAL** | **3,130** | **Complete coverage** |
+### ✅ Completed
+- 5,000+ vocabulary items across all categories
+- 5 quiz modes + flashcard mode
+- SM-2 spaced repetition engine
+- Gamification (25 badges, 10 levels, streaks, XP)
+- Offline-first PWA with service worker
+- Backup/restore functionality
+- Centralized storage layer with versioning
+- SEO optimization (Open Graph, JSON-LD, sitemap)
+- Cloudflare Web Analytics integration
+- Daily goals system
+- Text-to-speech pronunciation
+- Multi-user local support
 
-## 🎯 Target Exams
+### 🔜 Next
+- Accessibility audit (ARIA labels, screen reader support)
+- PWA icon set (proper PNG icons for all platforms)
+- Lazy loading data files per quiz mode
+- Match Game mode (word-definition pairing)
+- OG image for social sharing preview
 
-All content is optimized for:
-- **UPSC** (Civil Services)
-- **SSC** (Staff Selection Commission)
-- **Banking** (IBPS, SBI, RBI)
-- **Railways** (RRB)
-- **State PSC** exams
+### 🔮 Future
+- Vite migration for build-time optimization
+- IndexedDB for larger datasets
+- GitHub Device Flow authentication
+- Data export to Google Sheets
+
+---
 
 ## 🎓 Created By
 
 **Dr. Vishwanath Bite**
-*Educator | Content Creator | Vocabulary Expert*
+*Assistant Professor, Department of English*
+*Government Vidarbha Institute of Science and Humanities, Amravati*
 
-### Connect & Learn More
+15+ years of teaching experience | 12+ books authored | 38+ research papers published
 
-- 🎥 [YouTube: @literaryrides](https://www.youtube.com/@literaryrides)
+### Connect
+
+- 🌐 [vishwanathbite.com](https://vishwanathbite.com)
+- 🎥 [YouTube: @literaryrides](https://www.youtube.com/@literaryrides) (8,000+ subscribers)
 - 📸 [Instagram: @literaryrides](https://www.instagram.com/literaryrides)
-- 📸 [Instagram: @vishwanathbite](https://www.instagram.com/vishwanathbite)
-- 🎵 [Spotify Podcast](https://open.spotify.com/show/3lsJLi7SBqrsR65I1jqxAn)
+- 🎙️ [Spotify Podcast](https://open.spotify.com/show/3lsJLi7SBqrsR65I1jqxAn)
 - 🎧 [Apple Podcast](https://podcasts.apple.com/us/podcast/literary-rides/id1810843805)
 - 🎵 [Amazon Music](https://music.amazon.in/podcasts/b05c6db4-5c01-4cbb-bfc4-ddf70d68a91d/literary-rides)
-- 🎙️ [Audible](https://www.audible.in/podcast/Literary-Rides/B0F48NN5FN)
+- 📖 [The Criterion: An International Journal in English](https://www.the-criterion.com) (Founded 2010)
+- 📖 [Galaxy: International Multidisciplinary Research Journal](https://www.galaxyimrj.com) (Founded 2012)
 
-## 🤝 Contributing
-
-Want to add more words or improve the app? See [DEVELOPMENT.md](./DEVELOPMENT.md) for:
-- How to add new vocabulary words
-- Code structure and organization
-- Best practices for contributions
-- Testing guidelines
+---
 
 ## 📄 License
 
 **Free for educational use. Always will be.**
 
-This project is dedicated to helping students prepare for competitive exams. Use it, share it, learn from it.
-
-## 🙏 Acknowledgments
-
-- All vocabulary curated from authentic sources
-- Exam patterns based on actual UPSC/SSC/Banking papers
-- Indian context examples for better relatability
-- Community feedback incorporated continuously
+This project exists to help students prepare for competitive exams. Use it, share it, learn from it.
 
 ---
-
-## 🎯 Roadmap to 5,000+ Words
-
-Currently at **3,130 items** | Goal: **5,000+ comprehensive vocabulary**
-
-**Completed Milestones:**
-- ✅ Modular architecture implemented (Dec 2024)
-- ✅ Added 270 new N-Z vocabulary words to active database (Jan 2026)
-- ✅ Synced App.js words with js/data/ files (Jan 2026)
-- ✅ Upgraded to offline-first PWA with robust caching (Jan 2026)
-- ✅ Added backup/restore functionality (Jan 2026)
-- ✅ Centralized storage layer with versioning (Jan 2026)
-
-**Upcoming Milestones:**
-- 🔄 Adding 500 more medium-level words (Q1 2026)
-- 📝 Adding 500 more hard-level words (Q2 2026)
-- 🎯 Adding 400 more acronyms (Q2 2026)
-- 📚 Adding 400 more one-word substitutes (Q3 2026)
-- 🎮 Implementing Match Game mode (Q3 2026)
-- 🏆 Adding daily challenges (Q4 2026)
-
----
-
-💡 **Star this repo** if it helps you in your exam preparation!
 
 **Made with ❤️ for Indian students by Dr. Vishwanath Bite**
+
+*"Lighting lamps of knowledge — when you light one lamp, that person goes on to light countless others."*
