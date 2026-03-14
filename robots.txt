@@ -1,0 +1,7 @@
+# robots.txt for Literary Rides VocabPro
+# https://vishwanathbite.github.io/vocabpro/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://vishwanathbite.github.io/vocabpro/sitemap.xml
