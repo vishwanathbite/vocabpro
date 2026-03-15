@@ -206,7 +206,15 @@ const HomeScreen = ({
   onShowAnalytics,
   onSignOut,
   showWordOfDay = true,
-  showDailyGoals = true
+  showDailyGoals = true,
+  isSignedUp = false,
+  signedUpName = '',
+  signedUpEmail = '',
+  onShowSignUp,
+  showSignedUpCard = false,
+  onToggleSignedUpCard,
+  showSignUpNudge = false,
+  onDismissNudge
 }) => {
   const [showBadges, setShowBadges] = useState(false);
   const levelInfo = getLevelInfo(stats.totalPoints);
@@ -284,13 +292,34 @@ const HomeScreen = ({
                     <span className="sm:hidden">Exit</span>
                   </button>
                 </>
+              ) : isSignedUp ? (
+                <div className="relative">
+                  <button
+                    onClick={onToggleSignedUpCard}
+                    className="px-2 sm:px-3 py-2 bg-white bg-opacity-10 rounded-lg text-white text-xs sm:text-sm hover:bg-opacity-20 transition-all flex items-center gap-1"
+                    aria-label={`Signed up as ${signedUpName}`}
+                  >
+                    <div className="relative">
+                      <User width="16" height="16" />
+                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full"></div>
+                    </div>
+                    <span className="hidden sm:inline max-w-[80px] truncate">{signedUpName.split(' ')[0]}</span>
+                  </button>
+                  {showSignedUpCard && (
+                    <div className="absolute right-0 top-full mt-2 bg-gradient-to-br from-purple-900 to-blue-900 rounded-xl p-4 shadow-2xl border border-white border-opacity-20 min-w-[220px] z-50">
+                      <p className="text-white text-sm font-semibold">{signedUpName}</p>
+                      <p className="text-white text-opacity-60 text-xs mt-1">{signedUpEmail}</p>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <button
-                  onClick={onShowAuth}
+                  onClick={onShowSignUp}
                   className="px-2 sm:px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white text-xs sm:text-sm font-semibold hover:scale-105 active:scale-95 transition-all flex items-center gap-1"
+                  aria-label="Join VocabPro for free"
                 >
                   <User width="16" height="16" />
-                  <span className="hidden sm:inline">Sign In</span>
+                  <span className="hidden sm:inline">Join Free</span>
                 </button>
               )}
             </div>
@@ -571,6 +600,30 @@ const HomeScreen = ({
           </div>
         </div>
       </main>
+
+      {/* Gentle Nudge Banner */}
+      {showSignUpNudge && !isSignedUp && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-purple-800 to-blue-800 border-t border-white border-opacity-20 px-4 py-3 safe-area-bottom">
+          <div className="container mx-auto flex items-center justify-between gap-3 max-w-lg">
+            <p className="text-white text-sm flex-1">
+              <span className="mr-1">🎯</span> Join 50+ learners — get vocab tips & updates
+            </p>
+            <button
+              onClick={onShowSignUp}
+              className="px-4 py-2 bg-white bg-opacity-20 rounded-lg text-white text-sm font-semibold hover:bg-opacity-30 transition-all whitespace-nowrap"
+            >
+              Join Free
+            </button>
+            <button
+              onClick={onDismissNudge}
+              className="p-1 text-white text-opacity-60 hover:text-opacity-100"
+              aria-label="Dismiss"
+            >
+              <X width="18" height="18" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-white bg-opacity-5 backdrop-blur-xl border-t border-white border-opacity-20 mt-12">
@@ -1395,7 +1448,8 @@ const QuizHistoryScreen = ({ onBack }) => {
       oneword: 'One-Word',
       acronym: 'Acronyms',
       review: 'Smart Review',
-      bookmarks: 'Bookmarks'
+      bookmarks: 'Bookmarks',
+      match: 'Match Game'
     };
     return labels[mode] || mode;
   };
@@ -1408,7 +1462,8 @@ const QuizHistoryScreen = ({ onBack }) => {
       oneword: 'bg-orange-500',
       acronym: 'bg-pink-500',
       review: 'bg-yellow-500',
-      bookmarks: 'bg-red-500'
+      bookmarks: 'bg-red-500',
+      match: 'bg-amber-500'
     };
     return colors[mode] || 'bg-gray-500';
   };

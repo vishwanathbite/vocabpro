@@ -824,6 +824,206 @@ const Modal = ({ children, isOpen, onClose, title, maxWidth = 'max-w-md' }) => {
 };
 
 /**
+ * Sign Up Modal — Collects user details and posts to Google Sheets
+ */
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Andaman & Nicobar', 'Chandigarh', 'Dadra & Nagar Haveli', 'Daman & Diu',
+  'Delhi', 'Jammu & Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+];
+
+const EXAM_OPTIONS = ['UPSC', 'SSC CGL', 'Banking/IBPS', 'CAT', 'Railways', 'UGC NET', 'State PSC', 'Other'];
+
+const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
+  const [formData, setFormData] = useState({
+    name: '', email: '', whatsapp: '', exam: [], city: '', state: ''
+  });
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && nameRef.current) {
+      setTimeout(() => nameRef.current.focus(), 100);
+    }
+    if (isOpen) {
+      setFormData({ name: '', email: '', whatsapp: '', exam: [], city: '', state: '' });
+    }
+  }, [isOpen]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const modal = document.getElementById('signup-modal');
+    if (!modal) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const focusable = modal.querySelectorAll('input, select, button, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const toggleExam = (exam) => {
+    setFormData(prev => ({
+      ...prev,
+      exam: prev.exam.includes(exam) ? prev.exam.filter(e => e !== exam) : [...prev.exam, exam]
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  if (!isOpen) return null;
+
+  const inputClass = 'bg-white bg-opacity-10 border border-white border-opacity-20 text-white placeholder-white placeholder-opacity-40 rounded-xl px-4 py-3 w-full focus:border-purple-400 focus:outline-none text-base';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
+         onClick={onClose}
+         role="dialog"
+         aria-modal="true"
+         aria-label="Join VocabPro">
+      <div id="signup-modal"
+           className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-6
+                      shadow-2xl border border-white border-opacity-20 w-full max-w-md max-h-[90vh] overflow-y-auto"
+           onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-2xl font-bold text-white">Join VocabPro</h2>
+          <button onClick={onClose} className="text-white hover:text-gray-300" aria-label="Close">
+            <X width="24" height="24" />
+          </button>
+        </div>
+        <p className="text-white text-opacity-60 text-sm mb-5">Get updates, tips & new words</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="signup-name" className="sr-only">Your Name</label>
+            <input
+              ref={nameRef}
+              id="signup-name"
+              type="text"
+              placeholder="Your name *"
+              className={inputClass}
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              required
+              aria-required="true"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="signup-email" className="sr-only">Email Address</label>
+            <input
+              id="signup-email"
+              type="email"
+              placeholder="your@email.com *"
+              className={inputClass}
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              required
+              aria-required="true"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="signup-whatsapp" className="sr-only">WhatsApp Number</label>
+            <input
+              id="signup-whatsapp"
+              type="tel"
+              placeholder="WhatsApp number (optional)"
+              className={inputClass}
+              value={formData.whatsapp}
+              onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
+            />
+          </div>
+
+          <div>
+            <p className="text-white text-opacity-70 text-sm mb-2">Which exam are you preparing for?</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Select exams you are preparing for">
+              {EXAM_OPTIONS.map(exam => (
+                <button
+                  key={exam}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={formData.exam.includes(exam)}
+                  onClick={() => toggleExam(exam)}
+                  className={`px-3 py-2 rounded-full text-sm border transition-all min-h-[44px] ${
+                    formData.exam.includes(exam)
+                      ? 'bg-purple-500 border-purple-500 text-white'
+                      : 'border-white border-opacity-20 text-white text-opacity-70 hover:border-opacity-40'
+                  }`}
+                >
+                  {exam}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="signup-city" className="sr-only">City or Town</label>
+            <input
+              id="signup-city"
+              type="text"
+              placeholder="City / Town"
+              className={inputClass}
+              value={formData.city}
+              onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="signup-state" className="sr-only">State</label>
+            <select
+              id="signup-state"
+              className={`${inputClass} appearance-none`}
+              value={formData.state}
+              onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+              style={{ color: formData.state ? 'white' : 'rgba(255,255,255,0.4)' }}
+            >
+              <option value="" style={{ color: '#333' }}>Select State</option>
+              {INDIAN_STATES.map(s => (
+                <option key={s} value={s} style={{ color: '#333' }}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+            aria-label="Join VocabPro Community"
+          >
+            {submitting ? 'Joining...' : 'Join VocabPro Community'}
+          </button>
+
+          <p className="text-white text-opacity-40 text-xs text-center">
+            Your data is safe. We only send vocabulary tips and app updates.
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/**
  * Difficulty selection modal
  */
 const DifficultyModal = ({ isOpen, onClose, onSelect, mode }) => {
