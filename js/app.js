@@ -73,6 +73,21 @@ function App() {
   const [previousBadges, setPreviousBadges] = useState([]);
   const [previousLevel, setPreviousLevel] = useState(1);
 
+  // Match Game State
+  const [matchPairs, setMatchPairs] = useState([]);
+  const [matchSelected, setMatchSelected] = useState(null);
+  const [matchMatched, setMatchMatched] = useState([]);
+  const [matchWrong, setMatchWrong] = useState(0);
+  const [matchTimer, setMatchTimer] = useState(0);
+  const [matchTimerActive, setMatchTimerActive] = useState(false);
+  const [matchShuffledWords, setMatchShuffledWords] = useState([]);
+  const [matchShuffledDefs, setMatchShuffledDefs] = useState([]);
+  const [matchWrongPair, setMatchWrongPair] = useState(null);
+  const [matchComplete, setMatchComplete] = useState(false);
+  const [matchScore, setMatchScore] = useState(0);
+  const [matchFirstTryCount, setMatchFirstTryCount] = useState(0);
+  const [matchAttemptedIds, setMatchAttemptedIds] = useState(new Set());
+
   // ===========================
   // INITIALIZATION & PERSISTENCE
   // ===========================
@@ -152,9 +167,21 @@ function App() {
       settings: 'VocabPro — Settings',
       history: 'VocabPro — Quiz History',
       analytics: 'VocabPro — Analytics',
+      match: 'VocabPro — Match Game',
     };
     document.title = titles[screen] || 'VocabPro';
   }, [screen, mode]);
+
+  // Match Game timer
+  useEffect(() => {
+    let interval;
+    if (matchTimerActive) {
+      interval = setInterval(() => {
+        setMatchTimer(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [matchTimerActive]);
 
   // Check onboarding status
   useEffect(() => {
@@ -506,7 +533,7 @@ function App() {
    */
   const handleStartQuiz = (quizMode) => {
     // Check if mode needs difficulty selection
-    if (['vocab', 'synonym', 'antonym'].includes(quizMode)) {
+    if (['vocab', 'synonym', 'antonym', 'match'].includes(quizMode)) {
       setPendingMode(quizMode);
       setShowDifficultyModal(true);
     } else if (quizMode === 'flashcard') {
@@ -582,6 +609,8 @@ function App() {
   const handleDifficultySelect = (selectedDifficulty) => {
     if (pendingMode === 'flashcard') {
       startFlashcardMode(selectedDifficulty);
+    } else if (pendingMode === 'match') {
+      startMatchGame(selectedDifficulty);
     } else if (pendingMode) {
       startQuizWithDifficulty(pendingMode, selectedDifficulty);
     }
@@ -744,6 +773,221 @@ function App() {
   };
 
   // ===========================
+  // MATCH GAME LOGIC
+  // ===========================
+
+  /**
+   * Start a match game round
+   */
+  const startMatchGame = async (selectedDifficulty) => {
+    setShowDifficultyModal(false);
+    setIsLoading(true);
+    setLoadingMessage('Preparing match game...');
+
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const words = vocabularyDB[selectedDifficulty] || [];
+    if (words.length < 5) {
+      setIsLoading(false);
+      setLoadingMessage('');
+      toast.error('Not enough words for this difficulty level');
+      return;
+    }
+
+    const selected = shuffleArray([...words]).slice(0, 5);
+    const pairs = selected.map((w, i) => ({
+      id: i,
+      word: w.word,
+      definition: w.definition
+    }));
+
+    const shuffledWords = shuffleArray([...pairs]);
+    const shuffledDefs = shuffleArray([...pairs]);
+
+    setMatchPairs(pairs);
+    setMatchShuffledWords(shuffledWords);
+    setMatchShuffledDefs(shuffledDefs);
+    setMatchSelected(null);
+    setMatchMatched([]);
+    setMatchWrong(0);
+    setMatchTimer(0);
+    setMatchTimerActive(true);
+    setMatchComplete(false);
+    setMatchScore(0);
+    setMatchWrongPair(null);
+    setMatchFirstTryCount(0);
+    setMatchAttemptedIds(new Set());
+    setMode('match');
+    setDifficulty(selectedDifficulty);
+    setIsLoading(false);
+    setLoadingMessage('');
+    setScreen('match');
+    setPendingMode(null);
+  };
+
+  /**
+   * Handle tapping an item in the match game
+   */
+  const handleMatchTap = (item, type) => {
+    // Ignore if already matched or animating wrong
+    if (matchMatched.includes(item.id) || matchWrongPair) return;
+
+    if (!matchSelected) {
+      // First tap — select this item
+      setMatchSelected({ ...item, type });
+      return;
+    }
+
+    if (matchSelected.type === type) {
+      // Tapped same column — switch selection
+      setMatchSelected({ ...item, type });
+      return;
+    }
+
+    // Tapped different column — check if match
+    const wordItem = type === 'word' ? item : matchSelected;
+    const defItem = type === 'definition' ? item : matchSelected;
+
+    if (wordItem.id === defItem.id) {
+      // CORRECT MATCH
+      SoundManager.playCorrect();
+      const newMatched = [...matchMatched, wordItem.id];
+      setMatchMatched(newMatched);
+
+      // Track first-try matches
+      if (!matchAttemptedIds.has(wordItem.id)) {
+        setMatchFirstTryCount(prev => prev + 1);
+      }
+
+      setMatchSelected(null);
+
+      // Check if all matched
+      if (newMatched.length === matchPairs.length) {
+        setMatchTimerActive(false);
+        // Delay to show the final match animation
+        setTimeout(() => {
+          handleMatchComplete(newMatched.length);
+        }, 600);
+      }
+    } else {
+      // WRONG MATCH
+      SoundManager.playIncorrect();
+      setMatchWrong(prev => prev + 1);
+      // Track that these IDs have been attempted (no longer first-try eligible)
+      setMatchAttemptedIds(prev => {
+        const next = new Set(prev);
+        next.add(wordItem.id);
+        next.add(defItem.id);
+        return next;
+      });
+      // Show wrong animation
+      setMatchWrongPair({ wordId: wordItem.id, defId: defItem.id });
+      setTimeout(() => {
+        setMatchWrongPair(null);
+        setMatchSelected(null);
+      }, 600);
+    }
+  };
+
+  /**
+   * Handle match game completion
+   */
+  const handleMatchComplete = (totalMatched) => {
+    // Calculate score
+    let finalScore = 50; // Base points per round
+    if (matchTimer < 30) finalScore += 20; // Time bonus under 30s
+    else if (matchTimer < 60) finalScore += 10; // Time bonus under 60s
+
+    // Accuracy bonus: +5 per first-try match
+    finalScore += matchFirstTryCount * 5;
+
+    // Wrong attempt penalty
+    finalScore -= matchWrong * 5;
+    if (finalScore < 0) finalScore = 0;
+
+    setMatchScore(finalScore);
+    setMatchComplete(true);
+
+    // Update stats — treat as 5 correct answers for the match mode
+    let newStats = { ...stats };
+    const diffKey = difficulty || 'easy';
+    matchPairs.forEach(pair => {
+      newStats = updateStats(newStats, true, diffKey, pair.word, 'match');
+    });
+    newStats.totalPoints += finalScore;
+    const levelInfo = getLevelInfo(newStats.totalPoints);
+    newStats.level = levelInfo.level;
+    newStats.earnedBadges = getEarnedBadges(newStats).map(b => b.id);
+    setStats(newStats);
+
+    // Check for new achievements
+    const newBadges = getNewBadges(newStats, previousBadges);
+    if (newBadges.length > 0) {
+      setTimeout(() => {
+        SoundManager.playAchievement();
+        setShowAchievement(newBadges[0]);
+        setPreviousBadges(newStats.earnedBadges);
+      }, 500);
+    }
+
+    // Check for level up
+    if (newStats.level > previousLevel) {
+      const lvlInfo = getLevelInfo(newStats.totalPoints);
+      setTimeout(() => {
+        SoundManager.playLevelUp();
+        setShowLevelUp(lvlInfo);
+        setPreviousLevel(newStats.level);
+      }, newBadges.length > 0 ? 4500 : 500);
+    }
+
+    // Save to quiz history
+    QuizHistoryManager.addQuiz({
+      mode: 'match',
+      difficulty: difficulty,
+      questionsTotal: 5,
+      questionsCorrect: 5, // All pairs matched
+      score: finalScore,
+      timeSpent: matchTimer,
+      words: matchPairs.map(p => p.word)
+    });
+
+    // Update daily goals
+    const wasComplete = DailyGoalsManager.isGoalComplete();
+    DailyGoalsManager.updateProgress(5, finalScore);
+    const isNowComplete = DailyGoalsManager.isGoalComplete();
+    if (!wasComplete && isNowComplete) {
+      setTimeout(() => {
+        toast.success('Daily Goal Complete! Great work!', 5000);
+      }, 1000);
+    }
+  };
+
+  /**
+   * Handle back from match game
+   */
+  const handleMatchBack = () => {
+    if (matchComplete || matchMatched.length === 0) {
+      // No progress or already complete — go straight home
+      setMatchTimerActive(false);
+      setScreen('home');
+    } else {
+      // In progress — confirm exit
+      setConfirmModalConfig({
+        title: 'Exit Match Game?',
+        message: 'Are you sure you want to exit? Your current progress will be lost.',
+        confirmText: 'Exit Game',
+        cancelText: 'Continue',
+        type: 'warning',
+        onConfirm: () => {
+          setMatchTimerActive(false);
+          setScreen('home');
+        }
+      });
+      setShowConfirmModal(true);
+    }
+  };
+
+  // ===========================
   // RENDER
   // ===========================
 
@@ -821,6 +1065,25 @@ function App() {
           cards={flashcards}
           onBack={handleBack}
           onComplete={handleFlashcardComplete}
+        />
+      ) : screen === 'match' ? (
+        <MatchGameScreen
+          pairs={matchPairs}
+          shuffledWords={matchShuffledWords}
+          shuffledDefs={matchShuffledDefs}
+          selected={matchSelected}
+          matched={matchMatched}
+          wrongPair={matchWrongPair}
+          wrongCount={matchWrong}
+          timer={matchTimer}
+          complete={matchComplete}
+          score={matchScore}
+          firstTryCount={matchFirstTryCount}
+          onTap={handleMatchTap}
+          onBack={handleMatchBack}
+          onPlayAgain={() => startMatchGame(difficulty)}
+          onGoHome={() => { setMatchTimerActive(false); setScreen('home'); }}
+          difficulty={difficulty}
         />
       ) : (
         <QuizScreen
@@ -963,6 +1226,185 @@ function App() {
     </>
   );
 }
+
+// ===========================
+// MATCH GAME SCREEN COMPONENT
+// ===========================
+
+const MatchGameScreen = ({
+  pairs, shuffledWords, shuffledDefs, selected, matched,
+  wrongPair, wrongCount, timer, complete, score, firstTryCount,
+  onTap, onBack, onPlayAgain, onGoHome, difficulty
+}) => {
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getCardClass = (item, type) => {
+    const isMatched = matched.includes(item.id);
+    const isSelected = selected && selected.id === item.id && selected.type === type;
+    const isWrong = wrongPair && (
+      (type === 'word' && wrongPair.wordId === item.id) ||
+      (type === 'definition' && wrongPair.defId === item.id)
+    );
+
+    let base = 'w-full min-h-[48px] p-3 rounded-xl border-2 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ';
+
+    if (isMatched) {
+      base += 'bg-green-500 bg-opacity-30 border-green-400 opacity-40 cursor-default';
+    } else if (isWrong) {
+      base += 'bg-red-500 bg-opacity-30 border-red-400 animate-pulse';
+    } else if (isSelected) {
+      base += 'bg-purple-500 bg-opacity-30 border-purple-400 ring-2 ring-purple-400 ring-opacity-50 scale-105';
+    } else {
+      base += 'bg-white bg-opacity-10 border-white border-opacity-20 hover:bg-opacity-20 hover:scale-102 cursor-pointer active:scale-95';
+    }
+
+    return base;
+  };
+
+  if (complete) {
+    // Results screen
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        <header className="bg-white bg-opacity-10 backdrop-blur-xl border-b border-white border-opacity-20">
+          <div className="container mx-auto px-4 py-4">
+            <h1 className="text-2xl font-bold text-white text-center">Match Game Complete!</h1>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-8 max-w-md">
+          <div role="status" aria-live="polite" className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20 text-center">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold text-white mb-6">Great Job!</h2>
+
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Time</p>
+                <p className="text-2xl font-bold text-blue-400">{formatTime(timer)}</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Wrong Attempts</p>
+                <p className="text-2xl font-bold text-red-400">{wrongCount}</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">First Try</p>
+                <p className="text-2xl font-bold text-green-400">{firstTryCount}/5</p>
+              </div>
+              <div className="bg-white bg-opacity-10 rounded-xl p-4">
+                <p className="text-white text-opacity-70 text-sm">Score</p>
+                <p className="text-2xl font-bold text-yellow-400">+{score}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={onPlayAgain}
+                className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-semibold hover:scale-105 active:scale-95 transition-all"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={onGoHome}
+                className="w-full py-3 px-6 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl text-white font-semibold hover:bg-opacity-20 transition-all"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* Header */}
+      <header className="bg-white bg-opacity-10 backdrop-blur-xl border-b border-white border-opacity-20">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-white hover:text-gray-300 transition-all"
+              aria-label="Go back"
+            >
+              <ArrowLeft width="20" height="20" />
+              <span>Back</span>
+            </button>
+            <h1 className="text-xl font-bold text-white">Match Game</h1>
+            <div className="flex items-center gap-2 text-white" aria-live="off">
+              <Clock width="18" height="18" />
+              <span className="font-mono font-bold">{formatTime(timer)}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Game Area */}
+      <main className="container mx-auto px-4 py-6 max-w-2xl">
+        {/* Match Grid */}
+        <div className="space-y-3">
+          {shuffledWords.map((wordItem, rowIndex) => {
+            const defItem = shuffledDefs[rowIndex];
+            return (
+              <div key={rowIndex} className="grid grid-cols-2 gap-3">
+                {/* Word Card */}
+                <button
+                  className={getCardClass(wordItem, 'word')}
+                  onClick={() => !matched.includes(wordItem.id) && !wrongPair && onTap(wordItem, 'word')}
+                  disabled={matched.includes(wordItem.id)}
+                  role="button"
+                  aria-label={'Word: ' + wordItem.word}
+                  aria-pressed={selected && selected.id === wordItem.id && selected.type === 'word'}
+                  aria-disabled={matched.includes(wordItem.id)}
+                >
+                  <span className="text-white font-semibold text-sm sm:text-base">
+                    {wordItem.word}
+                  </span>
+                  {matched.includes(wordItem.id) && (
+                    <Check width="16" height="16" className="inline ml-2 text-green-400" />
+                  )}
+                </button>
+
+                {/* Definition Card */}
+                <button
+                  className={getCardClass(defItem, 'definition')}
+                  onClick={() => !matched.includes(defItem.id) && !wrongPair && onTap(defItem, 'definition')}
+                  disabled={matched.includes(defItem.id)}
+                  role="button"
+                  aria-label={'Definition: ' + defItem.definition}
+                  aria-pressed={selected && selected.id === defItem.id && selected.type === 'definition'}
+                  aria-disabled={matched.includes(defItem.id)}
+                >
+                  <span className="text-white text-opacity-90 text-xs sm:text-sm leading-snug">
+                    {defItem.definition}
+                  </span>
+                  {matched.includes(defItem.id) && (
+                    <Check width="16" height="16" className="inline ml-2 text-green-400" />
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Status Bar */}
+        <div className="mt-6 flex items-center justify-center gap-6 text-white text-sm">
+          <div className="flex items-center gap-2">
+            <CheckCircle width="18" height="18" className="text-green-400" />
+            <span aria-live="polite" aria-atomic="true">Matches: {matched.length}/{pairs.length}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <XCircle width="18" height="18" className="text-red-400" />
+            <span aria-live="polite" aria-atomic="true">Wrong: {wrongCount}</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
 
 // Expose to window for global access
 window.App = App;

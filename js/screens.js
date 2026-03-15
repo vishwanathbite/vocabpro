@@ -447,6 +447,13 @@ const HomeScreen = ({
               onClick={() => onStartQuiz('acronym')}
             />
             <QuizModeCard
+              icon={MatchGame}
+              title="Match Game"
+              description="Pair words with definitions"
+              color="from-amber-600 to-orange-600"
+              onClick={() => onStartQuiz('match')}
+            />
+            <QuizModeCard
               icon={Layers}
               title="Flashcards"
               description="Flip cards to learn without pressure"

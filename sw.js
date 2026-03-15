@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 18 - Robust offline-first caching with window exports fix
+ * Version 20 - Match Game mode added
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 19;
+const CACHE_VERSION = 20;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
