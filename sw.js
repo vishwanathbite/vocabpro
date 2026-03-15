@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 20 - Match Game mode added
+ * Version 22 - Sign Up modal with Google Sheets backend
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 20;
+const CACHE_VERSION = 22;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use

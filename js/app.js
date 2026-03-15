@@ -88,6 +88,21 @@ function App() {
   const [matchFirstTryCount, setMatchFirstTryCount] = useState(0);
   const [matchAttemptedIds, setMatchAttemptedIds] = useState(new Set());
 
+  // Sign Up Modal State
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [signUpSubmitting, setSignUpSubmitting] = useState(false);
+  const [isSignedUp, setIsSignedUp] = useState(() => {
+    try { return localStorage.getItem('vocabProSignedUp') === 'true'; } catch(e) { return false; }
+  });
+  const [signedUpName, setSignedUpName] = useState(() => {
+    try { return localStorage.getItem('vocabProUserName') || ''; } catch(e) { return ''; }
+  });
+  const [signedUpEmail, setSignedUpEmail] = useState(() => {
+    try { return localStorage.getItem('vocabProUserEmail') || ''; } catch(e) { return ''; }
+  });
+  const [showSignUpNudge, setShowSignUpNudge] = useState(false);
+  const [showSignedUpCard, setShowSignedUpCard] = useState(false);
+
   // ===========================
   // INITIALIZATION & PERSISTENCE
   // ===========================
@@ -293,6 +308,77 @@ function App() {
     removeFromStorage('vocabProCurrentUser');
     setStats(initializeStats());
     setScreen('home');
+  };
+
+  // ===========================
+  // SIGN UP (Google Sheets)
+  // ===========================
+
+  const SIGNUP_API = 'https://script.google.com/macros/s/AKfycbyZFu5Ct6VrLKDpkhSsGCRtxkeMGQbucoJN0EeeCbYkhk_2UP5Mr6qkesFLPExj3fML/exec';
+
+  const handleSignUp = async (formData) => {
+    if (!formData.name.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+    if (!formData.email.trim() || !formData.email.includes('@')) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+
+    setSignUpSubmitting(true);
+
+    try {
+      await fetch(SIGNUP_API, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          whatsapp: formData.whatsapp.trim(),
+          exam: formData.exam.join(', '),
+          city: formData.city.trim(),
+          state: formData.state
+        })
+      });
+
+      localStorage.setItem('vocabProSignedUp', 'true');
+      localStorage.setItem('vocabProUserName', formData.name.trim());
+      localStorage.setItem('vocabProUserEmail', formData.email.trim());
+      setIsSignedUp(true);
+      setSignedUpName(formData.name.trim());
+      setSignedUpEmail(formData.email.trim());
+
+      toast.success('Welcome to VocabPro! 🎉');
+      setShowSignUpModal(false);
+    } catch (error) {
+      console.error('Signup failed:', error);
+      toast.error('Could not connect. Please try again later.');
+    }
+
+    setSignUpSubmitting(false);
+  };
+
+  // Check if nudge banner should show
+  useEffect(() => {
+    if (isSignedUp) return;
+    try {
+      const dismissed = localStorage.getItem('vocabProNudgeDismissed');
+      if (dismissed) {
+        const dismissedAt = parseInt(dismissed, 10);
+        if (Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000) return;
+      }
+      const history = QuizHistoryManager.getHistory();
+      if (history.length >= 3) {
+        setShowSignUpNudge(true);
+      }
+    } catch(e) {}
+  }, [isSignedUp, screen]);
+
+  const dismissNudge = () => {
+    setShowSignUpNudge(false);
+    localStorage.setItem('vocabProNudgeDismissed', String(Date.now()));
   };
 
   // ===========================
@@ -1061,6 +1147,14 @@ function App() {
           onSignOut={handleSignOut}
           showWordOfDay={appSettings.showWordOfDay}
           showDailyGoals={appSettings.showDailyGoals}
+          isSignedUp={isSignedUp}
+          signedUpName={signedUpName}
+          signedUpEmail={signedUpEmail}
+          onShowSignUp={() => setShowSignUpModal(true)}
+          showSignedUpCard={showSignedUpCard}
+          onToggleSignedUpCard={() => setShowSignedUpCard(!showSignedUpCard)}
+          showSignUpNudge={showSignUpNudge}
+          onDismissNudge={dismissNudge}
         />
       ) : screen === 'flashcard' ? (
         <FlashcardScreen
@@ -1111,6 +1205,13 @@ function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuth={handleAuth}
+      />
+
+      <SignUpModal
+        isOpen={showSignUpModal}
+        onClose={() => setShowSignUpModal(false)}
+        onSubmit={handleSignUp}
+        submitting={signUpSubmitting}
       />
 
       <DifficultyModal
