@@ -908,13 +908,15 @@ function App() {
     setMatchScore(finalScore);
     setMatchComplete(true);
 
-    // Update stats — treat as 5 correct answers for the match mode
+    // Update stats — track word mastery for each matched pair
     let newStats = { ...stats };
     const diffKey = difficulty || 'easy';
+    const pointsBefore = newStats.totalPoints;
     matchPairs.forEach(pair => {
       newStats = updateStats(newStats, true, diffKey, pair.word, 'match');
     });
-    newStats.totalPoints += finalScore;
+    // Restore per-word points added by updateStats — match game uses its own scoring
+    newStats.totalPoints = pointsBefore + finalScore;
     const levelInfo = getLevelInfo(newStats.totalPoints);
     newStats.level = levelInfo.level;
     newStats.earnedBadges = getEarnedBadges(newStats).map(b => b.id);

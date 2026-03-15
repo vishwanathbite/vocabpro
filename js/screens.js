@@ -1395,7 +1395,8 @@ const QuizHistoryScreen = ({ onBack }) => {
       oneword: 'One-Word',
       acronym: 'Acronyms',
       review: 'Smart Review',
-      bookmarks: 'Bookmarks'
+      bookmarks: 'Bookmarks',
+      match: 'Match Game'
     };
     return labels[mode] || mode;
   };
@@ -1408,7 +1409,8 @@ const QuizHistoryScreen = ({ onBack }) => {
       oneword: 'bg-orange-500',
       acronym: 'bg-pink-500',
       review: 'bg-yellow-500',
-      bookmarks: 'bg-red-500'
+      bookmarks: 'bg-red-500',
+      match: 'bg-amber-500'
     };
     return colors[mode] || 'bg-gray-500';
   };
