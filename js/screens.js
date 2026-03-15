@@ -220,7 +220,7 @@ const HomeScreen = ({
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <VocabProLogo width="48" height="48" className="flex-shrink-0" />
+              <img src="Literary Rides.png" alt="Literary Rides VocabPro logo" width="40" height="40" className="rounded-lg flex-shrink-0" style={{ objectFit: 'contain' }} />
               <div className="hidden sm:block">
                 <h1 className="text-xl md:text-2xl font-bold text-white">Literary Rides VocabPro</h1>
                 <p className="text-white text-opacity-70 text-xs md:text-sm">Master 5000+ Words</p>
@@ -235,6 +235,7 @@ const HomeScreen = ({
                 onClick={onShowSearch}
                 className="p-2 bg-white bg-opacity-10 rounded-lg hover:bg-opacity-20 transition-all"
                 title="Search words (Press /)"
+                aria-label="Search words"
               >
                 <Search width="20" height="20" className="text-white" />
               </button>
@@ -243,6 +244,7 @@ const HomeScreen = ({
                 onClick={onShowAnalytics}
                 className="hidden xs:flex p-2 bg-white bg-opacity-10 rounded-lg hover:bg-opacity-20 transition-all"
                 title="Analytics"
+                aria-label="Analytics"
               >
                 <TrendingUp width="20" height="20" className="text-green-400" />
               </button>
@@ -251,6 +253,7 @@ const HomeScreen = ({
                 onClick={onShowHistory}
                 className="hidden sm:flex p-2 bg-white bg-opacity-10 rounded-lg hover:bg-opacity-20 transition-all"
                 title="Quiz History"
+                aria-label="Quiz history"
               >
                 <History width="20" height="20" className="text-blue-400" />
               </button>
@@ -259,6 +262,7 @@ const HomeScreen = ({
                 onClick={onShowSettings}
                 className="p-2 bg-white bg-opacity-10 rounded-lg hover:bg-opacity-20 transition-all"
                 title="Settings"
+                aria-label="Settings"
               >
                 <Settings width="20" height="20" className="text-white" />
               </button>
@@ -268,6 +272,7 @@ const HomeScreen = ({
                     onClick={onShowShare}
                     className="hidden sm:flex p-2 bg-white bg-opacity-10 rounded-lg hover:bg-opacity-20 transition-all"
                     title="Share & Earn"
+                    aria-label="Share and earn rewards"
                   >
                     <Gift width="20" height="20" className="text-yellow-400" />
                   </button>
@@ -644,7 +649,7 @@ const QuizScreen = ({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-white bg-opacity-10 px-4 py-2 rounded-lg">
                 <Trophy width="20" height="20" className="text-yellow-400" />
-                <span className="text-white font-bold">{score}</span>
+                <span className="text-white font-bold" aria-live="polite" aria-atomic="true">Score: {score}</span>
               </div>
               {streak >= 3 && (
                 <div className="flex items-center gap-2 bg-orange-500 bg-opacity-30 px-4 py-2 rounded-lg border border-orange-400">
@@ -684,7 +689,7 @@ const QuizScreen = ({
           </div>
 
           {/* Options */}
-          <div className="space-y-4" role="group" aria-label="Answer options">
+          <div className="space-y-4" role="radiogroup" aria-label="Choose the correct answer">
             {currentQuestion.options.map((option, index) => (
               <OptionButton
                 key={index}
@@ -694,6 +699,8 @@ const QuizScreen = ({
                 isIncorrect={showResult && selectedAnswer === option && option !== currentQuestion.correct}
                 disabled={showResult}
                 optionIndex={index}
+                role="radio"
+                aria-checked={selectedAnswer === option}
               >
                 {option}
               </OptionButton>
@@ -884,6 +891,7 @@ const FlashcardScreen = ({
                 <button
                   onClick={(e) => { e.stopPropagation(); speakWord(currentCard.word || currentCard.acronym || currentCard.answer); }}
                   className="p-3 bg-blue-500 bg-opacity-20 rounded-full text-blue-400 hover:bg-opacity-30"
+                  aria-label="Listen to pronunciation"
                 >
                   <Volume2 width="24" height="24" />
                 </button>
@@ -1096,6 +1104,9 @@ const SettingsScreen = ({ onBack, onToast }) => {
         className={`relative w-14 h-8 rounded-full transition-colors duration-300 ${
           checked ? 'bg-blue-500' : 'bg-white bg-opacity-20'
         }`}
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
       >
         <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
           checked ? 'translate-x-7' : 'translate-x-1'
@@ -1527,7 +1538,7 @@ const QuizHistoryScreen = ({ onBack }) => {
                onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Quiz Details</h2>
-              <button onClick={() => setSelectedQuiz(null)} className="text-white text-opacity-70 hover:text-opacity-100">
+              <button onClick={() => setSelectedQuiz(null)} className="text-white text-opacity-70 hover:text-opacity-100" aria-label="Close">
                 <X width="24" height="24" />
               </button>
             </div>

@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 18;
+const CACHE_VERSION = 19;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -33,7 +33,13 @@ const PRECACHE_ASSETS = [
   './js/data/vocab-medium.js',
   './js/data/vocab-hard.js',
   './js/data/acronyms.js',
-  './js/data/oneword.js'
+  './js/data/oneword.js',
+  './Literary Rides.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-192.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon-180.png'
 ];
 
 // External CDN resources - cached opportunistically
