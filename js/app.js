@@ -4,7 +4,7 @@
  * Central application logic, state management, and coordination
  */
 
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 /**
  * Main Application Component
@@ -132,6 +132,29 @@ function App() {
   useEffect(() => {
     return () => stopSpeech();
   }, []);
+
+  // Focus management ref for screen transitions (Change 7)
+  const mainContentRef = useRef(null);
+
+  // Move focus to main content on screen change (Change 7)
+  useEffect(() => {
+    if (mainContentRef.current) {
+      mainContentRef.current.focus();
+    }
+  }, [screen]);
+
+  // Dynamic page titles (Change 9)
+  useEffect(() => {
+    const titles = {
+      home: 'VocabPro — Master 5000+ Words for Competitive Exams',
+      quiz: `VocabPro — ${mode ? mode.charAt(0).toUpperCase() + mode.slice(1) : ''} Quiz`,
+      flashcard: 'VocabPro — Flashcards',
+      settings: 'VocabPro — Settings',
+      history: 'VocabPro — Quiz History',
+      analytics: 'VocabPro — Analytics',
+    };
+    document.title = titles[screen] || 'VocabPro';
+  }, [screen, mode]);
 
   // Check onboarding status
   useEffect(() => {
@@ -731,10 +754,12 @@ function App() {
 
       {/* Achievement Notification */}
       {showAchievement && (
-        <AchievementNotification
-          badge={showAchievement}
-          onClose={() => setShowAchievement(null)}
-        />
+        <div role="alert" aria-live="assertive">
+          <AchievementNotification
+            badge={showAchievement}
+            onClose={() => setShowAchievement(null)}
+          />
+        </div>
       )}
 
       {/* Level Up Notification */}
@@ -753,6 +778,7 @@ function App() {
         />
       )}
 
+      <div ref={mainContentRef} tabIndex={-1} id="main-content" className="outline-none">
       {screen === 'onboarding' ? (
         <OnboardingScreen
           onComplete={() => setScreen('home')}
@@ -813,6 +839,7 @@ function App() {
           stats={stats}
         />
       )}
+      </div>
 
       {/* Modals */}
       <AuthModal

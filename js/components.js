@@ -341,6 +341,7 @@ const Toast = ({ toast, onRemove }) => {
 
   return (
     <div
+      role="status"
       className={`${styles.bg} ${styles.border} border-2 rounded-xl p-4 shadow-2xl backdrop-blur-xl
                   flex items-start gap-3 pointer-events-auto transform transition-all duration-300
                   ${isExiting ? 'opacity-0 translate-x-full' : 'opacity-100 translate-x-0 animate-slide-in'}`}
@@ -354,6 +355,7 @@ const Toast = ({ toast, onRemove }) => {
       <button
         onClick={handleClose}
         className="text-white text-opacity-70 hover:text-opacity-100 flex-shrink-0"
+        aria-label="Dismiss notification"
       >
         <X width="16" height="16" />
       </button>
@@ -629,7 +631,7 @@ const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabl
 /**
  * Quiz option button (for multiple choice)
  */
-const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex }) => {
+const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex, role: roleOverride, ...restProps }) => {
   let bgColor = 'bg-white bg-opacity-10';
   let borderColor = 'border-white border-opacity-30';
   let hoverClass = 'hover:bg-opacity-20 hover:scale-105';
@@ -669,11 +671,11 @@ const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, d
     <div
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      role="button"
+      role={roleOverride || "button"}
       tabIndex={disabled ? -1 : 0}
       aria-label={ariaLabel}
-      aria-pressed={isSelected}
       aria-disabled={disabled}
+      {...restProps}
       className={`w-full px-6 py-4 ${bgColor} backdrop-blur-xl border-2 ${borderColor}
                   text-white rounded-xl font-medium text-left ${hoverClass} active:scale-95
                   select-none ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
@@ -811,7 +813,7 @@ const Modal = ({ children, isOpen, onClose, title, maxWidth = 'max-w-md' }) => {
            onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
-          <button onClick={onClose} className="text-white hover:text-gray-300">
+          <button onClick={onClose} className="text-white hover:text-gray-300" aria-label="Close">
             <X width="24" height="24" />
           </button>
         </div>
@@ -1015,7 +1017,8 @@ const ResultFeedback = ({ isCorrect, currentWord, mode }) => {
 
   return (
     <div className={`mt-6 p-6 rounded-xl backdrop-blur-xl border-2
-                    ${isCorrect ? 'bg-green-500 bg-opacity-20 border-green-400' : 'bg-red-500 bg-opacity-20 border-red-400'}`}>
+                    ${isCorrect ? 'bg-green-500 bg-opacity-20 border-green-400' : 'bg-red-500 bg-opacity-20 border-red-400'}`}
+         role="status" aria-live="polite">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           {isCorrect ? (
@@ -1045,6 +1048,7 @@ const ResultFeedback = ({ isCorrect, currentWord, mode }) => {
               : 'bg-white bg-opacity-10 text-white text-opacity-70 hover:text-pink-400'
           }`}
           title={isBookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
+          aria-label={isBookmarked ? 'Remove from bookmarks' : 'Bookmark this word'}
         >
           {isBookmarked ? (
             <HeartFilled width="24" height="24" />
@@ -1062,6 +1066,7 @@ const ResultFeedback = ({ isCorrect, currentWord, mode }) => {
             <button
               onClick={() => speakWord(currentWord.word)}
               className="ml-2 text-blue-300 hover:text-blue-100"
+              aria-label="Listen to pronunciation"
             >
               <Volume2 width="16" height="16" className="inline" />
             </button>
@@ -1272,7 +1277,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                         focus:outline-none text-lg"
             />
             {searchQuery && (
-              <button onClick={() => handleSearch('')} className="text-white text-opacity-50 hover:text-opacity-100">
+              <button onClick={() => handleSearch('')} className="text-white text-opacity-50 hover:text-opacity-100" aria-label="Clear search">
                 <X width="20" height="20" />
               </button>
             )}
@@ -1300,6 +1305,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                       <button
                         onClick={() => speakWord(selectedWord.word)}
                         className="p-2 bg-white bg-opacity-10 rounded-lg text-blue-400 hover:bg-opacity-20"
+                        aria-label="Listen to pronunciation"
                       >
                         <Volume2 width="20" height="20" />
                       </button>
@@ -1310,6 +1316,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                             ? 'bg-pink-500 bg-opacity-30 text-pink-400'
                             : 'bg-white bg-opacity-10 text-white hover:text-pink-400'
                         }`}
+                        aria-label={BookmarksManager.isBookmarked(selectedWord.word) ? 'Remove from bookmarks' : 'Bookmark this word'}
                       >
                         {BookmarksManager.isBookmarked(selectedWord.word) ? (
                           <HeartFilled width="20" height="20" />

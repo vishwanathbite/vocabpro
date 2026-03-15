@@ -84,7 +84,7 @@
   </script>
 
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
   <title>Literary Rides VocabPro - Master 5000+ Words for Competitive Exams</title>
 
   <!-- React + ReactDOM (UMD) -->
@@ -440,11 +440,17 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-purple-700 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none"
+     style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"
+     onfocus="this.style.position='fixed';this.style.left='8px';this.style.top='8px';this.style.width='auto';this.style.height='auto';this.style.overflow='visible';this.style.zIndex='9999';this.style.background='#7c3aed';this.style.color='white';this.style.padding='8px 16px';this.style.borderRadius='8px';"
+     onblur="this.style.position='absolute';this.style.left='-9999px';this.style.width='1px';this.style.height='1px';this.style.overflow='hidden';">
+    Skip to main content
+  </a>
   <div id="root">
     <!-- Loading state shown until React loads -->
     <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);">
       <div style="text-align: center; color: white;">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+        <img src="Literary Rides.png" alt="VocabPro" width="64" height="64" style="margin-bottom: 1rem; border-radius: 12px;">
         <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">VocabPro</h1>
         <p style="opacity: 0.7;">Loading...</p>
       </div>
@@ -457,7 +463,7 @@
     if ('caches' in window) {
       caches.keys().then(function(names) {
         names.forEach(function(name) {
-          if (name !== 'vocabpro-v18') {
+          if (name !== 'vocabpro-v19') {
             caches.delete(name);
           }
         });
@@ -478,12 +484,12 @@
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=18" onerror="onScriptError('vocab-easy.js')"></script>
-  <script src="js/data/vocab-medium.js?v=18" onerror="onScriptError('vocab-medium.js')"></script>
-  <script src="js/data/vocab-hard.js?v=18" onerror="onScriptError('vocab-hard.js')"></script>
-  <script src="js/data/acronyms.js?v=18" onerror="onScriptError('acronyms.js')"></script>
-  <script src="js/data/oneword.js?v=18" onerror="onScriptError('oneword.js')"></script>
-  <script src="js/data/index.js?v=18" onerror="onScriptError('index.js')"></script>
+  <script src="js/data/vocab-easy.js?v=19" onerror="onScriptError('vocab-easy.js')"></script>
+  <script src="js/data/vocab-medium.js?v=19" onerror="onScriptError('vocab-medium.js')"></script>
+  <script src="js/data/vocab-hard.js?v=19" onerror="onScriptError('vocab-hard.js')"></script>
+  <script src="js/data/acronyms.js?v=19" onerror="onScriptError('acronyms.js')"></script>
+  <script src="js/data/oneword.js?v=19" onerror="onScriptError('oneword.js')"></script>
+  <script src="js/data/index.js?v=19" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly -->
   <script>
@@ -504,38 +510,38 @@
   </script>
 
   <!-- 2. Storage layer - must load before other modules -->
-  <script src="js/storage.js?v=18" onerror="onScriptError('storage.js')"></script>
+  <script src="js/storage.js?v=19" onerror="onScriptError('storage.js')"></script>
 
   <!-- 3. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=18"></script>
+  <script type="text/babel" src="js/icons.js?v=19"></script>
 
   <!-- 4. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=18"></script>
+  <script type="text/babel" src="js/utils.js?v=19"></script>
 
   <!-- 5. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=18"></script>
+  <script type="text/babel" src="js/gamification.js?v=19"></script>
 
   <!-- 6. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=18"></script>
+  <script type="text/babel" src="js/srs.js?v=19"></script>
 
   <!-- 7. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=18"></script>
+  <script type="text/babel" src="js/bookmarks.js?v=19"></script>
 
   <!-- 8. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=18"></script>
+  <script type="text/babel" src="js/dailygoals.js?v=19"></script>
 
   <!-- 9. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=18"></script>
+  <script type="text/babel" src="js/settings.js?v=19"></script>
 
   <!-- 10. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=18"></script>
+  <script type="text/babel" src="js/components.js?v=19"></script>
 
   <!-- 11. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=18"></script>
+  <script type="text/babel" src="js/screens.js?v=19"></script>
 
   <!-- 12. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=18"></script>
+  <script type="text/babel" src="js/app.js?v=19"></script>
 
   <!-- 13. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">
