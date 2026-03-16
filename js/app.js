@@ -568,7 +568,7 @@ function App() {
   // Dynamic page titles (Change 9)
   useEffect(() => {
     const titles = {
-      home: 'VocabPro — Master 5000+ Words for Competitive Exams',
+      home: 'VocabPro — Master 6,100+ Words for Competitive Exams',
       quiz: `VocabPro — ${mode ? mode.charAt(0).toUpperCase() + mode.slice(1) : ''} Quiz`,
       flashcard: 'VocabPro — Flashcards',
       settings: 'VocabPro — Settings',

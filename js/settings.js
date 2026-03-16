@@ -433,7 +433,7 @@ const OnboardingManager = {
     {
       id: 'welcome',
       title: 'Welcome to VocabPro!',
-      description: 'Master 5000+ vocabulary words for competitive exams like UPSC, SSC, Banking & more.',
+      description: 'Master 6,100+ vocabulary words for competitive exams like UPSC, SSC, Banking & more.',
       icon: '📚',
       highlight: null
     },

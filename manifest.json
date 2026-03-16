@@ -1,8 +1,8 @@
 {
   "name": "Literary Rides VocabPro",
   "short_name": "VocabPro",
-  "description": "Master 5000+ vocabulary words for UPSC, SSC, Banking, Railways exams",
-  "start_url": ".",
+  "description": "Master 6,100+ vocabulary words for UPSC, SSC, Banking, Railways exams",
+  "start_url": "/vocabpro/",
   "display": "standalone",
   "background_color": "#1e1b4b",
   "theme_color": "#7c3aed",
