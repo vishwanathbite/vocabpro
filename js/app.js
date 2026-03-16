@@ -1245,7 +1245,20 @@ function App() {
   // Override handleBack for daily challenge (no quitting)
   const handleBackWithDaily = () => {
     if (isDailyChallenge) {
-      toast.info("You can't exit during a Daily Challenge! Complete all 10 questions.");
+      setConfirmModalConfig({
+        title: 'Exit Daily Challenge?',
+        message: "If you exit now, today's challenge will be marked as incomplete and your progress will be lost. You can try again tomorrow.",
+        confirmText: 'Exit Challenge',
+        cancelText: 'Continue',
+        type: 'warning',
+        onConfirm: () => {
+          setIsDailyChallenge(false);
+          setDailyChallengeQuestions([]);
+          setScreen('home');
+          stopSpeech();
+        }
+      });
+      setShowConfirmModal(true);
       return;
     }
     handleBack();
