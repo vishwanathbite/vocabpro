@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 28 - LCP improvements, logo precache priority, lazy-load vocab data
+ * Version 29 - Fix purple overlay on mobile
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 28;
+const CACHE_VERSION = 29;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
