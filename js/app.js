@@ -440,6 +440,36 @@ function App() {
     return () => stopSpeech();
   }, []);
 
+  // Storage quota warning listener
+  useEffect(() => {
+    const handleQuotaWarning = (e) => {
+      const { percentUsed } = e.detail;
+      toast.warning(`Storage ${Math.round(percentUsed)}% full. Consider clearing old quiz history in Settings.`);
+    };
+    window.addEventListener('storage-quota-warning', handleQuotaWarning);
+    return () => window.removeEventListener('storage-quota-warning', handleQuotaWarning);
+  }, []);
+
+  // Data corruption recovery listener
+  useEffect(() => {
+    const handleCorrupted = () => {
+      setConfirmModalConfig({
+        title: 'Data Recovery',
+        message: 'Your saved data appears corrupted. A backup has been saved. Would you like to start fresh?',
+        confirmText: 'Start Fresh',
+        cancelText: 'Continue Anyway',
+        type: 'warning',
+        onConfirm: () => {
+          StorageManager.resetState(true);
+          window.location.reload();
+        }
+      });
+      setShowConfirmModal(true);
+    };
+    window.addEventListener('storage-corrupted', handleCorrupted);
+    return () => window.removeEventListener('storage-corrupted', handleCorrupted);
+  }, []);
+
   // Focus management ref for screen transitions (Change 7)
   const mainContentRef = useRef(null);
 
@@ -894,7 +924,7 @@ function App() {
   /**
    * Start quiz handler
    */
-  const handleStartQuiz = (quizMode) => {
+  const handleStartQuiz = useCallback((quizMode) => {
     // Check if mode needs difficulty selection
     if (['vocab', 'synonym', 'antonym', 'match'].includes(quizMode)) {
       setPendingMode(quizMode);
@@ -907,7 +937,7 @@ function App() {
       // Start quiz directly for oneword, acronym, and review modes
       startQuizWithDifficulty(quizMode, null);
     }
-  };
+  }, []);
 
   /**
    * Start flashcard mode
@@ -977,7 +1007,7 @@ function App() {
   /**
    * Handle difficulty selection
    */
-  const handleDifficultySelect = (selectedDifficulty) => {
+  const handleDifficultySelect = useCallback((selectedDifficulty) => {
     if (pendingMode === 'flashcard') {
       startFlashcardMode(selectedDifficulty);
     } else if (pendingMode === 'match') {
@@ -985,12 +1015,12 @@ function App() {
     } else if (pendingMode) {
       startQuizWithDifficulty(pendingMode, selectedDifficulty);
     }
-  };
+  }, [pendingMode]);
 
   /**
    * Handle answer selection
    */
-  const handleAnswer = (answer) => {
+  const handleAnswer = useCallback((answer) => {
     const currentQuestion = questions[currentIndex];
     const correct = answer === currentQuestion.correct;
     const responseTime = Date.now() - (currentQuestion.startTime || Date.now());
@@ -1067,12 +1097,12 @@ function App() {
       // Still count the question even if wrong (no points)
       DailyGoalsManager.updateProgress(1, 0);
     }
-  };
+  }, [questions, currentIndex, stats, difficulty, mode, previousBadges, previousLevel]);
 
   /**
    * Handle next question
    */
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setShowResult(false);
@@ -1087,7 +1117,7 @@ function App() {
         handleQuizComplete();
       }
     }
-  };
+  }, [currentIndex, questions]);
 
   /**
    * Handle quiz completion
@@ -1133,9 +1163,15 @@ function App() {
    * Handle back to home
    */
   const handleBack = () => {
+    // If no questions answered yet, go straight home
+    if (currentIndex === 0 && !showResult) {
+      setScreen('home');
+      stopSpeech();
+      return;
+    }
     setConfirmModalConfig({
       title: 'Exit Quiz?',
-      message: 'Are you sure you want to exit? Your current quiz progress will be lost, but earned points are saved.',
+      message: `You have ${questions.length - currentIndex - (showResult ? 1 : 0)} unanswered questions. Leave quiz? Earned points are saved.`,
       confirmText: 'Exit Quiz',
       cancelText: 'Continue',
       type: 'warning',
@@ -1245,7 +1281,20 @@ function App() {
   // Override handleBack for daily challenge (no quitting)
   const handleBackWithDaily = () => {
     if (isDailyChallenge) {
-      toast.info("You can't exit during a Daily Challenge! Complete all 10 questions.");
+      setConfirmModalConfig({
+        title: 'Exit Daily Challenge?',
+        message: "If you exit now, today's challenge will be marked as incomplete and your progress will be lost. You can try again tomorrow.",
+        confirmText: 'Exit Challenge',
+        cancelText: 'Continue',
+        type: 'warning',
+        onConfirm: () => {
+          setIsDailyChallenge(false);
+          setDailyChallengeQuestions([]);
+          setScreen('home');
+          stopSpeech();
+        }
+      });
+      setShowConfirmModal(true);
       return;
     }
     handleBack();
@@ -1307,7 +1356,7 @@ function App() {
   /**
    * Handle tapping an item in the match game
    */
-  const handleMatchTap = (item, type) => {
+  const handleMatchTap = useCallback((item, type) => {
     // Ignore if already matched or animating wrong
     if (matchMatched.includes(item.id) || matchWrongPair) return;
 
@@ -1366,7 +1415,7 @@ function App() {
         setMatchSelected(null);
       }, 600);
     }
-  };
+  }, [matchMatched, matchWrongPair, matchSelected, matchPairs, matchAttemptedIds]);
 
   /**
    * Handle match game completion
@@ -1732,9 +1781,27 @@ function App() {
               </div>
             </div>
 
-            <PrimaryButton onClick={handleCloseQuizComplete} className="w-full">
-              Continue Learning
-            </PrimaryButton>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  const modeNames = { vocab: 'Vocabulary', synonym: 'Synonyms', antonym: 'Antonyms', oneword: 'One-Word Substitutes', acronym: 'Acronyms' };
+                  const text = `🎯 VocabPro Quiz Results\nScore: ${quizResults.score} | Accuracy: ${quizResults.accuracy}%\nMode: ${modeNames[mode] || 'Quiz'} (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})\nTry it free: https://vishwanathbite.github.io/vocabpro/`;
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    toast.success('Results copied to clipboard!');
+                  } catch (err) {
+                    toast.error('Failed to copy results');
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white bg-opacity-15 border-2 border-white border-opacity-30 text-white rounded-xl font-semibold hover:bg-opacity-25 active:scale-95 transition-all"
+              >
+                <Share2 width="18" height="18" />
+                <span>Share Results</span>
+              </button>
+              <PrimaryButton onClick={handleCloseQuizComplete} className="flex-1">
+                Continue Learning
+              </PrimaryButton>
+            </div>
           </div>
         )}
       </Modal>
@@ -1746,7 +1813,7 @@ function App() {
 // MATCH GAME SCREEN COMPONENT
 // ===========================
 
-const MatchGameScreen = ({
+const MatchGameScreen = React.memo(({
   pairs, shuffledWords, shuffledDefs, selected, matched,
   wrongPair, wrongCount, timer, complete, score, firstTryCount,
   onTap, onBack, onPlayAgain, onGoHome, difficulty
@@ -1919,7 +1986,7 @@ const MatchGameScreen = ({
       </main>
     </div>
   );
-};
+});
 
 // Expose to window for global access
 window.App = App;

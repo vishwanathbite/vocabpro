@@ -6,6 +6,9 @@
   <meta name="description" content="Literary Rides VocabPro - Master 5000+ vocabulary words for UPSC, SSC, Banking, Railways exams. Created by Dr. Vishwanath Bite">
   <meta name="keywords" content="vocabulary, UPSC, SSC, Banking, competitive exams, English learning, word power">
   <meta name="author" content="Dr. Vishwanath Bite">
+  <!-- Content Security Policy (unsafe-inline/eval needed for Babel standalone — tighten after Vite migration) -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://script.google.com;">
   <meta name="theme-color" content="#7c3aed">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -146,6 +149,27 @@
     button, [role="button"] {
       user-select: none;
       -webkit-user-select: none;
+    }
+
+    /* Loading screen animations (CSS-only, no JS) */
+    @keyframes loading-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    @keyframes loading-dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .loading-logo {
+      animation: loading-pulse 2s ease-in-out infinite;
+    }
+
+    .loading-dots::after {
+      content: '';
+      animation: loading-dots 1.5s steps(1) infinite;
     }
 
     /* Toast animations */
@@ -479,9 +503,11 @@
     <!-- Loading state shown until React loads -->
     <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);">
       <div style="text-align: center; color: white;">
-        <img src="Literary Rides.png" alt="VocabPro" width="64" height="64" style="margin-bottom: 1rem; border-radius: 12px;">
+        <img src="Literary Rides.png" alt="VocabPro" width="64" height="64" class="loading-logo" style="margin-bottom: 1rem; border-radius: 12px;"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div style="display:none; width:64px; height:64px; margin:0 auto 1rem; border-radius:12px; background:linear-gradient(135deg,#7c3aed,#4f46e5); align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; color:white;">VP</div>
         <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">VocabPro</h1>
-        <p style="opacity: 0.7;">Loading...</p>
+        <p style="opacity: 0.7;">Loading your vocabulary<span class="loading-dots"></span></p>
       </div>
     </div>
   </div>
