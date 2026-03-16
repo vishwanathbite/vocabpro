@@ -22,7 +22,7 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=27';
+    script.src = 'js/data/idioms.js?v=28';
     script.onload = () => {
       console.log('idiomsDB lazy-loaded:', typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0, 'entries');
       resolve();
@@ -34,6 +34,42 @@ function loadIdiomsDB() {
     document.head.appendChild(script);
   });
   return _idiomsLoadPromise;
+}
+
+// ===========================
+// LAZY LOADER FOR VOCAB DATA
+// ===========================
+
+/**
+ * Lazily load vocab-medium.js or vocab-hard.js on first use.
+ * After loading, updates vocabularyDB in place so all references stay valid.
+ */
+const _vocabLoadPromises = {};
+function loadVocabDifficulty(level) {
+  // Already loaded
+  if (vocabularyDB[level] && vocabularyDB[level].length > 0) {
+    return Promise.resolve();
+  }
+  if (_vocabLoadPromises[level]) return _vocabLoadPromises[level];
+  const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
+  _vocabLoadPromises[level] = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `js/data/${file}?v=28`;
+    script.onload = () => {
+      const globalName = level === 'medium' ? 'vocabMedium' : 'vocabHard';
+      if (typeof window[globalName] !== 'undefined' && Array.isArray(window[globalName])) {
+        vocabularyDB[level] = window[globalName];
+        console.log(`${file} lazy-loaded:`, vocabularyDB[level].length, 'entries');
+      }
+      resolve();
+    };
+    script.onerror = () => {
+      _vocabLoadPromises[level] = null;
+      reject(new Error(`Failed to load ${file}`));
+    };
+    document.head.appendChild(script);
+  });
+  return _vocabLoadPromises[level];
 }
 
 // ===========================
@@ -1082,6 +1118,18 @@ function App() {
     setIsLoading(true);
     setLoadingMessage('Preparing flashcards...');
 
+    // Lazy-load vocab data for medium/hard difficulties
+    if (flashcardDifficulty === 'medium' || flashcardDifficulty === 'hard') {
+      try {
+        await loadVocabDifficulty(flashcardDifficulty);
+      } catch (err) {
+        setIsLoading(false);
+        setLoadingMessage('');
+        toast.error(`Failed to load ${flashcardDifficulty} vocabulary data. Please try again.`);
+        return;
+      }
+    }
+
     await new Promise(resolve => setTimeout(resolve, 300));
 
     const words = vocabularyDB[flashcardDifficulty];
@@ -1111,6 +1159,18 @@ function App() {
     setShowDifficultyModal(false);
     setIsLoading(true);
     setLoadingMessage('Preparing your quiz...');
+
+    // Lazy-load vocab data for medium/hard difficulties
+    if (quizDifficulty && (quizDifficulty === 'medium' || quizDifficulty === 'hard')) {
+      try {
+        await loadVocabDifficulty(quizDifficulty);
+      } catch (err) {
+        setIsLoading(false);
+        setLoadingMessage('');
+        toast.error(`Failed to load ${quizDifficulty} vocabulary data. Please try again.`);
+        return;
+      }
+    }
 
     // Small delay for UX (shows loading state)
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -1252,7 +1312,7 @@ function App() {
         handleQuizComplete();
       }
     }
-  }, [currentIndex, questions]);
+  }, [currentIndex, questions, isDailyChallenge, correctCount, score, stats, mode, difficulty]);
 
   /**
    * Handle quiz completion
@@ -1351,7 +1411,9 @@ function App() {
     setIsLoading(true);
     setLoadingMessage("Preparing today's challenge...");
 
-    // Ensure idioms are loaded for daily challenge idiom questions
+    // Ensure all vocab data is loaded for daily challenge
+    try { await loadVocabDifficulty('medium'); } catch (e) { /* non-critical */ }
+    try { await loadVocabDifficulty('hard'); } catch (e) { /* non-critical */ }
     try { await loadIdiomsDB(); } catch (e) { /* non-critical — challenge works without idioms */ }
 
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -1470,6 +1532,18 @@ function App() {
     setShowDifficultyModal(false);
     setIsLoading(true);
     setLoadingMessage('Preparing match game...');
+
+    // Lazy-load vocab data for medium/hard difficulties
+    if (selectedDifficulty === 'medium' || selectedDifficulty === 'hard') {
+      try {
+        await loadVocabDifficulty(selectedDifficulty);
+      } catch (err) {
+        setIsLoading(false);
+        setLoadingMessage('');
+        toast.error(`Failed to load ${selectedDifficulty} vocabulary data. Please try again.`);
+        return;
+      }
+    }
 
     await new Promise(resolve => setTimeout(resolve, 400));
 

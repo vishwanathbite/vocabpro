@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 22 - Sign Up modal with Google Sheets backend
+ * Version 28 - LCP improvements, logo precache priority, lazy-load vocab data
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,11 +9,12 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 27;
+const CACHE_VERSION = 28;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
 const PRECACHE_ASSETS = [
+  './Literary Rides.png',
   './',
   './index.html',
   './manifest.json',
@@ -34,8 +35,7 @@ const PRECACHE_ASSETS = [
   './js/data/vocab-hard.js',
   './js/data/acronyms.js',
   './js/data/oneword.js',
-  // idioms.js is lazy-loaded on demand (1,116 entries) — not in precache
-  './Literary Rides.png',
+  './js/data/idioms.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',

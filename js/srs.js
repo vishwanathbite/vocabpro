@@ -204,7 +204,7 @@ const SRSManager = {
 
     // Score each word based on SRS data
     const scoredWords = words.map(word => {
-      const wordId = word.word || word.acronym || word.phrase;
+      const wordId = word.word || word.acronym || word.phrase || word.idiom;
       const entry = data[wordId];
 
       if (!entry) {
@@ -248,13 +248,13 @@ const SRSManager = {
 
     return words
       .filter(word => {
-        const wordId = word.word || word.acronym || word.phrase;
+        const wordId = word.word || word.acronym || word.phrase || word.idiom;
         const entry = data[wordId];
         return entry && entry.incorrectCount > 0 && entry.incorrectCount >= entry.correctCount * 0.5;
       })
       .sort((a, b) => {
-        const entryA = data[a.word || a.acronym || a.phrase];
-        const entryB = data[b.word || b.acronym || b.phrase];
+        const entryA = data[a.word || a.acronym || a.phrase || a.idiom];
+        const entryB = data[b.word || b.acronym || b.phrase || b.idiom];
         return (entryB.incorrectCount - entryB.correctCount) - (entryA.incorrectCount - entryA.correctCount);
       })
       .slice(0, limit);
@@ -267,7 +267,7 @@ const SRSManager = {
     const data = SRSManager.loadData();
 
     return words.filter(word => {
-      const wordId = word.word || word.acronym || word.phrase;
+      const wordId = word.word || word.acronym || word.phrase || word.idiom;
       const entry = data[wordId];
       return entry && entry.repetitions >= 3 && entry.correctCount > entry.incorrectCount * 2;
     });
@@ -354,7 +354,7 @@ const selectSRSOptimizedWords = (words, count = 10, mode = 'vocab') => {
 
   // Add due words first
   for (const word of dueWords) {
-    const id = word.word || word.acronym || word.phrase;
+    const id = word.word || word.acronym || word.phrase || word.idiom;
     if (!selectedIds.has(id) && selected.length < count) {
       selectedIds.add(id);
       selected.push(word);
@@ -363,7 +363,7 @@ const selectSRSOptimizedWords = (words, count = 10, mode = 'vocab') => {
 
   // Add struggling words
   for (const word of strugglingWords) {
-    const id = word.word || word.acronym || word.phrase;
+    const id = word.word || word.acronym || word.phrase || word.idiom;
     if (!selectedIds.has(id) && selected.length < count) {
       selectedIds.add(id);
       selected.push(word);
@@ -372,7 +372,7 @@ const selectSRSOptimizedWords = (words, count = 10, mode = 'vocab') => {
 
   // Fill remaining with random new words
   const remainingWords = words.filter(w => {
-    const id = w.word || w.acronym || w.phrase;
+    const id = w.word || w.acronym || w.phrase || w.idiom;
     return !selectedIds.has(id);
   });
 
