@@ -2,7 +2,7 @@
 
 **Free vocabulary builder for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways**
 
-Master **5,000+ vocabulary items** with spaced repetition, 5 quiz modes, flashcards, gamification, and full offline support. Built by an educator, for students. Always free.
+Master **6,100+ vocabulary items** with spaced repetition, 9 quiz modes, flashcards, gamification, and full offline support. Built by an educator, for students. Always free.
 
 🔗 **[Try VocabPro Now →](https://vishwanathbite.github.io/vocabpro/)**
 
@@ -17,9 +17,12 @@ Master **5,000+ vocabulary items** with spaced repetition, 5 quiz modes, flashca
 | Hard Words | 1,501 | Advanced vocabulary for UPSC/CAT |
 | Acronyms | 300 | Common acronyms with smart distractors |
 | One-Word Substitutes | 500 | Phrase-to-word patterns for exam MCQs |
-| **Total** | **5,010** | **Comprehensive exam-ready coverage** |
+| Idioms & Phrases | 1,116 | SSC/Banking/UPSC tested idioms with meanings |
+| **Total** | **6,126** | **Comprehensive exam-ready coverage** |
 
 Every item includes: definition, pronunciation, synonyms, antonyms, mnemonic, example sentence with Indian exam context, and exam relevance tag.
+
+Idioms include: idiom, meaning, example sentence, usage context, exam tags (SSC/Banking/UPSC/CAT/Railways), category, and difficulty level.
 
 ---
 
@@ -31,7 +34,16 @@ Every item includes: definition, pronunciation, synonyms, antonyms, mnemonic, ex
 - **Antonyms Quiz** — Find opposite meanings
 - **One-Word Substitutes** — Replace phrases with single words
 - **Acronyms Quiz** — Expand common acronyms
+- **Idioms & Phrases Quiz** — Match idioms with their correct meanings
+- **Idioms Reverse Quiz** — Identify the idiom from its meaning
 - **Flashcard Mode** — Card-flip learning with swipe navigation
+- **Smart Review (SRS)** — AI-powered spaced repetition review
+
+### Daily Challenge
+- 10 mixed questions daily — same for every user on the same date
+- Mix of vocabulary + idiom questions
+- Seeded RNG ensures deterministic daily challenges
+- Streak tracking and daily goal integration
 
 ### Spaced Repetition (SM-2)
 - Algorithm tracks what you know and what you struggle with
@@ -41,22 +53,33 @@ Every item includes: definition, pronunciation, synonyms, antonyms, mnemonic, ex
 
 ### Gamification
 - **10 Levels** — Beginner to Legend progression
-- **25 Badges** — Unlock achievements as you learn
+- **25+ Badges** — Including idiom-specific achievements
+  - Phrase Hunter — Complete first idioms quiz
+  - Idiom Master — Score 100% in idioms quiz
+  - Wordsmith — Complete idioms quiz in all 3 difficulties
 - **XP Points** — 10-20 points per question based on difficulty
 - **Streaks** — Build momentum with consecutive correct answers
 - **Daily Goals** — 4 preset difficulty levels to choose from
 
-### Offline & PWA
+### Performance
+- Lazy loading for data files — idioms.js only loads when needed
+- Service worker cache-first strategy (v27)
+- LCP optimized for fast initial load
 - Works 100% offline after first load
+
+### Offline & PWA
 - Install as an app on phone or desktop
-- Service worker with cache-first strategy
 - Background updates when online
+- All data cached for offline use
 
 ### Data Safety
 - All progress stored locally in your browser
 - Full JSON backup and restore
 - No server, no tracking, no accounts required
 - Optional multi-user support via local storage
+
+### Analytics
+- Cloudflare Web Analytics (privacy-first, no cookies)
 
 ---
 
@@ -79,7 +102,7 @@ All content is curated with Indian exam context:
 - **Twind** — TailwindCSS-compatible styling (no CORS issues)
 - **localStorage** — Progress persistence
 - **Web Speech API** — Text-to-speech pronunciation
-- **Service Worker** — Offline-first PWA caching
+- **Service Worker v27** — Offline-first PWA caching with lazy data loading
 
 No build process needed — runs directly in the browser.
 
@@ -90,7 +113,7 @@ No build process needed — runs directly in the browser.
 ```
 vocabpro/
 ├── index.html                # App shell (loads all scripts)
-├── sw.js                     # Service Worker (offline caching)
+├── sw.js                     # Service Worker v27 (offline caching)
 ├── manifest.json             # PWA manifest
 ├── robots.txt                # Search engine crawling rules
 ├── sitemap.xml               # Sitemap for Google Search Console
@@ -112,6 +135,7 @@ vocabpro/
 │       ├── vocab-hard.js     # 1,501 hard words
 │       ├── acronyms.js       # 300 acronyms
 │       ├── oneword.js        # 500 one-word substitutes
+│       ├── idioms.js         # 1,116 idioms & phrases (lazy loaded)
 │       └── index.js          # Data aggregator & stats
 └── README.md
 ```
@@ -153,15 +177,14 @@ VocabPro is a Progressive Web App:
 
 - **First visit:** App loads from network, caches all assets
 - **Subsequent visits:** Loads instantly from cache, even without internet
+- **Idioms data:** Lazy loaded on first idioms quiz click, then cached offline
 - **Updates:** When online, silently refreshes cached assets in background
-
-Everything works offline — quizzes, flashcards, settings, progress tracking.
 
 ### Updating the Cache (for developers)
 
 Increment `CACHE_VERSION` in `sw.js` and version query strings in `index.html`:
 ```javascript
-const CACHE_VERSION = 18;
+const CACHE_VERSION = 27;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 ```
 
@@ -170,31 +193,36 @@ const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 ## 📈 Roadmap
 
 ### ✅ Completed
-- 5,000+ vocabulary items across all categories
-- 5 quiz modes + flashcard mode
+- 6,126 vocabulary items across all categories
+- 9 quiz modes including Idioms & Phrases + Idioms Reverse
+- 1,116 idioms sourced from SSC/Banking/UPSC past papers
 - SM-2 spaced repetition engine
-- Gamification (25 badges, 10 levels, streaks, XP)
-- Offline-first PWA with service worker
+- Gamification (25+ badges, 10 levels, streaks, XP)
+- Idiom-specific badges (Phrase Hunter, Idiom Master, Wordsmith)
+- Daily Challenge with mixed vocab + idiom questions
+- Offline-first PWA with service worker v27
+- Lazy loading for idioms data file
+- Cloudflare Web Analytics (privacy-first)
 - Backup/restore functionality
 - Centralized storage layer with versioning
 - SEO optimization (Open Graph, JSON-LD, sitemap)
-- Cloudflare Web Analytics integration
 - Daily goals system
 - Text-to-speech pronunciation
 - Multi-user local support
+- Compact HomeScreen layout
 
 ### 🔜 Next
 - Accessibility audit (ARIA labels, screen reader support)
-- PWA icon set (proper PNG icons for all platforms)
-- Lazy loading data files per quiz mode
+- LCP optimization to 90%+ Good rating
+- IndexedDB migration (planned before localStorage limits)
 - Match Game mode (word-definition pairing)
 - OG image for social sharing preview
 
 ### 🔮 Future
 - Vite migration for build-time optimization
-- IndexedDB for larger datasets
 - GitHub Device Flow authentication
 - Data export to Google Sheets
+- Global leaderboards (needs backend)
 
 ---
 
