@@ -97,16 +97,8 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://static.cloudflareinsights.com" crossorigin>
 
-  <!-- Critical CSS for loading screen (inlined to avoid render-blocking) -->
+  <!-- Critical CSS for loading screen animations only (layout handled by inline styles) -->
   <style id="critical-loading-css">
-    #root > div {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
-    }
-    #root > div > div { text-align: center; color: white; }
     .loading-logo { animation: loading-pulse 2s ease-in-out infinite; }
     .loading-dots::after { content: ''; animation: loading-dots 1.5s steps(1) infinite; }
   </style>
