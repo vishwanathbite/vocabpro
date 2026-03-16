@@ -29,9 +29,7 @@ if (typeof acronymsDB === 'undefined') {
 if (typeof oneWordDB === 'undefined') {
   console.error('VocabPro Error: oneword.js failed to load');
 }
-if (typeof idiomsDB === 'undefined') {
-  console.error('VocabPro Error: idioms.js failed to load');
-}
+// idiomsDB is lazy-loaded on demand — no error if missing at startup
 
 // Create the main vocabulary database object
 // Maps difficulty levels to their respective word arrays
