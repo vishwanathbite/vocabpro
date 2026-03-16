@@ -729,26 +729,35 @@ const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabl
  * Quiz option button (for multiple choice)
  */
 const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex, role: roleOverride, ...restProps }) => {
-  let bgColor = 'bg-white bg-opacity-15';
-  let borderColor = 'border-white border-opacity-40';
-  let hoverClass = 'hover:bg-opacity-25 hover:scale-105';
+  // Use solid dark-tinted backgrounds for guaranteed readability on all devices.
+  // Avoids stacked translucent white + backdrop-blur that washes out on mobile.
+  let bgStyle = 'rgba(30, 41, 82, 0.85)';
+  let borderStyle = 'rgba(148, 163, 214, 0.45)';
+  let hoverBg = 'rgba(40, 54, 110, 0.95)';
+  let letterBg = 'rgba(99, 120, 195, 0.4)';
   let ariaLabel = `Option ${optionIndex !== undefined ? String.fromCharCode(65 + optionIndex) : ''}: ${children}`;
 
   if (isCorrect) {
-    bgColor = 'bg-green-500 bg-opacity-30';
-    borderColor = 'border-green-400';
-    hoverClass = '';
+    bgStyle = 'rgba(6, 78, 40, 0.9)';
+    borderStyle = 'rgb(74, 222, 128)';
+    hoverBg = bgStyle;
+    letterBg = 'rgba(34, 197, 94, 0.4)';
     ariaLabel += ' (Correct answer)';
   } else if (isIncorrect) {
-    bgColor = 'bg-red-500 bg-opacity-30';
-    borderColor = 'border-red-400';
-    hoverClass = '';
+    bgStyle = 'rgba(110, 20, 20, 0.9)';
+    borderStyle = 'rgb(248, 113, 113)';
+    hoverBg = bgStyle;
+    letterBg = 'rgba(239, 68, 68, 0.4)';
     ariaLabel += ' (Incorrect)';
   } else if (isSelected) {
-    bgColor = 'bg-blue-500 bg-opacity-30';
-    borderColor = 'border-blue-400';
+    bgStyle = 'rgba(20, 50, 130, 0.9)';
+    borderStyle = 'rgb(96, 165, 250)';
+    hoverBg = bgStyle;
+    letterBg = 'rgba(59, 130, 246, 0.4)';
     ariaLabel += ' (Selected)';
   }
+
+  const [isHovered, setIsHovered] = React.useState(false);
 
   const handleClick = (e) => {
     e.preventDefault();
@@ -764,23 +773,34 @@ const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, d
     }
   };
 
+  const canHover = !isCorrect && !isIncorrect && !disabled;
+
   return (
     <div
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => canHover && setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       role={roleOverride || "button"}
       tabIndex={disabled ? -1 : 0}
       aria-label={ariaLabel}
       aria-disabled={disabled}
       {...restProps}
-      className={`w-full px-6 py-4 ${bgColor} backdrop-blur-xl border-2 ${borderColor}
-                  text-white rounded-xl font-medium text-left ${hoverClass} active:scale-95
+      className={`w-full px-6 py-4 border-2
+                  text-white rounded-xl font-medium text-left
+                  ${canHover ? 'hover:scale-105' : ''} active:scale-95
                   select-none ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
                   focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent`}
-      style={{ pointerEvents: 'auto' }}
+      style={{
+        pointerEvents: 'auto',
+        backgroundColor: isHovered && canHover ? hoverBg : bgStyle,
+        borderColor: borderStyle,
+        transition: 'background-color 0.15s ease, transform 0.2s ease, border-color 0.15s ease'
+      }}
     >
       {optionIndex !== undefined && (
-        <span className="inline-block w-6 h-6 mr-3 rounded-full bg-white bg-opacity-20 text-center text-sm leading-6">
+        <span className="inline-block w-6 h-6 mr-3 rounded-full text-center text-sm leading-6 text-white font-semibold"
+          style={{ backgroundColor: letterBg }}>
           {String.fromCharCode(65 + optionIndex)}
         </span>
       )}
@@ -1285,8 +1305,11 @@ const ResultFeedback = ({ isCorrect, currentWord, mode }) => {
   };
 
   return (
-    <div className={`mt-6 p-6 rounded-xl backdrop-blur-xl border-2
-                    ${isCorrect ? 'bg-green-500 bg-opacity-20 border-green-400' : 'bg-red-500 bg-opacity-20 border-red-400'}`}
+    <div className="mt-6 p-6 rounded-xl border-2"
+         style={{
+           backgroundColor: isCorrect ? 'rgba(6, 78, 40, 0.7)' : 'rgba(110, 20, 20, 0.7)',
+           borderColor: isCorrect ? 'rgb(74, 222, 128)' : 'rgb(248, 113, 113)'
+         }}
          role="status" aria-live="polite">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -1327,8 +1350,8 @@ const ResultFeedback = ({ isCorrect, currentWord, mode }) => {
         </button>
       </div>
 
-      {/* Show word details for vocab/synonym/antonym modes */}
-      {['vocab', 'synonym', 'antonym'].includes(mode) && currentWord && (
+      {/* Show word details for vocab/synonym/antonym/daily modes */}
+      {['vocab', 'synonym', 'antonym', 'daily'].includes(mode) && currentWord && (
         <div className="space-y-2 text-white">
           <div>
             <span className="font-semibold">Word:</span> {currentWord.word}
