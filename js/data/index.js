@@ -8,6 +8,7 @@
  * - vocab-hard.js: Hard level vocabulary (vocabHard array)
  * - acronyms.js: Acronyms database (acronymsDB array)
  * - oneword.js: One-word substitutes database (oneWordDB array)
+ * - idioms.js: Idioms & phrases database (idiomsDB array)
  */
 
 // Defensive check - ensure data files loaded correctly
@@ -27,6 +28,9 @@ if (typeof acronymsDB === 'undefined') {
 }
 if (typeof oneWordDB === 'undefined') {
   console.error('VocabPro Error: oneword.js failed to load');
+}
+if (typeof idiomsDB === 'undefined') {
+  console.error('VocabPro Error: idioms.js failed to load');
 }
 
 // Create the main vocabulary database object
@@ -48,10 +52,12 @@ const getDatabaseStats = () => ({
   hard: vocabularyDB.hard.length,
   acronyms: typeof acronymsDB !== 'undefined' ? acronymsDB.length : 0,
   oneWord: typeof oneWordDB !== 'undefined' ? oneWordDB.length : 0,
+  idioms: typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0,
   totalVocabulary: vocabularyDB.easy.length + vocabularyDB.medium.length + vocabularyDB.hard.length,
   totalItems: vocabularyDB.easy.length + vocabularyDB.medium.length + vocabularyDB.hard.length +
               (typeof acronymsDB !== 'undefined' ? acronymsDB.length : 0) +
-              (typeof oneWordDB !== 'undefined' ? oneWordDB.length : 0)
+              (typeof oneWordDB !== 'undefined' ? oneWordDB.length : 0) +
+              (typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0)
 });
 
 // Expose to global scope for other scripts (const doesn't auto-add to window)
