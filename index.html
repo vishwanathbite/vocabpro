@@ -544,6 +544,7 @@
   <script src="js/data/vocab-hard.js?v=24" onerror="onScriptError('vocab-hard.js')"></script>
   <script src="js/data/acronyms.js?v=24" onerror="onScriptError('acronyms.js')"></script>
   <script src="js/data/oneword.js?v=24" onerror="onScriptError('oneword.js')"></script>
+  <script src="js/data/idioms.js?v=24" onerror="onScriptError('idioms.js')"></script>
   <script src="js/data/index.js?v=24" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly -->
@@ -554,6 +555,7 @@
       vocabHard: typeof vocabHard !== 'undefined' && Array.isArray(vocabHard) && vocabHard.length > 0,
       acronymsDB: typeof acronymsDB !== 'undefined' && Array.isArray(acronymsDB) && acronymsDB.length > 0,
       oneWordDB: typeof oneWordDB !== 'undefined' && Array.isArray(oneWordDB) && oneWordDB.length > 0,
+      idiomsDB: typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB),
       vocabularyDB: typeof vocabularyDB !== 'undefined' && vocabularyDB.easy && vocabularyDB.medium && vocabularyDB.hard
     };
 
