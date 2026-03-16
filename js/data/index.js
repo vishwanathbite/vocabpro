@@ -17,12 +17,7 @@
 if (typeof vocabEasy === 'undefined') {
   console.error('VocabPro Error: vocab-easy.js failed to load');
 }
-if (typeof vocabMedium === 'undefined') {
-  console.error('VocabPro Error: vocab-medium.js failed to load');
-}
-if (typeof vocabHard === 'undefined') {
-  console.error('VocabPro Error: vocab-hard.js failed to load');
-}
+// vocabMedium and vocabHard are lazy-loaded on demand when user selects that difficulty
 if (typeof acronymsDB === 'undefined') {
   console.error('VocabPro Error: acronyms.js failed to load');
 }
