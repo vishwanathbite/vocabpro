@@ -676,6 +676,14 @@ function App() {
     setMode(quizMode);
     setDifficulty(quizDifficulty);
     const newQuestions = generateQuestions(quizMode, quizDifficulty);
+
+    if (!newQuestions || newQuestions.length === 0) {
+      setIsLoading(false);
+      setLoadingMessage('');
+      toast.info('No words available for this difficulty. Please try another level.');
+      return;
+    }
+
     setQuestions(newQuestions);
     setCurrentIndex(0);
     setScore(0);
@@ -876,7 +884,7 @@ function App() {
     if (words.length < 5) {
       setIsLoading(false);
       setLoadingMessage('');
-      toast.error('Not enough words for this difficulty level');
+      toast.info('Not enough words available for this difficulty (need at least 5). Please try another level.');
       return;
     }
 

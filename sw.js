@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 22;
+const CACHE_VERSION = 23;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -80,9 +80,9 @@ self.addEventListener('install', (event) => {
         }
       }
 
-      // Activate immediately without waiting for old SW to stop
-      await self.skipWaiting();
-      console.log('[SW] Installed and skipped waiting');
+      // Don't auto-skipWaiting — let the client show an update prompt
+      // The client can send a 'skipWaiting' message when the user opts to update
+      console.log('[SW] Installed, waiting for client activation');
     })()
   );
 });
