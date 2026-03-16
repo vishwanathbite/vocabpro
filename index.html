@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Literary Rides VocabPro - Master 5000+ vocabulary words & 500 idioms for UPSC, SSC, Banking, Railways exams. 9 quiz modes. Created by Dr. Vishwanath Bite">
+  <meta name="description" content="Literary Rides VocabPro - Master 5000+ vocabulary words & 1,100+ idioms for UPSC, SSC, Banking, Railways exams. 9 quiz modes. Created by Dr. Vishwanath Bite">
   <meta name="keywords" content="vocabulary, UPSC, SSC, Banking, competitive exams, English learning, word power">
   <meta name="author" content="Dr. Vishwanath Bite">
   <!-- Content Security Policy (unsafe-inline/eval needed for Babel standalone — tighten after Vite migration) -->
@@ -539,13 +539,13 @@
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=25" onerror="onScriptError('vocab-easy.js')"></script>
-  <script src="js/data/vocab-medium.js?v=25" onerror="onScriptError('vocab-medium.js')"></script>
-  <script src="js/data/vocab-hard.js?v=25" onerror="onScriptError('vocab-hard.js')"></script>
-  <script src="js/data/acronyms.js?v=25" onerror="onScriptError('acronyms.js')"></script>
-  <script src="js/data/oneword.js?v=25" onerror="onScriptError('oneword.js')"></script>
-  <script src="js/data/idioms.js?v=25" onerror="onScriptError('idioms.js')"></script>
-  <script src="js/data/index.js?v=25" onerror="onScriptError('index.js')"></script>
+  <script src="js/data/vocab-easy.js?v=27" onerror="onScriptError('vocab-easy.js')"></script>
+  <script src="js/data/vocab-medium.js?v=27" onerror="onScriptError('vocab-medium.js')"></script>
+  <script src="js/data/vocab-hard.js?v=27" onerror="onScriptError('vocab-hard.js')"></script>
+  <script src="js/data/acronyms.js?v=27" onerror="onScriptError('acronyms.js')"></script>
+  <script src="js/data/oneword.js?v=27" onerror="onScriptError('oneword.js')"></script>
+  <!-- idioms.js is lazy-loaded when user enters Idioms Quiz mode (improves LCP) -->
+  <script src="js/data/index.js?v=27" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly -->
   <script>
@@ -555,7 +555,7 @@
       vocabHard: typeof vocabHard !== 'undefined' && Array.isArray(vocabHard) && vocabHard.length > 0,
       acronymsDB: typeof acronymsDB !== 'undefined' && Array.isArray(acronymsDB) && acronymsDB.length > 0,
       oneWordDB: typeof oneWordDB !== 'undefined' && Array.isArray(oneWordDB) && oneWordDB.length > 0,
-      idiomsDB: typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB),
+      idiomsDB: 'lazy-loaded', // loaded on demand when user enters Idioms Quiz
       vocabularyDB: typeof vocabularyDB !== 'undefined' && vocabularyDB.easy && vocabularyDB.medium && vocabularyDB.hard
     };
 
@@ -567,38 +567,38 @@
   </script>
 
   <!-- 2. Storage layer - must load before other modules -->
-  <script src="js/storage.js?v=25" onerror="onScriptError('storage.js')"></script>
+  <script src="js/storage.js?v=27" onerror="onScriptError('storage.js')"></script>
 
   <!-- 3. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=25"></script>
+  <script type="text/babel" src="js/icons.js?v=27"></script>
 
   <!-- 4. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=25"></script>
+  <script type="text/babel" src="js/utils.js?v=27"></script>
 
   <!-- 5. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=25"></script>
+  <script type="text/babel" src="js/gamification.js?v=27"></script>
 
   <!-- 6. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=25"></script>
+  <script type="text/babel" src="js/srs.js?v=27"></script>
 
   <!-- 7. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=25"></script>
+  <script type="text/babel" src="js/bookmarks.js?v=27"></script>
 
   <!-- 8. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=25"></script>
+  <script type="text/babel" src="js/dailygoals.js?v=27"></script>
 
   <!-- 9. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=25"></script>
+  <script type="text/babel" src="js/settings.js?v=27"></script>
 
   <!-- 10. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=25"></script>
+  <script type="text/babel" src="js/components.js?v=27"></script>
 
   <!-- 11. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=25"></script>
+  <script type="text/babel" src="js/screens.js?v=27"></script>
 
   <!-- 12. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=25"></script>
+  <script type="text/babel" src="js/app.js?v=27"></script>
 
   <!-- 13. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">

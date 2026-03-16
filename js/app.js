@@ -7,6 +7,36 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 // ===========================
+// LAZY LOADER FOR IDIOMS DB
+// ===========================
+
+/**
+ * Lazily load idioms.js on first use.
+ * Returns a Promise that resolves when idiomsDB is available globally.
+ */
+let _idiomsLoadPromise = null;
+function loadIdiomsDB() {
+  if (typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB) && idiomsDB.length > 0) {
+    return Promise.resolve();
+  }
+  if (_idiomsLoadPromise) return _idiomsLoadPromise;
+  _idiomsLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'js/data/idioms.js?v=27';
+    script.onload = () => {
+      console.log('idiomsDB lazy-loaded:', typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0, 'entries');
+      resolve();
+    };
+    script.onerror = () => {
+      _idiomsLoadPromise = null;
+      reject(new Error('Failed to load idioms.js'));
+    };
+    document.head.appendChild(script);
+  });
+  return _idiomsLoadPromise;
+}
+
+// ===========================
 // DAILY CHALLENGE SYSTEM
 // ===========================
 
@@ -1013,7 +1043,23 @@ function App() {
   /**
    * Start quiz handler
    */
-  const handleStartQuiz = useCallback((quizMode) => {
+  const handleStartQuiz = useCallback(async (quizMode) => {
+    // Lazy-load idioms data before entering idiom modes
+    if (quizMode === 'idiom' || quizMode === 'idiom-reverse') {
+      setIsLoading(true);
+      setLoadingMessage('Loading idioms...');
+      try {
+        await loadIdiomsDB();
+      } catch (err) {
+        setIsLoading(false);
+        setLoadingMessage('');
+        toast.error('Failed to load idioms data. Please try again.');
+        return;
+      }
+      setIsLoading(false);
+      setLoadingMessage('');
+    }
+
     // Check if mode needs difficulty selection
     if (['vocab', 'synonym', 'antonym', 'match', 'idiom', 'idiom-reverse'].includes(quizMode)) {
       setPendingMode(quizMode);
@@ -1304,7 +1350,11 @@ function App() {
 
     setIsLoading(true);
     setLoadingMessage("Preparing today's challenge...");
-    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Ensure idioms are loaded for daily challenge idiom questions
+    try { await loadIdiomsDB(); } catch (e) { /* non-critical — challenge works without idioms */ }
+
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     const dcQuestions = DailyChallengeManager.generateQuestions();
     if (!dcQuestions || dcQuestions.length === 0) {
