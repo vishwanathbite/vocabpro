@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 32 - Pre-compiled JSX, remove Babel standalone, dns-prefetch
+ * Version 33 - Align cache-buster versions across all scripts
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 32;
+const CACHE_VERSION = 33;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use

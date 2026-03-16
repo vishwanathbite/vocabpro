@@ -537,7 +537,7 @@
     if ('caches' in window) {
       caches.keys().then(function(names) {
         names.forEach(function(name) {
-          if (name !== 'vocabpro-v32') {
+          if (name !== 'vocabpro-v33') {
             caches.delete(name);
           }
         });
@@ -585,41 +585,41 @@
   </script>
 
   <!-- 2. Storage layer - must load before other modules -->
-  <script src="js/storage.js?v=29" onerror="onScriptError('storage.js')"></script>
+  <script src="js/storage.js?v=33" onerror="onScriptError('storage.js')"></script>
 
   <!-- 3. Pre-compiled scripts (JSX compiled offline via Babel CLI) -->
   <!-- Icons - SVG components -->
-  <script src="js/compiled/icons.js?v=32"></script>
+  <script src="js/compiled/icons.js?v=33"></script>
 
   <!-- 4. Utilities - Helper functions -->
-  <script src="js/compiled/utils.js?v=32"></script>
+  <script src="js/compiled/utils.js?v=33"></script>
 
   <!-- 5. Gamification - XP, levels, badges -->
-  <script src="js/compiled/gamification.js?v=32"></script>
+  <script src="js/compiled/gamification.js?v=33"></script>
 
   <!-- 6. Spaced Repetition System -->
-  <script src="js/compiled/srs.js?v=32"></script>
+  <script src="js/compiled/srs.js?v=33"></script>
 
   <!-- 7. Bookmarks System -->
-  <script src="js/compiled/bookmarks.js?v=32"></script>
+  <script src="js/compiled/bookmarks.js?v=33"></script>
 
   <!-- 8. Daily Goals System -->
-  <script src="js/compiled/dailygoals.js?v=32"></script>
+  <script src="js/compiled/dailygoals.js?v=33"></script>
 
   <!-- 9. Settings, History & Onboarding -->
-  <script src="js/compiled/settings.js?v=32"></script>
+  <script src="js/compiled/settings.js?v=33"></script>
 
   <!-- 10. Components - Reusable UI components -->
-  <script src="js/compiled/components.js?v=32"></script>
+  <script src="js/compiled/components.js?v=33"></script>
 
   <!-- 11. Screens - Main screen components -->
-  <script src="js/compiled/screens.js?v=32"></script>
+  <script src="js/compiled/screens.js?v=33"></script>
 
   <!-- 12. App - Main application component -->
-  <script src="js/compiled/app.js?v=32"></script>
+  <script src="js/compiled/app.js?v=33"></script>
 
   <!-- 13. Initialize the app (pre-compiled) -->
-  <script src="js/compiled/init.js?v=32"></script>
+  <script src="js/compiled/init.js?v=33"></script>
 
   <!-- 14. Register Service Worker for PWA and cache clearing helper -->
   <script>
