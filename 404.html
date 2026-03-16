@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found — VocabPro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: white;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    .emoji { font-size: 4rem; margin-bottom: 1rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    p { opacity: 0.8; margin-bottom: 1.5rem; }
+    a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #7c3aed;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      min-height: 44px;
+      transition: background 0.2s;
+    }
+    a:hover { background: #6d28d9; }
+    a:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="emoji">📚</div>
+    <h1>Page Not Found</h1>
+    <p>The page you're looking for doesn't exist. Let's get you back to learning!</p>
+    <a href="/vocabpro/">Go to VocabPro</a>
+  </div>
+  <script>
+    // Auto-redirect to main app after 5 seconds
+    setTimeout(function() {
+      window.location.href = '/vocabpro/';
+    }, 5000);
+  </script>
+</body>
+</html>
