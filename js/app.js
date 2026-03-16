@@ -647,7 +647,7 @@ function App() {
   /**
    * Start quiz handler
    */
-  const handleStartQuiz = (quizMode) => {
+  const handleStartQuiz = useCallback((quizMode) => {
     // Check if mode needs difficulty selection
     if (['vocab', 'synonym', 'antonym', 'match'].includes(quizMode)) {
       setPendingMode(quizMode);
@@ -660,7 +660,7 @@ function App() {
       // Start quiz directly for oneword, acronym, and review modes
       startQuizWithDifficulty(quizMode, null);
     }
-  };
+  }, []);
 
   /**
    * Start flashcard mode
@@ -730,7 +730,7 @@ function App() {
   /**
    * Handle difficulty selection
    */
-  const handleDifficultySelect = (selectedDifficulty) => {
+  const handleDifficultySelect = useCallback((selectedDifficulty) => {
     if (pendingMode === 'flashcard') {
       startFlashcardMode(selectedDifficulty);
     } else if (pendingMode === 'match') {
@@ -738,12 +738,12 @@ function App() {
     } else if (pendingMode) {
       startQuizWithDifficulty(pendingMode, selectedDifficulty);
     }
-  };
+  }, [pendingMode]);
 
   /**
    * Handle answer selection
    */
-  const handleAnswer = (answer) => {
+  const handleAnswer = useCallback((answer) => {
     const currentQuestion = questions[currentIndex];
     const correct = answer === currentQuestion.correct;
     const responseTime = Date.now() - (currentQuestion.startTime || Date.now());
@@ -820,12 +820,12 @@ function App() {
       // Still count the question even if wrong (no points)
       DailyGoalsManager.updateProgress(1, 0);
     }
-  };
+  }, [questions, currentIndex, stats, difficulty, mode, previousBadges, previousLevel]);
 
   /**
    * Handle next question
    */
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setShowResult(false);
@@ -836,7 +836,7 @@ function App() {
       // Quiz finished
       handleQuizComplete();
     }
-  };
+  }, [currentIndex, questions]);
 
   /**
    * Handle quiz completion
@@ -958,7 +958,7 @@ function App() {
   /**
    * Handle tapping an item in the match game
    */
-  const handleMatchTap = (item, type) => {
+  const handleMatchTap = useCallback((item, type) => {
     // Ignore if already matched or animating wrong
     if (matchMatched.includes(item.id) || matchWrongPair) return;
 
@@ -1017,7 +1017,7 @@ function App() {
         setMatchSelected(null);
       }, 600);
     }
-  };
+  }, [matchMatched, matchWrongPair, matchSelected, matchPairs, matchAttemptedIds]);
 
   /**
    * Handle match game completion
@@ -1396,7 +1396,7 @@ function App() {
 // MATCH GAME SCREEN COMPONENT
 // ===========================
 
-const MatchGameScreen = ({
+const MatchGameScreen = React.memo(({
   pairs, shuffledWords, shuffledDefs, selected, matched,
   wrongPair, wrongCount, timer, complete, score, firstTryCount,
   onTap, onBack, onPlayAgain, onGoHome, difficulty
@@ -1569,7 +1569,7 @@ const MatchGameScreen = ({
       </main>
     </div>
   );
-};
+});
 
 // Expose to window for global access
 window.App = App;

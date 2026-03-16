@@ -389,7 +389,7 @@ const ToastContainer = ({ toasts, onRemove }) => {
 /**
  * Individual Toast Component
  */
-const Toast = ({ toast, onRemove }) => {
+const Toast = React.memo(({ toast, onRemove }) => {
   const [isExiting, setIsExiting] = useState(false);
 
   const handleClose = () => {
@@ -454,7 +454,7 @@ const Toast = ({ toast, onRemove }) => {
       </button>
     </div>
   );
-};
+});
 
 /**
  * Achievement Notification Component
@@ -728,7 +728,7 @@ const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabl
 /**
  * Quiz option button (for multiple choice)
  */
-const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex, role: roleOverride, ...restProps }) => {
+const OptionButton = React.memo(({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex, role: roleOverride, ...restProps }) => {
   let bgColor = 'bg-white bg-opacity-15';
   let borderColor = 'border-white border-opacity-40';
   let hoverClass = 'hover:bg-opacity-25 hover:scale-105';
@@ -787,7 +787,7 @@ const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, d
       {children}
     </div>
   );
-};
+});
 
 // ===========================
 // CARD COMPONENTS
@@ -816,7 +816,7 @@ const StatsCard = ({ icon: Icon, title, value, subtitle, color = 'text-white', i
 /**
  * Quiz mode selection card
  */
-const QuizModeCard = ({ icon: Icon, title, description, onClick, color = 'from-purple-600 to-blue-600', locked = false }) => {
+const QuizModeCard = React.memo(({ icon: Icon, title, description, onClick, color = 'from-purple-600 to-blue-600', locked = false }) => {
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -848,12 +848,12 @@ const QuizModeCard = ({ icon: Icon, title, description, onClick, color = 'from-p
       <p className="text-white text-opacity-90 text-sm pointer-events-none">{description}</p>
     </div>
   );
-};
+});
 
 /**
  * Badge card for achievements
  */
-const BadgeCard = ({ badge, earned = false }) => (
+const BadgeCard = React.memo(({ badge, earned = false }) => (
   <div className={`bg-white bg-opacity-10 backdrop-blur-xl rounded-lg p-4 text-center border-2
                    ${earned ? 'border-yellow-400' : 'border-white border-opacity-20'}
                    ${earned ? 'shadow-lg shadow-yellow-500/50' : ''}`}>
@@ -861,7 +861,7 @@ const BadgeCard = ({ badge, earned = false }) => (
     <h4 className="text-white font-semibold text-sm mb-1">{badge.name}</h4>
     <p className="text-white text-opacity-75 text-xs">{badge.description}</p>
   </div>
-);
+));
 
 /**
  * Progress bar component
@@ -1464,6 +1464,7 @@ const ShareModal = ({ isOpen, onClose, referralCode, totalPoints }) => {
  */
 const SearchModal = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [results, setResults] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
   const inputRef = useRef(null);
@@ -1477,21 +1478,28 @@ const SearchModal = ({ isOpen, onClose }) => {
     }
     if (!isOpen) {
       setSearchQuery('');
+      setDebouncedQuery('');
       setResults([]);
       setSelectedWord(null);
     }
   }, [isOpen]);
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
+  // Debounce the search query by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Perform search when debounced query changes
+  useEffect(() => {
     setSelectedWord(null);
 
-    if (query.length < 2) {
+    if (debouncedQuery.length < 2) {
       setResults([]);
       return;
     }
 
-    const searchLower = query.toLowerCase();
+    const searchLower = debouncedQuery.toLowerCase();
     const allWords = [
       ...vocabularyDB.easy.map(w => ({ ...w, type: 'vocab', difficulty: 'easy' })),
       ...vocabularyDB.medium.map(w => ({ ...w, type: 'vocab', difficulty: 'medium' })),
@@ -1516,7 +1524,7 @@ const SearchModal = ({ isOpen, onClose }) => {
     }).slice(0, 20); // Limit to 20 results
 
     setResults(filtered);
-  };
+  }, [debouncedQuery]);
 
   const handleWordClick = (word) => {
     setSelectedWord(word);
@@ -1545,12 +1553,12 @@ const SearchModal = ({ isOpen, onClose }) => {
               placeholder="Search words, definitions, synonyms..."
               aria-label="Search words, definitions, and synonyms"
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-white placeholder-white placeholder-opacity-50
                         focus:outline-none text-lg"
             />
             {searchQuery && (
-              <button onClick={() => handleSearch('')} className="text-white text-opacity-50 hover:text-opacity-100" aria-label="Clear search">
+              <button onClick={() => setSearchQuery('')} className="text-white text-opacity-50 hover:text-opacity-100" aria-label="Clear search">
                 <X width="20" height="20" />
               </button>
             )}
