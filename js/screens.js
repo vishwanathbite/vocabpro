@@ -916,7 +916,8 @@ const QuizScreen = ({
 
       {/* Quiz Content */}
       <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl p-8 border border-white border-opacity-20">
+        <div className="rounded-2xl p-8 border"
+          style={{ backgroundColor: 'rgba(15, 23, 60, 0.7)', borderColor: 'rgba(148, 163, 214, 0.25)' }}>
           {/* Question */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-white mb-4">{getQuestionText()}</h2>
@@ -971,15 +972,15 @@ const QuizScreen = ({
 
         {/* Progress Info */}
         <div className="mt-6 grid grid-cols-3 gap-4">
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-lg p-4 text-center">
+          <div className="rounded-lg p-4 text-center" style={{ backgroundColor: 'rgba(15, 23, 60, 0.6)' }}>
             <p className="text-white text-opacity-70 text-sm mb-1">Session Score</p>
             <p className="text-2xl font-bold text-white">{score}</p>
           </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-lg p-4 text-center">
+          <div className="rounded-lg p-4 text-center" style={{ backgroundColor: 'rgba(15, 23, 60, 0.6)' }}>
             <p className="text-white text-opacity-70 text-sm mb-1">Total Points</p>
             <p className="text-2xl font-bold text-yellow-400">{stats.totalPoints}</p>
           </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-lg p-4 text-center">
+          <div className="rounded-lg p-4 text-center" style={{ backgroundColor: 'rgba(15, 23, 60, 0.6)' }}>
             <p className="text-white text-opacity-70 text-sm mb-1">Level</p>
             <p className="text-2xl font-bold text-white">{stats.level}</p>
           </div>
