@@ -163,6 +163,36 @@ function App() {
     return () => stopSpeech();
   }, []);
 
+  // Storage quota warning listener
+  useEffect(() => {
+    const handleQuotaWarning = (e) => {
+      const { percentUsed } = e.detail;
+      toast.warning(`Storage ${Math.round(percentUsed)}% full. Consider clearing old quiz history in Settings.`);
+    };
+    window.addEventListener('storage-quota-warning', handleQuotaWarning);
+    return () => window.removeEventListener('storage-quota-warning', handleQuotaWarning);
+  }, []);
+
+  // Data corruption recovery listener
+  useEffect(() => {
+    const handleCorrupted = () => {
+      setConfirmModalConfig({
+        title: 'Data Recovery',
+        message: 'Your saved data appears corrupted. A backup has been saved. Would you like to start fresh?',
+        confirmText: 'Start Fresh',
+        cancelText: 'Continue Anyway',
+        type: 'warning',
+        onConfirm: () => {
+          StorageManager.resetState(true);
+          window.location.reload();
+        }
+      });
+      setShowConfirmModal(true);
+    };
+    window.addEventListener('storage-corrupted', handleCorrupted);
+    return () => window.removeEventListener('storage-corrupted', handleCorrupted);
+  }, []);
+
   // Focus management ref for screen transitions (Change 7)
   const mainContentRef = useRef(null);
 

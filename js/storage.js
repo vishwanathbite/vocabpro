@@ -368,8 +368,18 @@ const loadState = () => {
         memoryState = migrated;
         return migrated;
       } catch (parseError) {
-        console.warn('Storage: Corrupted state, checking for legacy data');
+        console.warn('Storage: Corrupted state detected, attempting backup');
+        // Back up the corrupted data so user can potentially recover it
+        try {
+          localStorage.setItem(STORAGE_KEY + '_corrupted_backup', stored);
+        } catch (e) { /* ignore */ }
         localStorage.removeItem(STORAGE_KEY);
+        // Notify the UI about corruption
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('storage-corrupted', {
+            detail: { hasBackup: true }
+          }));
+        }, 0);
       }
     }
 
@@ -391,6 +401,32 @@ const loadState = () => {
     memoryState = getDefaultState();
     return memoryState;
   }
+};
+
+/**
+ * Check storage quota and warn if usage is high
+ * Dispatches a custom event that the UI can listen to
+ * @returns {Promise<{percentUsed: number, warning: boolean}>}
+ */
+const checkStorageQuota = async () => {
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      const percentUsed = (estimate.usage / estimate.quota) * 100;
+      if (percentUsed > 90) {
+        console.warn(`Storage: ${percentUsed.toFixed(1)}% used — consider clearing old data`);
+        // Dispatch event for UI to handle
+        window.dispatchEvent(new CustomEvent('storage-quota-warning', {
+          detail: { percentUsed, usage: estimate.usage, quota: estimate.quota }
+        }));
+        return { percentUsed, warning: true };
+      }
+      return { percentUsed, warning: false };
+    }
+  } catch (e) {
+    // Storage estimate not available, silently continue
+  }
+  return { percentUsed: 0, warning: false };
 };
 
 /**
@@ -465,6 +501,8 @@ const saveState = (state) => {
   saveTimeout = setTimeout(() => {
     saveStateImmediate(state);
     saveTimeout = null;
+    // Check quota after save (async, non-blocking)
+    checkStorageQuota();
   }, DEBOUNCE_MS);
 
   return true;
@@ -636,7 +674,8 @@ window.StorageManager = {
   importStateFromJSON,
   resetState,
   getStorageInfo,
-  isStorageAvailable
+  isStorageAvailable,
+  checkStorageQuota
 };
 
 // Also expose individual functions for convenience
