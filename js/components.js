@@ -817,18 +817,18 @@ const OptionButton = React.memo(({ children, onClick, isSelected, isCorrect, isI
  * Glass morphism card with stats
  */
 const StatsCard = ({ icon: Icon, title, value, subtitle, color = 'text-white', iconColor = 'text-yellow-400' }) => (
-  <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 shadow-xl border border-white border-opacity-20">
-    <div className="flex items-start justify-between mb-3">
-      <div>
-        <p className="text-white text-opacity-70 text-sm mb-1">{title}</p>
-        <p className={`text-3xl font-bold ${color}`}>{value}</p>
-        {subtitle && <p className="text-white text-opacity-75 text-xs mt-1">{subtitle}</p>}
-      </div>
+  <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-lg p-3 shadow-lg border border-white border-opacity-20">
+    <div className="flex items-center gap-2">
       {Icon && (
-        <div className={`p-3 bg-white bg-opacity-10 rounded-lg ${iconColor}`}>
-          <Icon width="24" height="24" />
+        <div className={`p-1.5 bg-white bg-opacity-10 rounded-md ${iconColor} flex-shrink-0`}>
+          <Icon width="16" height="16" />
         </div>
       )}
+      <div className="min-w-0">
+        <p className="text-white text-opacity-60 text-xs leading-tight">{title}</p>
+        <p className={`text-lg font-bold leading-tight ${color}`}>{value}</p>
+        {subtitle && <p className="text-white text-opacity-50 text-xs leading-tight truncate">{subtitle}</p>}
+      </div>
     </div>
   </div>
 );
@@ -850,22 +850,24 @@ const QuizModeCard = React.memo(({ icon: Icon, title, description, onClick, colo
       onClick={handleClick}
       role="button"
       tabIndex={locked ? -1 : 0}
-      className={`relative bg-gradient-to-br ${color} rounded-xl p-6 shadow-xl
-                  transform hover:scale-105 active:scale-95 text-left w-full
+      className={`relative bg-gradient-to-br ${color} rounded-lg p-3 shadow-lg
+                  transform hover:scale-[1.03] active:scale-95 text-left w-full
                   ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   select-none`}
-      style={{ pointerEvents: 'auto' }}
+      style={{ pointerEvents: 'auto', minHeight: '44px' }}
     >
       {locked && (
-        <div className="absolute top-4 right-4">
-          <Lock width="24" height="24" className="text-white" />
+        <div className="absolute top-2 right-2">
+          <Lock width="16" height="16" className="text-white" />
         </div>
       )}
-      <div className="flex items-center gap-4 mb-3 pointer-events-none">
-        {Icon && <Icon width="32" height="32" className="text-white" />}
-        <h3 className="text-xl font-bold text-white">{title}</h3>
+      <div className="flex items-center gap-2.5 pointer-events-none">
+        {Icon && <Icon width="22" height="22" className="text-white flex-shrink-0" />}
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold text-white leading-tight">{title}</h3>
+          <p className="text-white text-opacity-75 text-xs leading-tight truncate">{description}</p>
+        </div>
       </div>
-      <p className="text-white text-opacity-90 text-sm pointer-events-none">{description}</p>
     </div>
   );
 });
