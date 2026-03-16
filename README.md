@@ -63,7 +63,7 @@ Idioms include: idiom, meaning, example sentence, usage context, exam tags (SSC/
 
 ### Performance
 - Lazy loading for data files — idioms.js only loads when needed
-- Service worker cache-first strategy (v27)
+- Service worker cache-first strategy (v30)
 - LCP optimized for fast initial load
 - Works 100% offline after first load
 
@@ -102,7 +102,7 @@ All content is curated with Indian exam context:
 - **Twind** — TailwindCSS-compatible styling (no CORS issues)
 - **localStorage** — Progress persistence
 - **Web Speech API** — Text-to-speech pronunciation
-- **Service Worker v27** — Offline-first PWA caching with lazy data loading
+- **Service Worker v30** — Offline-first PWA caching with lazy data loading
 
 No build process needed — runs directly in the browser.
 
@@ -113,7 +113,7 @@ No build process needed — runs directly in the browser.
 ```
 vocabpro/
 ├── index.html                # App shell (loads all scripts)
-├── sw.js                     # Service Worker v27 (offline caching)
+├── sw.js                     # Service Worker v30 (offline caching)
 ├── manifest.json             # PWA manifest
 ├── robots.txt                # Search engine crawling rules
 ├── sitemap.xml               # Sitemap for Google Search Console
@@ -184,7 +184,7 @@ VocabPro is a Progressive Web App:
 
 Increment `CACHE_VERSION` in `sw.js` and version query strings in `index.html`:
 ```javascript
-const CACHE_VERSION = 27;
+const CACHE_VERSION = 30;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 ```
 
@@ -200,12 +200,14 @@ const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 - Gamification (25+ badges, 10 levels, streaks, XP)
 - Idiom-specific badges (Phrase Hunter, Idiom Master, Wordsmith)
 - Daily Challenge with mixed vocab + idiom questions
-- Offline-first PWA with service worker v27
+- Offline-first PWA with service worker v30
 - Lazy loading for idioms data file
 - Cloudflare Web Analytics (privacy-first)
 - Backup/restore functionality
 - Centralized storage layer with versioning
 - SEO optimization (Open Graph, JSON-LD, sitemap)
+- Match Game mode (word-definition pairing)
+- OG image for social sharing preview
 - Daily goals system
 - Text-to-speech pronunciation
 - Multi-user local support
@@ -215,8 +217,6 @@ const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 - Accessibility audit (ARIA labels, screen reader support)
 - LCP optimization to 90%+ Good rating
 - IndexedDB migration (planned before localStorage limits)
-- Match Game mode (word-definition pairing)
-- OG image for social sharing preview
 
 ### 🔮 Future
 - Vite migration for build-time optimization

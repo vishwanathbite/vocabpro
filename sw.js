@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 29 - Fix purple overlay on mobile
+ * Version 30 - WebP image, manifest fixes, preload hints
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,12 +9,12 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 29;
+const CACHE_VERSION = 30;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
 const PRECACHE_ASSETS = [
-  './Literary Rides.png',
+  './Literary-Rides.webp',
   './',
   './index.html',
   './manifest.json',
@@ -40,7 +40,8 @@ const PRECACHE_ASSETS = [
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
   './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon-180.png'
+  './icons/apple-touch-icon-180.png',
+  './icons/apple-touch-icon-152.png'
 ];
 
 // External CDN resources - cached opportunistically

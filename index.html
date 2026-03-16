@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Literary Rides VocabPro - Master 5000+ vocabulary words & 1,100+ idioms for UPSC, SSC, Banking, Railways exams. 9 quiz modes. Created by Dr. Vishwanath Bite">
+  <meta name="description" content="Literary Rides VocabPro - Master 6,100+ vocabulary words & 1,100+ idioms for UPSC, SSC, Banking, Railways exams. 9 quiz modes. Created by Dr. Vishwanath Bite">
   <meta name="keywords" content="vocabulary, UPSC, SSC, Banking, competitive exams, English learning, word power">
   <meta name="author" content="Dr. Vishwanath Bite">
   <!-- Content Security Policy (unsafe-inline/eval needed for Babel standalone — tighten after Vite migration) -->
@@ -20,7 +20,7 @@
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Telegram) -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="VocabPro — Free Vocabulary Builder for UPSC, SSC, Banking & CAT" />
-  <meta property="og:description" content="5000+ words with definitions, synonyms, antonyms, mnemonics & Indian exam context. Spaced repetition, 9 quiz modes including idioms, offline support. 100% free by Dr. Vishwanath Bite." />
+  <meta property="og:description" content="6,100+ words with definitions, synonyms, antonyms, mnemonics & Indian exam context. Spaced repetition, 9 quiz modes including idioms, offline support. 100% free by Dr. Vishwanath Bite." />
   <meta property="og:url" content="https://vishwanathbite.github.io/vocabpro/" />
   <meta property="og:site_name" content="Literary Rides VocabPro" />
   <meta property="og:locale" content="en_IN" />
@@ -30,7 +30,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="VocabPro — Free Vocabulary Builder for UPSC, SSC, Banking & CAT" />
-  <meta name="twitter:description" content="5000+ words with spaced repetition, 9 quiz modes including idioms, offline support. Built for Indian competitive exams. 100% free." />
+  <meta name="twitter:description" content="6,100+ words with spaced repetition, 9 quiz modes including idioms, offline support. Built for Indian competitive exams. 100% free." />
   <meta name="twitter:image" content="https://vishwanathbite.github.io/vocabpro/og-image.png" />
 
   <!-- JSON-LD Structured Data -->
@@ -40,7 +40,7 @@
     "@type": "WebApplication",
     "name": "Literary Rides VocabPro",
     "alternateName": "VocabPro",
-    "description": "Free vocabulary builder app for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways. 5000+ words with definitions, synonyms, antonyms, mnemonics, and exam-relevant example sentences.",
+    "description": "Free vocabulary builder app for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways. 6,100+ words with definitions, synonyms, antonyms, mnemonics, and exam-relevant example sentences.",
     "url": "https://vishwanathbite.github.io/vocabpro/",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Any (Progressive Web App)",
@@ -72,7 +72,7 @@
       "audienceType": "UPSC, SSC, Banking, CAT, Railways aspirants"
     },
     "featureList": [
-      "5000+ vocabulary words",
+      "6,100+ vocabulary words",
       "Spaced repetition (SM-2 algorithm)",
       "9 quiz modes including idioms",
       "Flashcard learning",
@@ -90,7 +90,11 @@
   </script>
 
   <!-- Preload LCP image -->
-  <link rel="preload" as="image" href="Literary Rides.png" fetchpriority="high">
+  <link rel="preload" as="image" href="Literary-Rides.webp" fetchpriority="high">
+
+  <!-- Preload critical CDN scripts -->
+  <link rel="preload" as="script" href="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin>
+  <link rel="preload" as="script" href="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin>
 
   <!-- Preconnect to CDN domains -->
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -105,7 +109,8 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
-  <title>Literary Rides VocabPro - Master 5000+ Words for Competitive Exams</title>
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/apple-touch-icon-152.png">
+  <title>Literary Rides VocabPro - Master 6,100+ Words for Competitive Exams</title>
 
   <!-- React + ReactDOM (UMD) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -517,7 +522,7 @@
     <!-- Loading state shown until React loads -->
     <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #581c87 0%, #1e3a8a 50%, #312e81 100%);">
       <div style="text-align: center; color: white;">
-        <img src="Literary Rides.png" alt="VocabPro" width="64" height="64" fetchpriority="high" class="loading-logo" style="margin-bottom: 1rem; border-radius: 12px;"
+        <img src="Literary-Rides.webp" alt="VocabPro" width="64" height="64" fetchpriority="high" class="loading-logo" style="margin-bottom: 1rem; border-radius: 12px;"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <div style="display:none; width:64px; height:64px; margin:0 auto 1rem; border-radius:12px; background:linear-gradient(135deg,#7c3aed,#4f46e5); align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; color:white;">VP</div>
         <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">VocabPro</h1>
@@ -532,7 +537,7 @@
     if ('caches' in window) {
       caches.keys().then(function(names) {
         names.forEach(function(name) {
-          if (name !== 'vocabpro-v29') {
+          if (name !== 'vocabpro-v30') {
             caches.delete(name);
           }
         });
