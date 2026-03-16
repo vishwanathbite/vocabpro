@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 31 - Privacy policy, assetlinks, manifest updates
+ * Version 32 - Pre-compiled JSX, remove Babel standalone, dns-prefetch
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 31;
+const CACHE_VERSION = 32;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -19,16 +19,17 @@ const PRECACHE_ASSETS = [
   './index.html',
   './manifest.json',
   './js/storage.js',
-  './js/icons.js',
-  './js/utils.js',
-  './js/gamification.js',
-  './js/srs.js',
-  './js/bookmarks.js',
-  './js/dailygoals.js',
-  './js/settings.js',
-  './js/components.js',
-  './js/screens.js',
-  './js/app.js',
+  './js/compiled/icons.js',
+  './js/compiled/utils.js',
+  './js/compiled/gamification.js',
+  './js/compiled/srs.js',
+  './js/compiled/bookmarks.js',
+  './js/compiled/dailygoals.js',
+  './js/compiled/settings.js',
+  './js/compiled/components.js',
+  './js/compiled/screens.js',
+  './js/compiled/app.js',
+  './js/compiled/init.js',
   './js/data/index.js',
   './js/data/vocab-easy.js',
   './js/data/vocab-medium.js',
@@ -49,7 +50,6 @@ const PRECACHE_ASSETS = [
 const CDN_ASSETS = [
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://unpkg.com/@babel/standalone/babel.min.js',
   'https://cdn.jsdelivr.net/npm/@twind/cdn@1.0.7/cdn.global.js'
 ];
 
