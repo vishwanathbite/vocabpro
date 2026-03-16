@@ -840,6 +840,7 @@ const HomeScreen = ({
           <div className="text-center text-white text-opacity-70 text-sm">
             <p className="mb-2">© {new Date().getFullYear()} Literary Rides VocabPro. Created by Dr. Vishwanath Bite.</p>
             <p>Master vocabulary for UPSC, SSC, Banking, Railways & State PSC exams</p>
+            <p className="mt-2"><a href="https://vishwanathbite.github.io/vocabpro/privacy.html" target="_blank" rel="noopener noreferrer" className="text-white text-opacity-50 hover:text-opacity-75 transition-all text-xs">Privacy Policy</a></p>
           </div>
         </div>
       </footer>
