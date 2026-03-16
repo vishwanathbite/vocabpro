@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 30 - WebP image, manifest fixes, preload hints
+ * Version 31 - Privacy policy, assetlinks, manifest updates
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 30;
+const CACHE_VERSION = 31;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -41,7 +41,8 @@ const PRECACHE_ASSETS = [
   './icons/icon-maskable-192.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon-180.png',
-  './icons/apple-touch-icon-152.png'
+  './icons/apple-touch-icon-152.png',
+  './privacy.html'
 ];
 
 // External CDN resources - cached opportunistically
