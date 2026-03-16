@@ -102,6 +102,7 @@ const WordOfTheDay = () => {
   const [wotd, setWotd] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     const wotdData = getWordOfTheDay();
@@ -118,6 +119,16 @@ const WordOfTheDay = () => {
   const handleBookmark = () => {
     BookmarksManager.toggleBookmark(word, 'vocab');
     setIsBookmarked(!isBookmarked);
+  };
+
+  const handleShareWord = async () => {
+    const text = `📚 Word of the Day: ${word.word}\n📖 ${word.definition}${word.synonyms && word.synonyms.length > 0 ? `\n🔗 Synonyms: ${word.synonyms.slice(0, 3).join(', ')}` : ''}\n\nLearn more at: https://vishwanathbite.github.io/vocabpro/`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Word copied to clipboard!');
+    } catch (err) {
+      toast.error('Failed to copy');
+    }
   };
 
   return (
@@ -143,8 +154,16 @@ const WordOfTheDay = () => {
             <button
               onClick={handleBookmark}
               className={`p-2 rounded-lg ${isBookmarked ? 'bg-pink-500 bg-opacity-30 text-pink-400' : 'bg-white bg-opacity-10 text-white hover:text-pink-400'}`}
+              aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark word'}
             >
               {isBookmarked ? <HeartFilled width="20" height="20" /> : <Heart width="20" height="20" />}
+            </button>
+            <button
+              onClick={handleShareWord}
+              className="p-2 bg-white bg-opacity-10 rounded-lg text-white hover:bg-opacity-20"
+              aria-label="Share word of the day"
+            >
+              <Share2 width="20" height="20" />
             </button>
           </div>
         </div>
@@ -829,6 +848,42 @@ const FlashcardScreen = ({
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
+
+  // Keyboard shortcuts for flashcards
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch (e.key) {
+        case ' ':
+        case 'Enter':
+          e.preventDefault();
+          setIsFlipped(prev => !prev);
+          break;
+        case 'ArrowRight':
+        case 'k':
+          e.preventDefault();
+          handleKnow();
+          break;
+        case 'ArrowLeft':
+        case 'l':
+          e.preventDefault();
+          handleDontKnow();
+          break;
+        case 'p':
+          e.preventDefault();
+          if (currentCard) speakWord(currentCard.word || currentCard.acronym || currentCard.answer);
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onBack();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, currentCard, knownCards, unknownCards]);
 
   const handleKnow = () => {
     // Update SRS

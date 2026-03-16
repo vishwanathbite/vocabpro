@@ -852,9 +852,15 @@ function App() {
    * Handle back to home
    */
   const handleBack = () => {
+    // If no questions answered yet, go straight home
+    if (currentIndex === 0 && !showResult) {
+      setScreen('home');
+      stopSpeech();
+      return;
+    }
     setConfirmModalConfig({
       title: 'Exit Quiz?',
-      message: 'Are you sure you want to exit? Your current quiz progress will be lost, but earned points are saved.',
+      message: `You have ${questions.length - currentIndex - (showResult ? 1 : 0)} unanswered questions. Leave quiz? Earned points are saved.`,
       confirmText: 'Exit Quiz',
       cancelText: 'Continue',
       type: 'warning',
@@ -1328,9 +1334,27 @@ function App() {
               </div>
             </div>
 
-            <PrimaryButton onClick={handleCloseQuizComplete} className="w-full">
-              Continue Learning
-            </PrimaryButton>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  const modeNames = { vocab: 'Vocabulary', synonym: 'Synonyms', antonym: 'Antonyms', oneword: 'One-Word Substitutes', acronym: 'Acronyms' };
+                  const text = `🎯 VocabPro Quiz Results\nScore: ${quizResults.score} | Accuracy: ${quizResults.accuracy}%\nMode: ${modeNames[mode] || 'Quiz'} (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})\nTry it free: https://vishwanathbite.github.io/vocabpro/`;
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    toast.success('Results copied to clipboard!');
+                  } catch (err) {
+                    toast.error('Failed to copy results');
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white bg-opacity-15 border-2 border-white border-opacity-30 text-white rounded-xl font-semibold hover:bg-opacity-25 active:scale-95 transition-all"
+              >
+                <Share2 width="18" height="18" />
+                <span>Share Results</span>
+              </button>
+              <PrimaryButton onClick={handleCloseQuizComplete} className="flex-1">
+                Continue Learning
+              </PrimaryButton>
+            </div>
           </div>
         )}
       </Modal>
