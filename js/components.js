@@ -7,6 +7,72 @@
 const { useState, useEffect, useRef, createContext, useContext, useCallback, Component } = React;
 
 // ===========================
+// ACCESSIBILITY HOOKS
+// ===========================
+
+/**
+ * useFocusTrap - Traps focus within a container when active.
+ * Tab at last element wraps to first; Shift+Tab at first wraps to last.
+ */
+const useFocusTrap = (containerRef, isActive) => {
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return;
+
+    const container = containerRef.current;
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const handleKeyDown = (e) => {
+      if (e.key !== 'Tab') return;
+
+      const focusableElements = Array.from(container.querySelectorAll(focusableSelector)).filter(
+        el => !el.closest('[aria-hidden="true"]') && el.offsetParent !== null
+      );
+      if (focusableElements.length === 0) return;
+
+      const firstEl = focusableElements[0];
+      const lastEl = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstEl || !container.contains(document.activeElement)) {
+          e.preventDefault();
+          lastEl.focus();
+        }
+      } else {
+        if (document.activeElement === lastEl || !container.contains(document.activeElement)) {
+          e.preventDefault();
+          firstEl.focus();
+        }
+      }
+    };
+
+    // Focus first focusable element on trap activation
+    requestAnimationFrame(() => {
+      const focusableElements = container.querySelectorAll(focusableSelector);
+      if (focusableElements.length > 0 && !container.contains(document.activeElement)) {
+        focusableElements[0].focus();
+      }
+    });
+
+    container.addEventListener('keydown', handleKeyDown);
+    return () => container.removeEventListener('keydown', handleKeyDown);
+  }, [isActive, containerRef]);
+};
+
+/**
+ * useEscapeKey - Calls handler when Escape key is pressed while active.
+ */
+const useEscapeKey = (handler, isActive) => {
+  useEffect(() => {
+    if (!isActive) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handler();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handler, isActive]);
+};
+
+// ===========================
 // ERROR BOUNDARY COMPONENT
 // ===========================
 
@@ -548,6 +614,10 @@ const LoadingOverlay = ({ isVisible, message = 'Loading...' }) => {
  * Confirm Modal Component - replacement for window.confirm()
  */
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', type = 'warning' }) => {
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, isOpen);
+  useEscapeKey(onClose, isOpen);
+
   if (!isOpen) return null;
 
   const getTypeStyles = () => {
@@ -567,7 +637,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
-         onClick={onClose}>
+         onClick={onClose} ref={modalRef} role="dialog" aria-modal="true" aria-label={title}>
       <div className={`bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-6
                       shadow-2xl border border-white border-opacity-20 w-full max-w-md transform
                       transition-all duration-300 scale-100`}
@@ -659,9 +729,9 @@ const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabl
  * Quiz option button (for multiple choice)
  */
 const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex, role: roleOverride, ...restProps }) => {
-  let bgColor = 'bg-white bg-opacity-10';
-  let borderColor = 'border-white border-opacity-30';
-  let hoverClass = 'hover:bg-opacity-20 hover:scale-105';
+  let bgColor = 'bg-white bg-opacity-15';
+  let borderColor = 'border-white border-opacity-40';
+  let hoverClass = 'hover:bg-opacity-25 hover:scale-105';
   let ariaLabel = `Option ${optionIndex !== undefined ? String.fromCharCode(65 + optionIndex) : ''}: ${children}`;
 
   if (isCorrect) {
@@ -732,7 +802,7 @@ const StatsCard = ({ icon: Icon, title, value, subtitle, color = 'text-white', i
       <div>
         <p className="text-white text-opacity-70 text-sm mb-1">{title}</p>
         <p className={`text-3xl font-bold ${color}`}>{value}</p>
-        {subtitle && <p className="text-white text-opacity-60 text-xs mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-white text-opacity-75 text-xs mt-1">{subtitle}</p>}
       </div>
       {Icon && (
         <div className={`p-3 bg-white bg-opacity-10 rounded-lg ${iconColor}`}>
@@ -789,7 +859,7 @@ const BadgeCard = ({ badge, earned = false }) => (
                    ${earned ? 'shadow-lg shadow-yellow-500/50' : ''}`}>
     <div className="text-4xl mb-2">{badge.icon}</div>
     <h4 className="text-white font-semibold text-sm mb-1">{badge.name}</h4>
-    <p className="text-white text-opacity-60 text-xs">{badge.description}</p>
+    <p className="text-white text-opacity-75 text-xs">{badge.description}</p>
   </div>
 );
 
@@ -820,21 +890,15 @@ const ProgressBar = ({ progress, color = 'bg-blue-500', height = 'h-2', label = 
  * Base modal component with backdrop
  */
 const Modal = ({ children, isOpen, onClose, title, maxWidth = 'max-w-md' }) => {
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      window.addEventListener('keydown', handleEsc);
-      return () => window.removeEventListener('keydown', handleEsc);
-    }
-  }, [isOpen, onClose]);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, isOpen);
+  useEscapeKey(onClose, isOpen);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
-         onClick={onClose}>
+         onClick={onClose} ref={modalRef} role="dialog" aria-modal="true" aria-label={title}>
       <div className={`bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-6
                       shadow-2xl border border-white border-opacity-20 w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
            onClick={(e) => e.stopPropagation()}>
@@ -870,6 +934,9 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
     name: '', email: '', whatsapp: '', exam: [], city: '', state: ''
   });
   const nameRef = useRef(null);
+  const signupModalRef = useRef(null);
+  useFocusTrap(signupModalRef, isOpen);
+  useEscapeKey(onClose, isOpen);
 
   useEffect(() => {
     if (isOpen && nameRef.current) {
@@ -879,32 +946,6 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
       setFormData({ name: '', email: '', whatsapp: '', exam: [], city: '', state: '' });
     }
   }, [isOpen]);
-
-  // Focus trap
-  useEffect(() => {
-    if (!isOpen) return;
-    const modal = document.getElementById('signup-modal');
-    if (!modal) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') { onClose(); return; }
-      if (e.key !== 'Tab') return;
-      const focusable = modal.querySelectorAll('input, select, button, [tabindex]:not([tabindex="-1"])');
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   const toggleExam = (exam) => {
     setFormData(prev => ({
@@ -925,6 +966,7 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
          onClick={onClose}
+         ref={signupModalRef}
          role="dialog"
          aria-modal="true"
          aria-label="Join VocabPro">
@@ -938,7 +980,7 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
             <X width="24" height="24" />
           </button>
         </div>
-        <p className="text-white text-opacity-60 text-sm mb-5">Get updates, tips & new words</p>
+        <p className="text-white text-opacity-75 text-sm mb-5">Get updates, tips & new words</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -1425,6 +1467,9 @@ const SearchModal = ({ isOpen, onClose }) => {
   const [results, setResults] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
   const inputRef = useRef(null);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, isOpen);
+  useEscapeKey(onClose, isOpen);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -1486,7 +1531,7 @@ const SearchModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black bg-opacity-50 backdrop-blur-sm"
-         onClick={onClose}>
+         onClick={onClose} ref={modalRef} role="dialog" aria-modal="true" aria-label="Search words">
       <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl shadow-2xl
                       border border-white border-opacity-20 w-full max-w-2xl max-h-[70vh] overflow-hidden"
            onClick={(e) => e.stopPropagation()}>
@@ -1498,6 +1543,7 @@ const SearchModal = ({ isOpen, onClose }) => {
               ref={inputRef}
               type="text"
               placeholder="Search words, definitions, synonyms..."
+              aria-label="Search words, definitions, and synonyms"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="flex-1 bg-transparent text-white placeholder-white placeholder-opacity-50
@@ -1638,7 +1684,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                     </div>
                     <ChevronRight width="16" height="16" className="text-white text-opacity-50" />
                   </div>
-                  <p className="text-white text-opacity-60 text-sm mt-1 line-clamp-1">
+                  <p className="text-white text-opacity-75 text-sm mt-1 line-clamp-1">
                     {item.definition || item.full || item.phrase}
                   </p>
                 </div>
