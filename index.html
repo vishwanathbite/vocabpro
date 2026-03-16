@@ -351,6 +351,7 @@
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
       }
     }
 
@@ -365,6 +366,11 @@
     body {
       text-rendering: optimizeLegibility;
       -webkit-text-size-adjust: 100%;
+    }
+
+    /* Improve contrast for white text on translucent backgrounds (WCAG AA) */
+    .bg-opacity-10, .bg-opacity-15, .bg-opacity-20 {
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     /* Prevent zoom on input focus (iOS) */

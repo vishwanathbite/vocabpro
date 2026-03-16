@@ -35,7 +35,7 @@ const DailyGoals = () => {
           </div>
           <div>
             <h3 className="text-lg font-bold text-white">Daily Goal</h3>
-            <p className="text-white text-opacity-60 text-sm">{goal.name}</p>
+            <p className="text-white text-opacity-75 text-sm">{goal.name}</p>
           </div>
         </div>
         {isComplete && (
@@ -130,7 +130,7 @@ const WordOfTheDay = () => {
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Word of the Day</h3>
-              <p className="text-white text-opacity-60 text-xs">{new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+              <p className="text-white text-opacity-75 text-xs">{new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -308,7 +308,7 @@ const HomeScreen = ({
                   {showSignedUpCard && (
                     <div className="absolute right-0 top-full mt-2 bg-gradient-to-br from-purple-900 to-blue-900 rounded-xl p-4 shadow-2xl border border-white border-opacity-20 min-w-[220px] z-50">
                       <p className="text-white text-sm font-semibold">{signedUpName}</p>
-                      <p className="text-white text-opacity-60 text-xs mt-1">{signedUpEmail}</p>
+                      <p className="text-white text-opacity-75 text-xs mt-1">{signedUpEmail}</p>
                     </div>
                   )}
                 </div>
@@ -616,7 +616,7 @@ const HomeScreen = ({
             </button>
             <button
               onClick={onDismissNudge}
-              className="p-1 text-white text-opacity-60 hover:text-opacity-100"
+              className="p-1 text-white text-opacity-75 hover:text-opacity-100"
               aria-label="Dismiss"
             >
               <X width="18" height="18" />
@@ -889,17 +889,18 @@ const FlashcardScreen = ({
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={onBack}
+              aria-label="Exit flashcard session"
               className="flex items-center gap-2 text-white hover:text-gray-300 transition-all"
             >
               <ArrowLeft width="20" height="20" />
               <span>Exit</span>
             </button>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-green-500 bg-opacity-20 px-3 py-1 rounded-lg">
+              <div className="flex items-center gap-2 bg-green-500 bg-opacity-20 px-3 py-1 rounded-lg" aria-label={`${knownCards.length} cards known`}>
                 <Check width="16" height="16" className="text-green-400" />
                 <span className="text-green-300 font-bold">{knownCards.length}</span>
               </div>
-              <div className="flex items-center gap-2 bg-red-500 bg-opacity-20 px-3 py-1 rounded-lg">
+              <div className="flex items-center gap-2 bg-red-500 bg-opacity-20 px-3 py-1 rounded-lg" aria-label={`${unknownCards.length} cards still learning`}>
                 <X width="16" height="16" className="text-red-400" />
                 <span className="text-red-300 font-bold">{unknownCards.length}</span>
               </div>
@@ -921,7 +922,11 @@ const FlashcardScreen = ({
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div
           onClick={handleFlip}
-          className="relative cursor-pointer perspective-1000"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleFlip(); } }}
+          role="region"
+          aria-label={isFlipped ? 'Flashcard — showing definition. Press Enter to flip back to word.' : 'Flashcard — showing word. Press Enter to flip and see definition.'}
+          tabIndex={0}
+          className="relative cursor-pointer perspective-1000 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent rounded-2xl"
           style={{ minHeight: '350px' }}
         >
           <div
@@ -941,7 +946,7 @@ const FlashcardScreen = ({
               style={{ backfaceVisibility: 'hidden' }}
             >
               <div className="text-center">
-                <p className="text-white text-opacity-60 text-sm mb-4">TAP TO FLIP</p>
+                <p className="text-white text-opacity-75 text-sm mb-4">TAP TO FLIP</p>
                 <h2 className="text-4xl font-bold text-white mb-4">
                   {currentCard.word || currentCard.acronym || currentCard.answer}
                 </h2>
@@ -970,25 +975,25 @@ const FlashcardScreen = ({
               <div className="text-center space-y-4 w-full">
                 {currentCard.definition && (
                   <div>
-                    <p className="text-white text-opacity-60 text-sm">Definition</p>
+                    <p className="text-white text-opacity-75 text-sm">Definition</p>
                     <p className="text-white text-xl">{currentCard.definition}</p>
                   </div>
                 )}
                 {currentCard.full && (
                   <div>
-                    <p className="text-white text-opacity-60 text-sm">Full Form</p>
+                    <p className="text-white text-opacity-75 text-sm">Full Form</p>
                     <p className="text-white text-xl">{currentCard.full}</p>
                   </div>
                 )}
                 {currentCard.phrase && (
                   <div>
-                    <p className="text-white text-opacity-60 text-sm">Phrase</p>
+                    <p className="text-white text-opacity-75 text-sm">Phrase</p>
                     <p className="text-white text-lg">{currentCard.phrase}</p>
                   </div>
                 )}
                 {currentCard.example && (
                   <div className="mt-4">
-                    <p className="text-white text-opacity-60 text-sm">Example</p>
+                    <p className="text-white text-opacity-75 text-sm">Example</p>
                     <p className="text-white text-opacity-80 italic">"{currentCard.example}"</p>
                   </div>
                 )}
@@ -1006,6 +1011,7 @@ const FlashcardScreen = ({
         <div className="flex gap-4 mt-8">
           <button
             onClick={handleDontKnow}
+            aria-label="Still learning — mark card for review"
             className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-red-500 bg-opacity-20
                       border-2 border-red-400 text-red-300 rounded-xl font-semibold
                       hover:bg-opacity-30 active:scale-95 transition-all"
@@ -1015,6 +1021,7 @@ const FlashcardScreen = ({
           </button>
           <button
             onClick={handleKnow}
+            aria-label="Got it — mark card as known"
             className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-green-500 bg-opacity-20
                       border-2 border-green-400 text-green-300 rounded-xl font-semibold
                       hover:bg-opacity-30 active:scale-95 transition-all"
@@ -1156,7 +1163,7 @@ const SettingsScreen = ({ onBack, onToast }) => {
         )}
         <div>
           <p className="text-white font-medium">{label}</p>
-          {description && <p className="text-white text-opacity-60 text-sm">{description}</p>}
+          {description && <p className="text-white text-opacity-75 text-sm">{description}</p>}
         </div>
       </div>
       <button
@@ -1238,8 +1245,8 @@ const SettingsScreen = ({ onBack, onToast }) => {
                 }`}
               >
                 <p className="text-white font-bold">{preset.name}</p>
-                <p className="text-white text-opacity-60 text-sm">{preset.questions} questions</p>
-                <p className="text-white text-opacity-60 text-sm">{preset.points} points</p>
+                <p className="text-white text-opacity-75 text-sm">{preset.questions} questions</p>
+                <p className="text-white text-opacity-75 text-sm">{preset.points} points</p>
               </button>
             ))}
           </div>
@@ -1570,7 +1577,7 @@ const QuizHistoryScreen = ({ onBack }) => {
                         {getModeLabel(quiz.mode)}
                       </span>
                       {quiz.difficulty && (
-                        <span className="text-white text-opacity-60 text-sm capitalize">{quiz.difficulty}</span>
+                        <span className="text-white text-opacity-75 text-sm capitalize">{quiz.difficulty}</span>
                       )}
                     </div>
                     <span className="text-white text-opacity-50 text-sm">{formatDate(quiz.date)}</span>
@@ -1854,13 +1861,17 @@ const OnboardingScreen = ({ onComplete, onSkip }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4"
+         role="region" aria-label={`Onboarding step ${currentStep + 1} of ${steps.length}`}>
       <div className="w-full max-w-lg">
         {/* Progress Dots */}
-        <div className="flex justify-center gap-2 mb-8">
+        <div className="flex justify-center gap-2 mb-8" role="progressbar"
+             aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={steps.length}
+             aria-label={`Step ${currentStep + 1} of ${steps.length}`}>
           {steps.map((_, index) => (
             <div
               key={index}
+              aria-hidden="true"
               className={`w-2 h-2 rounded-full transition-all ${
                 index === currentStep
                   ? 'w-8 bg-blue-400'
@@ -1904,7 +1915,8 @@ const OnboardingScreen = ({ onComplete, onSkip }) => {
           {currentStep < steps.length - 1 && (
             <button
               onClick={handleSkip}
-              className="mt-4 text-white text-opacity-60 hover:text-opacity-100 text-sm"
+              aria-label="Skip onboarding tutorial"
+              className="mt-4 text-white text-opacity-75 hover:text-opacity-100 text-sm"
             >
               Skip tutorial
             </button>
