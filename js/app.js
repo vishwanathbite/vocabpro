@@ -6,6 +6,275 @@
 
 const { useState, useEffect, useRef, useCallback } = React;
 
+// ===========================
+// DAILY CHALLENGE SYSTEM
+// ===========================
+
+/**
+ * Deterministic pseudo-random number generator from a seed string.
+ * Same seed always produces the same sequence of numbers.
+ */
+function seededRandom(seed) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return function() {
+    hash = (hash * 1103515245 + 12345) & 0x7fffffff;
+    return (hash >> 16) / 32768;
+  };
+}
+
+/**
+ * Seeded version of shuffleArray
+ */
+function seededShuffle(arr, rng) {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
+ * Pick n items from array using seeded RNG (without replacement)
+ */
+function seededSample(arr, n, rng) {
+  const pool = [...arr];
+  const result = [];
+  for (let i = 0; i < n && pool.length > 0; i++) {
+    const idx = Math.floor(rng() * pool.length);
+    result.push(pool.splice(idx, 1)[0]);
+  }
+  return result;
+}
+
+/**
+ * Daily Challenge Manager
+ * Handles persistence, streak tracking, and question generation
+ */
+const DailyChallengeManager = {
+  getToday() {
+    return new Date().toISOString().split('T')[0];
+  },
+
+  getTodayFormatted() {
+    const d = new Date();
+    return d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  },
+
+  loadData() {
+    const state = StorageManager.loadState();
+    return state.dailyChallenge || { lastCompletedDate: null, streak: 0, bestStreak: 0, history: {} };
+  },
+
+  saveData(data) {
+    const state = StorageManager.loadState();
+    state.dailyChallenge = data;
+    StorageManager.saveState(state);
+  },
+
+  isCompletedToday() {
+    const data = this.loadData();
+    return data.lastCompletedDate === this.getToday();
+  },
+
+  getTodayResult() {
+    const data = this.loadData();
+    return data.history[this.getToday()] || null;
+  },
+
+  getStreak() {
+    const data = this.loadData();
+    const today = this.getToday();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (data.lastCompletedDate === today) {
+      return data.streak;
+    }
+    if (data.lastCompletedDate === yesterdayStr) {
+      return data.streak;
+    }
+    return 0;
+  },
+
+  getBestStreak() {
+    return this.loadData().bestStreak || 0;
+  },
+
+  getYesterdayResult() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const data = this.loadData();
+    return data.history[yesterdayStr] || null;
+  },
+
+  completeChallenge(score, total, points) {
+    const data = this.loadData();
+    const today = this.getToday();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Calculate streak
+    let newStreak;
+    if (data.lastCompletedDate === yesterdayStr) {
+      newStreak = data.streak + 1;
+    } else if (data.lastCompletedDate === today) {
+      newStreak = data.streak; // Already completed today
+    } else {
+      newStreak = 1; // Streak reset
+    }
+
+    data.lastCompletedDate = today;
+    data.streak = newStreak;
+    data.bestStreak = Math.max(data.bestStreak || 0, newStreak);
+    data.history[today] = { score, total, points };
+
+    // Cleanup: keep only last 30 days
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    for (const dateKey of Object.keys(data.history)) {
+      if (dateKey < cutoffStr) {
+        delete data.history[dateKey];
+      }
+    }
+
+    this.saveData(data);
+    return { streak: newStreak, bestStreak: data.bestStreak };
+  },
+
+  /**
+   * Generate deterministic daily challenge questions.
+   * Same date = same questions for every user.
+   */
+  generateQuestions() {
+    const today = this.getToday();
+    const rng = seededRandom('vocabpro-daily-' + today);
+
+    const easyPool = [...(vocabularyDB.easy || [])];
+    const mediumPool = [...(vocabularyDB.medium || [])];
+    const hardPool = [...(vocabularyDB.hard || [])];
+
+    // Pick 3 easy, 4 medium, 3 hard words
+    const easyWords = seededSample(easyPool, 3, rng);
+    const mediumWords = seededSample(mediumPool, 4, rng);
+    const hardWords = seededSample(hardPool, 3, rng);
+
+    // Combine all and assign modes
+    const allWords = [...easyWords, ...mediumWords, ...hardWords];
+    const modes = ['vocab', 'synonym', 'vocab', 'synonym', 'vocab', 'antonym', 'vocab', 'antonym', 'vocab', 'vocab'];
+    const difficulties = ['easy', 'easy', 'easy', 'medium', 'medium', 'medium', 'medium', 'hard', 'hard', 'hard'];
+
+    const allVocab = [...(vocabularyDB.easy || []), ...(vocabularyDB.medium || []), ...(vocabularyDB.hard || [])];
+
+    const questions = allWords.map((word, i) => {
+      if (!word || !word.word) return null;
+      const questionMode = modes[i];
+      const questionDifficulty = difficulties[i];
+
+      if (questionMode === 'synonym') {
+        if (!word.synonyms || word.synonyms.length === 0) {
+          // Fall back to vocab mode
+          const distractors = generateSmartDistractors(word.definition, allVocab, 3);
+          const options = seededShuffle([word.definition, ...distractors], rng);
+          return {
+            question: `What is the meaning of "${word.word}"?`,
+            options, correct: word.definition, wordData: word, word: word.word,
+            dailyMode: 'Vocabulary', difficulty: questionDifficulty, startTime: Date.now()
+          };
+        }
+        const correctSyn = word.synonyms[Math.floor(rng() * word.synonyms.length)];
+        const synPool = [];
+        for (const w of allVocab) {
+          if (w.synonyms && w.word !== word.word) {
+            for (const s of w.synonyms) {
+              if (!word.synonyms.includes(s) && !synPool.includes(s)) synPool.push(s);
+            }
+          }
+        }
+        const distractors = seededSample(synPool, 3, rng);
+        const options = seededShuffle([correctSyn, ...distractors], rng);
+        return {
+          question: word.word, options, correct: correctSyn, wordData: word, word: word.word,
+          dailyMode: 'Synonym', difficulty: questionDifficulty, startTime: Date.now()
+        };
+      }
+
+      if (questionMode === 'antonym') {
+        if (!word.antonyms || word.antonyms.length === 0) {
+          const distractors = generateSmartDistractors(word.definition, allVocab, 3);
+          const options = seededShuffle([word.definition, ...distractors], rng);
+          return {
+            question: `What is the meaning of "${word.word}"?`,
+            options, correct: word.definition, wordData: word, word: word.word,
+            dailyMode: 'Vocabulary', difficulty: questionDifficulty, startTime: Date.now()
+          };
+        }
+        const correctAnt = word.antonyms[Math.floor(rng() * word.antonyms.length)];
+        const antPool = [];
+        for (const w of allVocab) {
+          if (w.antonyms && w.word !== word.word) {
+            for (const a of w.antonyms) {
+              if (!word.antonyms.includes(a) && !antPool.includes(a)) antPool.push(a);
+            }
+          }
+        }
+        const distractors = seededSample(antPool, 3, rng);
+        const options = seededShuffle([correctAnt, ...distractors], rng);
+        return {
+          question: word.word, options, correct: correctAnt, wordData: word, word: word.word,
+          dailyMode: 'Antonym', difficulty: questionDifficulty, startTime: Date.now()
+        };
+      }
+
+      // Default: vocab mode
+      const distractors = generateSmartDistractors(word.definition, allVocab, 3);
+      const options = seededShuffle([word.definition, ...distractors], rng);
+      return {
+        question: `What is the meaning of "${word.word}"?`,
+        options, correct: word.definition, wordData: word, word: word.word,
+        dailyMode: 'Vocabulary', difficulty: questionDifficulty, startTime: Date.now()
+      };
+    }).filter(q => q !== null);
+
+    // Final shuffle
+    return seededShuffle(questions, rng);
+  },
+
+  /**
+   * Calculate points for daily challenge results
+   */
+  calculateDailyPoints(correctCount, totalQuestions, questions) {
+    let points = 0;
+    // Base points per correct answer with difficulty bonus
+    for (let i = 0; i < correctCount; i++) {
+      const q = questions[i];
+      const diff = q ? q.difficulty : 'easy';
+      points += 10; // base
+      if (diff === 'medium') points += 5;
+      if (diff === 'hard') points += 10;
+    }
+    // Perfect score bonus
+    if (correctCount === totalQuestions) {
+      points += 50;
+    }
+    // Streak bonus
+    const streak = this.getStreak();
+    points += Math.min(streak * 10, 100);
+    return points;
+  }
+};
+
+window.DailyChallengeManager = DailyChallengeManager;
+
 /**
  * Main Application Component
  */
@@ -102,6 +371,14 @@ function App() {
   });
   const [showSignUpNudge, setShowSignUpNudge] = useState(false);
   const [showSignedUpCard, setShowSignedUpCard] = useState(false);
+
+  // Daily Challenge State
+  const [isDailyChallenge, setIsDailyChallenge] = useState(false);
+  const [dailyChallengeCompleted, setDailyChallengeCompleted] = useState(() => DailyChallengeManager.isCompletedToday());
+  const [dailyChallengeResult, setDailyChallengeResult] = useState(() => DailyChallengeManager.getTodayResult());
+  const [dailyChallengeStreak, setDailyChallengeStreak] = useState(() => DailyChallengeManager.getStreak());
+  const [showDailyChallengeResults, setShowDailyChallengeResults] = useState(false);
+  const [dailyChallengeQuestions, setDailyChallengeQuestions] = useState([]);
 
   // ===========================
   // INITIALIZATION & PERSISTENCE
@@ -804,7 +1081,11 @@ function App() {
       stopSpeech();
     } else {
       // Quiz finished
-      handleQuizComplete();
+      if (isDailyChallenge) {
+        handleDailyChallengeComplete();
+      } else {
+        handleQuizComplete();
+      }
     }
   };
 
@@ -864,6 +1145,110 @@ function App() {
       }
     });
     setShowConfirmModal(true);
+  };
+
+  // ===========================
+  // DAILY CHALLENGE HANDLERS
+  // ===========================
+
+  const handleStartDailyChallenge = async () => {
+    if (DailyChallengeManager.isCompletedToday()) {
+      toast.info("You've already completed today's challenge!");
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingMessage("Preparing today's challenge...");
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const dcQuestions = DailyChallengeManager.generateQuestions();
+    if (!dcQuestions || dcQuestions.length === 0) {
+      setIsLoading(false);
+      setLoadingMessage('');
+      toast.error('Could not generate daily challenge questions.');
+      return;
+    }
+
+    setDailyChallengeQuestions(dcQuestions);
+    setQuestions(dcQuestions);
+    setCurrentIndex(0);
+    setScore(0);
+    setCorrectCount(0);
+    setShowResult(false);
+    setIsCorrect(false);
+    setSelectedAnswer(null);
+    setIsDailyChallenge(true);
+    setMode('daily');
+    setDifficulty(null);
+    setIsLoading(false);
+    setLoadingMessage('');
+    setScreen('quiz');
+  };
+
+  const handleDailyChallengeComplete = () => {
+    const totalQ = dailyChallengeQuestions.length;
+    const points = DailyChallengeManager.calculateDailyPoints(correctCount, totalQ, dailyChallengeQuestions);
+    const { streak, bestStreak } = DailyChallengeManager.completeChallenge(correctCount, totalQ, points);
+
+    // Add points to stats
+    const newStats = { ...stats };
+    newStats.totalPoints += points;
+    newStats.dailyChallengeStreak = streak;
+    const levelInfo = getLevelInfo(newStats.totalPoints);
+    newStats.level = levelInfo.level;
+    const earnedBadges = getEarnedBadges(newStats);
+    newStats.earnedBadges = earnedBadges.map(b => b.id);
+    setStats(newStats);
+
+    // Save to quiz history
+    QuizHistoryManager.addQuiz({
+      mode: 'daily',
+      difficulty: 'mixed',
+      questionsTotal: totalQ,
+      questionsCorrect: correctCount,
+      score: points,
+      words: dailyChallengeQuestions.map(q => q.word).filter(Boolean)
+    });
+
+    setDailyChallengeCompleted(true);
+    setDailyChallengeResult({ score: correctCount, total: totalQ, points });
+    setDailyChallengeStreak(streak);
+    setShowDailyChallengeResults(true);
+    stopSpeech();
+  };
+
+  const handleDailyChallengeResultsClose = () => {
+    setShowDailyChallengeResults(false);
+    setIsDailyChallenge(false);
+    setDailyChallengeQuestions([]);
+    setScreen('home');
+  };
+
+  const handleShareDailyChallenge = () => {
+    const result = DailyChallengeManager.getTodayResult();
+    if (!result) return;
+    const streak = DailyChallengeManager.getStreak();
+    const dateStr = DailyChallengeManager.getTodayFormatted();
+    const text = `🏆 VocabPro Daily Challenge\n📅 ${dateStr}\n📊 Score: ${result.score}/${result.total}\n🔥 Streak: ${streak} day${streak !== 1 ? 's' : ''}\n\nCan you beat my score? Try today's challenge:\nhttps://vishwanathbite.github.io/vocabpro/`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        toast.success('Results copied to clipboard!');
+      }).catch(() => {
+        toast.info('Could not copy to clipboard');
+      });
+    } else if (navigator.share) {
+      navigator.share({ text }).catch(() => {});
+    }
+  };
+
+  // Override handleBack for daily challenge (no quitting)
+  const handleBackWithDaily = () => {
+    if (isDailyChallenge) {
+      toast.info("You can't exit during a Daily Challenge! Complete all 10 questions.");
+      return;
+    }
+    handleBack();
   };
 
   // ===========================
@@ -1163,6 +1548,11 @@ function App() {
           onToggleSignedUpCard={() => setShowSignedUpCard(!showSignedUpCard)}
           showSignUpNudge={showSignUpNudge}
           onDismissNudge={dismissNudge}
+          onStartDailyChallenge={handleStartDailyChallenge}
+          dailyChallengeCompleted={dailyChallengeCompleted}
+          dailyChallengeResult={dailyChallengeResult}
+          dailyChallengeStreak={dailyChallengeStreak}
+          onShareDailyChallenge={handleShareDailyChallenge}
         />
       ) : screen === 'flashcard' ? (
         <FlashcardScreen
@@ -1202,11 +1592,25 @@ function App() {
           selectedAnswer={selectedAnswer}
           onAnswer={handleAnswer}
           onNext={handleNext}
-          onBack={handleBack}
+          onBack={isDailyChallenge ? handleBackWithDaily : handleBack}
           stats={stats}
+          isDailyChallenge={isDailyChallenge}
         />
       )}
       </div>
+
+      {/* Daily Challenge Results Modal */}
+      {showDailyChallengeResults && dailyChallengeResult && (
+        <DailyChallengeResultsScreen
+          score={dailyChallengeResult.score}
+          total={dailyChallengeResult.total}
+          points={dailyChallengeResult.points}
+          streak={dailyChallengeStreak}
+          dateStr={DailyChallengeManager.getTodayFormatted()}
+          onShare={handleShareDailyChallenge}
+          onClose={handleDailyChallengeResultsClose}
+        />
+      )}
 
       {/* Modals */}
       <AuthModal

@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 23;
+const CACHE_VERSION = 24;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
