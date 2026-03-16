@@ -101,7 +101,10 @@ const BADGES = [
 
   // Special Badges
   { id: 'referral', name: 'Social Butterfly', description: 'Refer a friend', icon: '🦋', condition: (stats) => stats.referrals >= 1 },
-  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 5 }
+  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 5 },
+
+  // Daily Challenge Badges
+  { id: 'daily_challenge_7', name: 'Consistent Challenger', description: 'Complete 7 daily challenges in a row', icon: '🏆', condition: (stats) => stats.dailyChallengeStreak >= 7 }
 ];
 
 /**
@@ -178,7 +181,8 @@ const POINTS_CONFIG = {
   medium: 15,
   hard: 20,
   acronym: 12,
-  oneword: 12
+  oneword: 12,
+  daily: 10
 };
 
 /**

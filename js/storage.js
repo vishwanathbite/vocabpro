@@ -100,6 +100,14 @@ const getDefaultState = () => ({
   // Pending referral code
   pendingReferral: null,
 
+  // Daily Challenge
+  dailyChallenge: {
+    lastCompletedDate: null,
+    streak: 0,
+    bestStreak: 0,
+    history: {}
+  },
+
   // Gamification stats (per-user, but stored here for single-user mode)
   stats: {
     totalPoints: 0,

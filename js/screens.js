@@ -188,6 +188,155 @@ const WordOfTheDay = () => {
 };
 
 // ===========================
+// DAILY CHALLENGE CARD
+// ===========================
+
+const DailyChallengeCard = ({
+  completed,
+  result,
+  streak,
+  onStart,
+  onShare
+}) => {
+  const yesterdayResult = DailyChallengeManager.getYesterdayResult();
+  const dateStr = DailyChallengeManager.getTodayFormatted();
+
+  const getScoreMessage = (score) => {
+    if (score === 10) return 'Perfect!';
+    if (score >= 8) return 'Excellent!';
+    if (score >= 6) return 'Good job!';
+    if (score >= 4) return 'Not bad!';
+    return 'Keep practicing!';
+  };
+
+  return (
+    <div className="mb-8 rounded-xl p-6 border border-amber-400 border-opacity-40"
+      style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%)' }}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="p-3 rounded-lg bg-amber-500 bg-opacity-20">
+          <Trophy width="24" height="24" className="text-amber-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-white">Daily Challenge</h3>
+          <p className="text-white text-opacity-70 text-sm">{dateStr}</p>
+        </div>
+      </div>
+
+      <p className="text-white text-opacity-80 text-sm mb-4">
+        10 questions &middot; Mixed difficulty &middot; Same for everyone
+      </p>
+
+      {completed && result ? (
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-green-500 bg-opacity-20 rounded-lg px-4 py-2 flex items-center gap-2">
+              <CheckCircle width="20" height="20" className="text-green-400" />
+              <span className="text-white font-bold">{result.score}/{result.total}</span>
+            </div>
+            <span className="text-white text-opacity-70">{getScoreMessage(result.score)}</span>
+          </div>
+          <button
+            onClick={onShare}
+            className="w-full py-3 rounded-lg bg-amber-500 bg-opacity-20 border border-amber-400 border-opacity-40 text-amber-300 font-semibold hover:bg-opacity-30 transition-all flex items-center justify-center gap-2"
+          >
+            <Share2 width="18" height="18" />
+            Share Results
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={onStart}
+          className="w-full py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:from-amber-600 hover:to-orange-600 transition-all"
+        >
+          Start Today's Challenge
+        </button>
+      )}
+
+      <div className="mt-4 flex items-center gap-4 text-sm">
+        {streak > 0 && (
+          <span className="text-amber-300 flex items-center gap-1">
+            <Flame width="16" height="16" />
+            Streak: {streak} day{streak !== 1 ? 's' : ''}
+          </span>
+        )}
+        {yesterdayResult && !completed && (
+          <span className="text-white text-opacity-60">
+            Yesterday: {yesterdayResult.score}/{yesterdayResult.total}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ===========================
+// DAILY CHALLENGE RESULTS SCREEN
+// ===========================
+
+const DailyChallengeResultsScreen = ({
+  score,
+  total,
+  points,
+  streak,
+  dateStr,
+  onShare,
+  onClose
+}) => {
+  const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
+  const getMessage = () => {
+    if (score === total) return 'Perfect!';
+    if (accuracy >= 80) return 'Excellent!';
+    if (accuracy >= 60) return 'Good job!';
+    if (accuracy >= 40) return 'Not bad!';
+    return 'Keep practicing!';
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+      style={{ animation: 'fade-in 0.3s ease-out' }}>
+      <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-8 max-w-md w-full border border-white border-opacity-20 text-center"
+        style={{ animation: 'bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' }}>
+        <div className="text-4xl mb-2">🏆</div>
+        <h2 className="text-2xl font-bold text-white mb-1">Daily Challenge</h2>
+        <p className="text-white text-opacity-70 text-sm mb-6">{dateStr}</p>
+
+        <div className="text-5xl font-bold text-white mb-2">{score}/{total}</div>
+        <p className="text-xl text-amber-400 font-semibold mb-6">{getMessage()}</p>
+
+        <div className="flex justify-center gap-4 mb-6">
+          <div className="bg-white bg-opacity-10 rounded-xl px-5 py-3">
+            <div className="text-amber-400 font-bold text-lg">+{points}</div>
+            <div className="text-white text-opacity-60 text-xs">Points</div>
+          </div>
+          <div className="bg-white bg-opacity-10 rounded-xl px-5 py-3">
+            <div className="text-orange-400 font-bold text-lg flex items-center justify-center gap-1">
+              {streak} <Flame width="16" height="16" />
+            </div>
+            <div className="text-white text-opacity-60 text-xs">Day{streak !== 1 ? 's' : ''} Streak</div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={onShare}
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
+          >
+            <Share2 width="18" height="18" />
+            Share Challenge Results
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-lg bg-white bg-opacity-10 text-white font-semibold hover:bg-opacity-20 transition-all"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===========================
 // HOME SCREEN
 // ===========================
 
@@ -214,7 +363,12 @@ const HomeScreen = ({
   showSignedUpCard = false,
   onToggleSignedUpCard,
   showSignUpNudge = false,
-  onDismissNudge
+  onDismissNudge,
+  onStartDailyChallenge,
+  dailyChallengeCompleted = false,
+  dailyChallengeResult = null,
+  dailyChallengeStreak = 0,
+  onShareDailyChallenge
 }) => {
   const [showBadges, setShowBadges] = useState(false);
   const levelInfo = getLevelInfo(stats.totalPoints);
@@ -413,6 +567,15 @@ const HomeScreen = ({
             iconColor="text-blue-400"
           />
         </div>
+
+        {/* Daily Challenge Card */}
+        <DailyChallengeCard
+          completed={dailyChallengeCompleted}
+          result={dailyChallengeResult}
+          streak={dailyChallengeStreak}
+          onStart={onStartDailyChallenge}
+          onShare={onShareDailyChallenge}
+        />
 
         {/* Daily Goals */}
         {showDailyGoals && <DailyGoals />}
@@ -658,7 +821,8 @@ const QuizScreen = ({
   onAnswer,
   onNext,
   onBack,
-  stats
+  stats,
+  isDailyChallenge = false
 }) => {
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -674,6 +838,9 @@ const QuizScreen = ({
   }
 
   const getModeTitle = () => {
+    if (isDailyChallenge) {
+      return `Daily Challenge`;
+    }
     const titles = {
       vocab: 'Vocabulary',
       synonym: 'Synonyms',
@@ -685,6 +852,11 @@ const QuizScreen = ({
   };
 
   const getQuestionText = () => {
+    if (isDailyChallenge && currentQuestion.dailyMode) {
+      if (currentQuestion.dailyMode === 'Synonym') return `Find a synonym for: ${currentQuestion.question}`;
+      if (currentQuestion.dailyMode === 'Antonym') return `Find an antonym for: ${currentQuestion.question}`;
+      return currentQuestion.question;
+    }
     if (mode === 'vocab') return currentQuestion.question;
     if (mode === 'synonym') return `Find a synonym for: ${currentQuestion.question}`;
     if (mode === 'antonym') return `Find an antonym for: ${currentQuestion.question}`;
@@ -699,13 +871,20 @@ const QuizScreen = ({
       <header className="bg-white bg-opacity-10 backdrop-blur-xl border-b border-white border-opacity-20">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-white hover:text-gray-300 transition-all"
-            >
-              <ArrowLeft width="20" height="20" />
-              <span>Back</span>
-            </button>
+            {isDailyChallenge ? (
+              <div className="flex items-center gap-2 text-amber-400">
+                <Trophy width="20" height="20" />
+                <span className="font-semibold">Daily Challenge</span>
+              </div>
+            ) : (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-2 text-white hover:text-gray-300 transition-all"
+              >
+                <ArrowLeft width="20" height="20" />
+                <span>Back</span>
+              </button>
+            )}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-white bg-opacity-10 px-4 py-2 rounded-lg">
                 <Trophy width="20" height="20" className="text-yellow-400" />
@@ -721,7 +900,11 @@ const QuizScreen = ({
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-white font-semibold">{getModeTitle()}</span>
+              <span className="text-white font-semibold">
+                {isDailyChallenge && currentQuestion.dailyMode ? (
+                  <span>{currentQuestion.dailyMode}</span>
+                ) : getModeTitle()}
+              </span>
               <span className="text-white text-sm">
                 Question {currentIndex + 1} of {questions.length}
               </span>
@@ -1456,7 +1639,8 @@ const QuizHistoryScreen = ({ onBack }) => {
       acronym: 'Acronyms',
       review: 'Smart Review',
       bookmarks: 'Bookmarks',
-      match: 'Match Game'
+      match: 'Match Game',
+      daily: 'Daily Challenge'
     };
     return labels[mode] || mode;
   };
@@ -1470,7 +1654,8 @@ const QuizHistoryScreen = ({ onBack }) => {
       acronym: 'bg-pink-500',
       review: 'bg-yellow-500',
       bookmarks: 'bg-red-500',
-      match: 'bg-amber-500'
+      match: 'bg-amber-500',
+      daily: 'bg-amber-600'
     };
     return colors[mode] || 'bg-gray-500';
   };
