@@ -675,6 +675,20 @@ const HomeScreen = ({
               onClick={() => onStartQuiz('flashcard')}
             />
             <QuizModeCard
+              icon={MessageSquare}
+              title="Idioms & Phrases"
+              description="Match idioms with their meanings"
+              color="from-rose-600 to-pink-600"
+              onClick={() => onStartQuiz('idiom')}
+            />
+            <QuizModeCard
+              icon={BookOpen}
+              title="Idioms Reverse"
+              description="Identify the idiom from its meaning"
+              color="from-fuchsia-600 to-rose-600"
+              onClick={() => onStartQuiz('idiom-reverse')}
+            />
+            <QuizModeCard
               icon={Star}
               title="Smart Review"
               description="AI-powered review of words you need to practice"
@@ -868,7 +882,9 @@ const QuizScreen = ({
       synonym: 'Synonyms',
       antonym: 'Antonyms',
       oneword: 'One-Word Substitutes',
-      acronym: 'Acronyms'
+      acronym: 'Acronyms',
+      idiom: 'Idioms & Phrases',
+      'idiom-reverse': 'Idioms (Reverse)'
     };
     return titles[mode] || 'Quiz';
   };
@@ -877,6 +893,7 @@ const QuizScreen = ({
     if (isDailyChallenge && currentQuestion.dailyMode) {
       if (currentQuestion.dailyMode === 'Synonym') return `Find a synonym for: ${currentQuestion.question}`;
       if (currentQuestion.dailyMode === 'Antonym') return `Find an antonym for: ${currentQuestion.question}`;
+      if (currentQuestion.dailyMode === 'Idiom') return `What does the idiom "${currentQuestion.question}" mean?`;
       return currentQuestion.question;
     }
     if (mode === 'vocab') return currentQuestion.question;
@@ -884,6 +901,8 @@ const QuizScreen = ({
     if (mode === 'antonym') return `Find an antonym for: ${currentQuestion.question}`;
     if (mode === 'oneword') return `One word for: ${currentQuestion.question}`;
     if (mode === 'acronym') return `What does ${currentQuestion.question} stand for?`;
+    if (mode === 'idiom') return `What does the idiom "${currentQuestion.question}" mean?`;
+    if (mode === 'idiom-reverse') return `Which idiom means: ${currentQuestion.question}?`;
     return currentQuestion.question;
   };
 

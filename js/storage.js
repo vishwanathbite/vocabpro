@@ -128,7 +128,11 @@ const getDefaultState = () => ({
     earnedBadges: [],
     lastPlayedDate: null,
     totalSessionTime: 0,
-    averageAccuracy: 0
+    averageAccuracy: 0,
+    idiomsQuizzesCompleted: 0,
+    idiomsPerfectScore: 0,
+    idiomsDifficultiesCompleted: 0,
+    idiomsDifficultiesList: []
   }
 });
 

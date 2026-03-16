@@ -101,10 +101,15 @@ const BADGES = [
 
   // Special Badges
   { id: 'referral', name: 'Social Butterfly', description: 'Refer a friend', icon: '🦋', condition: (stats) => stats.referrals >= 1 },
-  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 5 },
+  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 6 },
 
   // Daily Challenge Badges
-  { id: 'daily_challenge_7', name: 'Consistent Challenger', description: 'Complete 7 daily challenges in a row', icon: '🏆', condition: (stats) => stats.dailyChallengeStreak >= 7 }
+  { id: 'daily_challenge_7', name: 'Consistent Challenger', description: 'Complete 7 daily challenges in a row', icon: '🏆', condition: (stats) => stats.dailyChallengeStreak >= 7 },
+
+  // Idiom Badges
+  { id: 'idiom_first', name: 'Phrase Hunter', description: 'Complete your first idioms quiz', icon: '💬', condition: (stats) => stats.idiomsQuizzesCompleted >= 1 },
+  { id: 'idiom_master', name: 'Idiom Master', description: 'Score 100% in an idioms quiz', icon: '🏅', condition: (stats) => stats.idiomsPerfectScore >= 1 },
+  { id: 'idiom_wordsmith', name: 'Wordsmith', description: 'Complete idioms quiz in all 3 difficulties', icon: '✍️', condition: (stats) => stats.idiomsDifficultiesCompleted >= 3 }
 ];
 
 /**
@@ -225,7 +230,11 @@ const initializeStats = () => {
     earnedBadges: [],
     lastPlayedDate: null,
     totalSessionTime: 0,
-    averageAccuracy: 0
+    averageAccuracy: 0,
+    idiomsQuizzesCompleted: 0,
+    idiomsPerfectScore: 0,
+    idiomsDifficultiesCompleted: 0,
+    idiomsDifficultiesList: []
   };
 };
 

@@ -163,15 +163,19 @@ const DailyChallengeManager = {
     const mediumPool = [...(vocabularyDB.medium || [])];
     const hardPool = [...(vocabularyDB.hard || [])];
 
-    // Pick 3 easy, 4 medium, 3 hard words
+    // Pick 3 easy, 3 medium, 2 hard words + 2 idioms
     const easyWords = seededSample(easyPool, 3, rng);
-    const mediumWords = seededSample(mediumPool, 4, rng);
-    const hardWords = seededSample(hardPool, 3, rng);
+    const mediumWords = seededSample(mediumPool, 3, rng);
+    const hardWords = seededSample(hardPool, 2, rng);
+
+    // Pick 2 idiom questions
+    const idiomPool = typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB) ? [...idiomsDB] : [];
+    const idiomWords = seededSample(idiomPool, 2, rng);
 
     // Combine all and assign modes
     const allWords = [...easyWords, ...mediumWords, ...hardWords];
-    const modes = ['vocab', 'synonym', 'vocab', 'synonym', 'vocab', 'antonym', 'vocab', 'antonym', 'vocab', 'vocab'];
-    const difficulties = ['easy', 'easy', 'easy', 'medium', 'medium', 'medium', 'medium', 'hard', 'hard', 'hard'];
+    const modes = ['vocab', 'synonym', 'vocab', 'synonym', 'vocab', 'antonym', 'vocab', 'vocab'];
+    const difficulties = ['easy', 'easy', 'easy', 'medium', 'medium', 'medium', 'hard', 'hard'];
 
     const allVocab = [...(vocabularyDB.easy || []), ...(vocabularyDB.medium || []), ...(vocabularyDB.hard || [])];
 
@@ -245,8 +249,23 @@ const DailyChallengeManager = {
       };
     }).filter(q => q !== null);
 
+    // Generate idiom questions
+    const idiomQuestions = idiomWords.map(item => {
+      if (!item || !item.idiom || !item.meaning) return null;
+      const distractorPool = idiomPool
+        .filter(d => d.meaning !== item.meaning)
+        .map(d => d.meaning);
+      const distractors = seededSample(distractorPool, 3, rng);
+      const options = seededShuffle([item.meaning, ...distractors], rng);
+      return {
+        question: item.idiom,
+        options, correct: item.meaning, wordData: item, word: item.idiom,
+        dailyMode: 'Idiom', difficulty: item.difficulty || 'medium', startTime: Date.now()
+      };
+    }).filter(q => q !== null);
+
     // Final shuffle
-    return seededShuffle(questions, rng);
+    return seededShuffle([...questions, ...idiomQuestions], rng);
   },
 
   /**
@@ -290,7 +309,7 @@ function App() {
 
   // Screen & Navigation
   const [screen, setScreen] = useState('home'); // 'home', 'quiz', 'flashcard', 'settings', 'history', 'analytics', 'onboarding'
-  const [mode, setMode] = useState(null); // 'vocab', 'synonym', 'antonym', 'oneword', 'acronym'
+  const [mode, setMode] = useState(null); // 'vocab', 'synonym', 'antonym', 'oneword', 'acronym', 'idiom', 'idiom-reverse'
   const [difficulty, setDifficulty] = useState(null); // 'easy', 'medium', 'hard'
 
   // Settings
@@ -832,6 +851,76 @@ function App() {
           startTime: Date.now()
         };
       }).filter(q => q !== null);
+    } else if (quizMode === 'idiom') {
+      // Idioms mode: Match idiom to meaning
+      if (typeof idiomsDB === 'undefined' || !Array.isArray(idiomsDB) || idiomsDB.length === 0) {
+        console.warn('idiomsDB is not defined or empty');
+        return [];
+      }
+      // Filter by difficulty if provided
+      const idiomPool = quizDifficulty
+        ? idiomsDB.filter(item => item.difficulty === quizDifficulty)
+        : idiomsDB;
+      if (idiomPool.length === 0) {
+        console.warn(`No idioms found for difficulty: ${quizDifficulty}`);
+        return [];
+      }
+      const selectedItems = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(idiomPool, count)
+        : sample(idiomPool, count);
+
+      generatedQuestions = selectedItems.map(item => {
+        if (!item || !item.idiom || !item.meaning) return null;
+        // Build distractor pool from other idiom meanings
+        const distractorPool = idiomsDB
+          .filter(d => d.meaning !== item.meaning)
+          .map(d => d.meaning);
+        const distractors = sample(distractorPool, 3);
+        const options = shuffleArray([item.meaning, ...distractors]);
+
+        return {
+          question: item.idiom,
+          options,
+          correct: item.meaning,
+          wordData: item,
+          word: item.idiom,
+          startTime: Date.now()
+        };
+      }).filter(q => q !== null);
+    } else if (quizMode === 'idiom-reverse') {
+      // Idioms reverse mode: Show meaning, pick correct idiom
+      if (typeof idiomsDB === 'undefined' || !Array.isArray(idiomsDB) || idiomsDB.length === 0) {
+        console.warn('idiomsDB is not defined or empty');
+        return [];
+      }
+      const idiomPool = quizDifficulty
+        ? idiomsDB.filter(item => item.difficulty === quizDifficulty)
+        : idiomsDB;
+      if (idiomPool.length === 0) {
+        console.warn(`No idioms found for difficulty: ${quizDifficulty}`);
+        return [];
+      }
+      const selectedItems = useSRS && typeof selectSRSOptimizedWords === 'function'
+        ? selectSRSOptimizedWords(idiomPool, count)
+        : sample(idiomPool, count);
+
+      generatedQuestions = selectedItems.map(item => {
+        if (!item || !item.idiom || !item.meaning) return null;
+        const distractorPool = idiomsDB
+          .filter(d => d.idiom !== item.idiom)
+          .map(d => d.idiom);
+        const distractors = sample(distractorPool, 3);
+        const options = shuffleArray([item.idiom, ...distractors]);
+
+        return {
+          question: item.meaning,
+          options,
+          correct: item.idiom,
+          wordData: item,
+          word: item.idiom,
+          startTime: Date.now()
+        };
+      }).filter(q => q !== null);
     } else if (quizMode === 'review') {
       // Review mode - due words across all difficulties
       const easyWords = vocabularyDB.easy || [];
@@ -926,7 +1015,7 @@ function App() {
    */
   const handleStartQuiz = useCallback((quizMode) => {
     // Check if mode needs difficulty selection
-    if (['vocab', 'synonym', 'antonym', 'match'].includes(quizMode)) {
+    if (['vocab', 'synonym', 'antonym', 'match', 'idiom', 'idiom-reverse'].includes(quizMode)) {
       setPendingMode(quizMode);
       setShowDifficultyModal(true);
     } else if (quizMode === 'flashcard') {
@@ -1037,7 +1126,7 @@ function App() {
     }
 
     // Update SRS data for the word
-    const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase;
+    const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase || currentQuestion.wordData?.idiom;
     if (wordId) {
       SRSManager.updateEntry(wordId, correct, responseTime);
     }
@@ -1132,8 +1221,28 @@ function App() {
       questionsTotal: sessionTotal,
       questionsCorrect: correctCount,
       score: score,
-      words: questions.map(q => q.word || q.wordData?.acronym || q.wordData?.phrase).filter(Boolean)
+      words: questions.map(q => q.word || q.wordData?.acronym || q.wordData?.phrase || q.wordData?.idiom).filter(Boolean)
     });
+
+    // Track idiom-specific badge stats
+    if (mode === 'idiom' || mode === 'idiom-reverse') {
+      const newStats = { ...stats };
+      if (!newStats.idiomsQuizzesCompleted) newStats.idiomsQuizzesCompleted = 0;
+      newStats.idiomsQuizzesCompleted += 1;
+      if (correctCount === sessionTotal) {
+        if (!newStats.idiomsPerfectScore) newStats.idiomsPerfectScore = 0;
+        newStats.idiomsPerfectScore += 1;
+      }
+      if (difficulty && mode === 'idiom') {
+        if (!newStats.idiomsDifficultiesList) newStats.idiomsDifficultiesList = [];
+        if (!newStats.idiomsDifficultiesList.includes(difficulty)) {
+          newStats.idiomsDifficultiesList.push(difficulty);
+        }
+        newStats.idiomsDifficultiesCompleted = newStats.idiomsDifficultiesList.length;
+      }
+      setStats(newStats);
+      StorageManager.updateStats(newStats);
+    }
 
     setQuizResults({
       score,
@@ -1784,7 +1893,7 @@ function App() {
             <div className="flex gap-3">
               <button
                 onClick={async () => {
-                  const modeNames = { vocab: 'Vocabulary', synonym: 'Synonyms', antonym: 'Antonyms', oneword: 'One-Word Substitutes', acronym: 'Acronyms' };
+                  const modeNames = { vocab: 'Vocabulary', synonym: 'Synonyms', antonym: 'Antonyms', oneword: 'One-Word Substitutes', acronym: 'Acronyms', idiom: 'Idioms & Phrases', 'idiom-reverse': 'Idioms (Reverse)' };
                   const text = `🎯 VocabPro Quiz Results\nScore: ${quizResults.score} | Accuracy: ${quizResults.accuracy}%\nMode: ${modeNames[mode] || 'Quiz'} (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})\nTry it free: https://vishwanathbite.github.io/vocabpro/`;
                   try {
                     await navigator.clipboard.writeText(text);
