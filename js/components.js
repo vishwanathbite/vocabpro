@@ -129,6 +129,27 @@ class ErrorBoundary extends Component {
     }
   };
 
+  handleExportBackup = () => {
+    try {
+      const jsonData = typeof StorageManager !== 'undefined'
+        ? StorageManager.exportStateToJSON()
+        : JSON.stringify({ message: 'No data available' });
+
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vocabpro-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Backup export failed:', e);
+      alert('Failed to export backup. Please try again.');
+    }
+  };
+
   handleResetLocalData = () => {
     if (!this.state.showResetConfirm) {
       this.setState({ showResetConfirm: true });
@@ -186,6 +207,12 @@ class ErrorBoundary extends Component {
                 className="w-full px-6 py-3 min-h-[48px] bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
               >
                 Reload App
+              </button>
+              <button
+                onClick={this.handleExportBackup}
+                className="w-full px-6 py-3 min-h-[48px] bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all"
+              >
+                Export Backup Data
               </button>
               <button
                 onClick={this.handleClearCacheAndReload}
@@ -1637,9 +1664,139 @@ const LevelBadge = ({ level, totalPoints = 0 }) => {
   );
 };
 
+// ===========================
+// OFFLINE DETECTION BANNER
+// ===========================
+
+const OfflineBanner = () => {
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => setIsOffline(false);
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
+  if (!isOffline) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 9999,
+      background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+      color: '#78350f',
+      textAlign: 'center',
+      padding: '10px 16px',
+      fontWeight: 600,
+      fontSize: '0.875rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+    }}>
+      <span>📡</span>
+      <span>You're offline — progress still saves locally</span>
+    </div>
+  );
+};
+
+// ===========================
+// SW UPDATE TOAST
+// ===========================
+
+const SWUpdateToast = () => {
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const handleUpdate = (registration) => {
+      if (registration.waiting) {
+        setUpdateAvailable(true);
+      }
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              setUpdateAvailable(true);
+            }
+          });
+        }
+      });
+    };
+
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg) handleUpdate(reg);
+    });
+
+    // Also listen for controllerchange to auto-reload after skipWaiting
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+  }, []);
+
+  const handleRefresh = () => {
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg && reg.waiting) {
+        reg.waiting.postMessage('skipWaiting');
+      } else {
+        window.location.reload();
+      }
+    });
+  };
+
+  if (!updateAvailable) return null;
+
+  return (
+    <div
+      onClick={handleRefresh}
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 9998,
+        background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+        color: 'white',
+        padding: '12px 24px',
+        borderRadius: '12px',
+        fontWeight: 600,
+        fontSize: '0.875rem',
+        cursor: 'pointer',
+        boxShadow: '0 4px 16px rgba(124, 58, 237, 0.4)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        animation: 'slideUp 0.3s ease-out'
+      }}
+    >
+      <span>🔄</span>
+      <span>Update available — tap to refresh</span>
+    </div>
+  );
+};
+
 // Expose to window for global access
 window.ErrorBoundary = ErrorBoundary;
 window.ToastContext = ToastContext;
 window.ToastProvider = ToastProvider;
 window.useToast = useToast;
 window.LevelBadge = LevelBadge;
+window.OfflineBanner = OfflineBanner;
+window.SWUpdateToast = SWUpdateToast;
