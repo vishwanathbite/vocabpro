@@ -729,24 +729,24 @@ const SecondaryButton = ({ children, onClick, icon: Icon, className = '', disabl
  * Quiz option button (for multiple choice)
  */
 const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, disabled, optionIndex, role: roleOverride, ...restProps }) => {
-  let bgColor = 'bg-white bg-opacity-15';
-  let borderColor = 'border-white border-opacity-40';
-  let hoverClass = 'hover:bg-opacity-25 hover:scale-105';
+  let bgStyle = 'rgba(255, 255, 255, 0.12)';
+  let borderStyle = 'rgba(255, 255, 255, 0.35)';
+  let hoverClass = 'hover:scale-105';
   let ariaLabel = `Option ${optionIndex !== undefined ? String.fromCharCode(65 + optionIndex) : ''}: ${children}`;
 
   if (isCorrect) {
-    bgColor = 'bg-green-500 bg-opacity-30';
-    borderColor = 'border-green-400';
+    bgStyle = 'rgba(34, 197, 94, 0.3)';
+    borderStyle = 'rgb(74, 222, 128)';
     hoverClass = '';
     ariaLabel += ' (Correct answer)';
   } else if (isIncorrect) {
-    bgColor = 'bg-red-500 bg-opacity-30';
-    borderColor = 'border-red-400';
+    bgStyle = 'rgba(239, 68, 68, 0.3)';
+    borderStyle = 'rgb(248, 113, 113)';
     hoverClass = '';
     ariaLabel += ' (Incorrect)';
   } else if (isSelected) {
-    bgColor = 'bg-blue-500 bg-opacity-30';
-    borderColor = 'border-blue-400';
+    bgStyle = 'rgba(59, 130, 246, 0.3)';
+    borderStyle = 'rgb(96, 165, 250)';
     ariaLabel += ' (Selected)';
   }
 
@@ -773,14 +773,15 @@ const OptionButton = ({ children, onClick, isSelected, isCorrect, isIncorrect, d
       aria-label={ariaLabel}
       aria-disabled={disabled}
       {...restProps}
-      className={`w-full px-6 py-4 ${bgColor} backdrop-blur-xl border-2 ${borderColor}
+      className={`w-full px-6 py-4 backdrop-blur-xl border-2
                   text-white rounded-xl font-medium text-left ${hoverClass} active:scale-95
                   select-none ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
                   focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent`}
-      style={{ pointerEvents: 'auto' }}
+      style={{ pointerEvents: 'auto', backgroundColor: bgStyle, borderColor: borderStyle }}
     >
       {optionIndex !== undefined && (
-        <span className="inline-block w-6 h-6 mr-3 rounded-full bg-white bg-opacity-20 text-center text-sm leading-6">
+        <span className="inline-block w-6 h-6 mr-3 rounded-full text-center text-sm leading-6"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
           {String.fromCharCode(65 + optionIndex)}
         </span>
       )}
