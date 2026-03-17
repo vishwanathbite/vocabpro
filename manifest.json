@@ -1,6 +1,7 @@
 {
   "name": "Literary Rides VocabPro",
   "short_name": "VocabPro",
+  "id": "com.literaryrides.vocabpro",
   "description": "Master 6,100+ vocabulary items for UPSC, SSC, Banking, Railways & CAT. Free forever.",
   "start_url": "/vocabpro/",
   "privacy_policy_url": "https://vishwanathbite.github.io/vocabpro/privacy.html",
