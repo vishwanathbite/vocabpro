@@ -231,7 +231,8 @@ const DailyChallengeCard = ({
   result,
   streak,
   onStart,
-  onShare
+  onShare,
+  shareCopied = false
 }) => {
   const yesterdayResult = DailyChallengeManager.getYesterdayResult();
   const dateStr = DailyChallengeManager.getTodayFormatted();
@@ -274,11 +275,15 @@ const DailyChallengeCard = ({
           <span className="text-white text-opacity-60 text-xs">{getScoreMessage(result.score)}</span>
           <button
             onClick={onShare}
-            className="ml-auto px-3 py-1.5 rounded-md bg-amber-500 bg-opacity-20 border border-amber-400 border-opacity-40 text-amber-300 font-semibold text-xs hover:bg-opacity-30 transition-all flex items-center gap-1"
+            className={`ml-auto px-3 py-1.5 rounded-md border font-semibold text-xs transition-all flex items-center gap-1 ${shareCopied ? 'bg-green-500 bg-opacity-30 border-green-400 text-green-300' : 'bg-amber-500 bg-opacity-20 border-amber-400 border-opacity-40 text-amber-300 hover:bg-opacity-30'}`}
             style={{ minHeight: '44px' }}
           >
-            <Share2 width="14" height="14" />
-            Share
+            {shareCopied ? '✓ Copied!' : (
+              <>
+                <Share2 width="14" height="14" />
+                Share
+              </>
+            )}
           </button>
         </div>
       ) : (
@@ -309,6 +314,7 @@ const DailyChallengeResultsScreen = ({
   streak,
   dateStr,
   onShare,
+  shareCopied = false,
   onClose
 }) => {
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
@@ -348,10 +354,16 @@ const DailyChallengeResultsScreen = ({
         <div className="space-y-3">
           <button
             onClick={onShare}
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
+            className={`w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${shareCopied ? 'bg-green-500 text-white' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600'}`}
           >
-            <Share2 width="18" height="18" />
-            Share Challenge Results
+            {shareCopied ? (
+              <span>✓ Copied to clipboard!</span>
+            ) : (
+              <>
+                <Share2 width="18" height="18" />
+                Share Challenge Results
+              </>
+            )}
           </button>
           <button
             onClick={onClose}
@@ -397,7 +409,8 @@ const HomeScreen = ({
   dailyChallengeCompleted = false,
   dailyChallengeResult = null,
   dailyChallengeStreak = 0,
-  onShareDailyChallenge
+  onShareDailyChallenge,
+  dailyShareCopied = false
 }) => {
   const [showBadges, setShowBadges] = useState(false);
   const levelInfo = getLevelInfo(stats.totalPoints);
@@ -607,6 +620,7 @@ const HomeScreen = ({
           streak={dailyChallengeStreak}
           onStart={onStartDailyChallenge}
           onShare={onShareDailyChallenge}
+          shareCopied={dailyShareCopied}
         />
 
         {/* Daily Goals */}

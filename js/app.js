@@ -409,6 +409,8 @@ function App() {
   // Quiz Complete Modal State
   const [showQuizCompleteModal, setShowQuizCompleteModal] = useState(false);
   const [quizResults, setQuizResults] = useState(null);
+  const [quizShareCopied, setQuizShareCopied] = useState(false);
+  const [dailyShareCopied, setDailyShareCopied] = useState(false);
 
   // Loading State
   const [isLoading, setIsLoading] = useState(false);
@@ -1481,22 +1483,53 @@ function App() {
     setScreen('home');
   };
 
-  const handleShareDailyChallenge = () => {
+  const copyToClipboardFallback = (text) => {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const copyWithFeedback = async (text, setCopied) => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        copyToClipboardFallback(text);
+      }
+    } catch (e) {
+      copyToClipboardFallback(text);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareDailyChallenge = async () => {
     const result = DailyChallengeManager.getTodayResult();
     if (!result) return;
     const streak = DailyChallengeManager.getStreak();
-    const dateStr = DailyChallengeManager.getTodayFormatted();
-    const text = `🏆 VocabPro Daily Challenge\n📅 ${dateStr}\n📊 Score: ${result.score}/${result.total}\n🔥 Streak: ${streak} day${streak !== 1 ? 's' : ''}\n\nCan you beat my score? Try today's challenge:\nhttps://vishwanathbite.github.io/vocabpro/`;
+    const accuracy = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
+    const text = `🎯 I just scored ${result.score}/${result.total} on Daily Challenge quiz!\n\n📊 Accuracy: ${accuracy}%\n🔥 Streak: ${streak} day${streak !== 1 ? 's' : ''}\n\n📚 Literary Rides VocabPro\nMaster 6,100+ words for UPSC, SSC, Banking & CAT\n👉 https://vishwanathbite.github.io/vocabpro/\n\n#VocabPro #UPSC #SSC #Banking #CompetitiveExams`;
+    const url = 'https://vishwanathbite.github.io/vocabpro/';
 
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        toast.success('Results copied to clipboard!');
-      }).catch(() => {
-        toast.info('Could not copy to clipboard');
-      });
-    } else if (navigator.share) {
-      navigator.share({ text }).catch(() => {});
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'VocabPro Quiz Result', text, url });
+        return;
+      } catch (e) {
+        // User cancelled or share failed — fall back to clipboard
+      }
     }
+    await copyWithFeedback(text, setDailyShareCopied);
   };
 
   // Override handleBack for daily challenge (no quitting)
@@ -1835,6 +1868,7 @@ function App() {
           dailyChallengeResult={dailyChallengeResult}
           dailyChallengeStreak={dailyChallengeStreak}
           onShareDailyChallenge={handleShareDailyChallenge}
+          dailyShareCopied={dailyShareCopied}
         />
       ) : screen === 'flashcard' ? (
         <FlashcardScreen
@@ -1890,6 +1924,7 @@ function App() {
           streak={dailyChallengeStreak}
           dateStr={DailyChallengeManager.getTodayFormatted()}
           onShare={handleShareDailyChallenge}
+          shareCopied={dailyShareCopied}
           onClose={handleDailyChallengeResultsClose}
         />
       )}
@@ -2018,18 +2053,32 @@ function App() {
               <button
                 onClick={async () => {
                   const modeNames = { vocab: 'Vocabulary', synonym: 'Synonyms', antonym: 'Antonyms', oneword: 'One-Word Substitutes', acronym: 'Acronyms', idiom: 'Idioms & Phrases', 'idiom-reverse': 'Idioms (Reverse)' };
-                  const text = `🎯 VocabPro Quiz Results\nScore: ${quizResults.score} | Accuracy: ${quizResults.accuracy}%\nMode: ${modeNames[mode] || 'Quiz'} (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})\nTry it free: https://vishwanathbite.github.io/vocabpro/`;
-                  try {
-                    await navigator.clipboard.writeText(text);
-                    toast.success('Results copied to clipboard!');
-                  } catch (err) {
-                    toast.error('Failed to copy results');
+                  const modeName = modeNames[mode] || 'Quiz';
+                  const hasDifficulty = difficulty && !['oneword', 'acronym'].includes(mode);
+                  const difficultyStr = hasDifficulty ? ` (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})` : '';
+                  const text = `🎯 I just scored ${quizResults.correctCount}/${quizResults.totalQuestions} on ${modeName}${difficultyStr} quiz!\n\n📊 Accuracy: ${quizResults.accuracy}%\n⚡ Score: ${quizResults.score} XP\n\n📚 Literary Rides VocabPro\nMaster 6,100+ words for UPSC, SSC, Banking & CAT\n👉 https://vishwanathbite.github.io/vocabpro/\n\n#VocabPro #UPSC #SSC #Banking #CompetitiveExams`;
+                  const url = 'https://vishwanathbite.github.io/vocabpro/';
+
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title: 'VocabPro Quiz Result', text, url });
+                      return;
+                    } catch (e) {
+                      // User cancelled or share failed — fall back to clipboard
+                    }
                   }
+                  await copyWithFeedback(text, setQuizShareCopied);
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white bg-opacity-15 border-2 border-white border-opacity-30 text-white rounded-xl font-semibold hover:bg-opacity-25 active:scale-95 transition-all"
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 rounded-xl font-semibold active:scale-95 transition-all ${quizShareCopied ? 'bg-green-500 bg-opacity-30 border-green-400 text-green-300' : 'bg-white bg-opacity-15 border-white border-opacity-30 text-white hover:bg-opacity-25'}`}
               >
-                <Share2 width="18" height="18" />
-                <span>Share Results</span>
+                {quizShareCopied ? (
+                  <span>✓ Copied to clipboard!</span>
+                ) : (
+                  <>
+                    <Share2 width="18" height="18" />
+                    <span>Share Results</span>
+                  </>
+                )}
               </button>
               <PrimaryButton onClick={handleCloseQuizComplete} className="flex-1">
                 Continue Learning
