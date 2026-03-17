@@ -1,6 +1,6 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 34 - Revert Babel compilation, restore Babel standalone
+ * Version 35 - Fix share functionality with native share sheet + clipboard feedback
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +9,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 34;
+const CACHE_VERSION = 35;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
