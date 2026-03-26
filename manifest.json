@@ -9,7 +9,7 @@
   "background_color": "#1e1b4b",
   "theme_color": "#7c3aed",
   "orientation": "portrait-primary",
-  "scope": ".",
+  "scope": "/vocabpro/",
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -32,6 +32,31 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/apple-touch-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ],
   "categories": ["education", "books"],
