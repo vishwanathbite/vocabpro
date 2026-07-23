@@ -78,9 +78,6 @@ Idioms include: idiom, meaning, example sentence, usage context, exam tags (SSC/
 - No server, no tracking, no accounts required
 - Optional multi-user support via local storage
 
-### Analytics
-- Cloudflare Web Analytics (privacy-first, no cookies)
-
 ---
 
 ## 🎯 Target Exams
@@ -202,7 +199,6 @@ const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 - Daily Challenge with mixed vocab + idiom questions
 - Offline-first PWA with service worker v30
 - Lazy loading for idioms data file
-- Cloudflare Web Analytics (privacy-first)
 - Backup/restore functionality
 - Centralized storage layer with versioning
 - SEO optimization (Open Graph, JSON-LD, sitemap)
