@@ -22,7 +22,7 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=32';
+    script.src = 'js/data/idioms.js?v=33';
     script.onload = () => {
       console.log('idiomsDB lazy-loaded:', typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0, 'entries');
       resolve();
@@ -54,7 +54,7 @@ function loadVocabDifficulty(level) {
   const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
   _vocabLoadPromises[level] = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `js/data/${file}?v=32`;
+    script.src = `js/data/${file}?v=33`;
     script.onload = () => {
       const globalName = level === 'medium' ? 'vocabMedium' : 'vocabHard';
       if (typeof window[globalName] !== 'undefined' && Array.isArray(window[globalName])) {
