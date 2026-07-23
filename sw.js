@@ -1,8 +1,8 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 40 - Bump cache to invalidate idioms.js after the PRB repair (11
- * duplicates removed, 94 meanings and 14 examples rewritten); align
- * PRECACHE_ASSETS with the ?v=33 versioned script URLs.
+ * Version 41 - Bump cache to invalidate vocab-easy.js and vocab-medium.js after
+ * the PRC de-duplication (201 cross-file duplicate headwords removed); align
+ * PRECACHE_ASSETS with the ?v=34 versioned script URLs.
  *
  * NOTE: CACHE_VERSION below is mirrored by window.VOCABPRO_CACHE_VERSION in
  * index.html (pre-SW cache cleaner). Bump both together or the cleaner will
@@ -15,7 +15,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 40;
+const CACHE_VERSION = 41;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -24,24 +24,24 @@ const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './js/storage.js?v=33',
-  './js/icons.js?v=33',
-  './js/utils.js?v=33',
-  './js/gamification.js?v=33',
-  './js/srs.js?v=33',
-  './js/bookmarks.js?v=33',
-  './js/dailygoals.js?v=33',
-  './js/settings.js?v=33',
-  './js/components.js?v=33',
-  './js/screens.js?v=33',
-  './js/app.js?v=33',
-  './js/data/index.js?v=33',
-  './js/data/vocab-easy.js?v=33',
-  './js/data/vocab-medium.js?v=33',
-  './js/data/vocab-hard.js?v=33',
-  './js/data/acronyms.js?v=33',
-  './js/data/oneword.js?v=33',
-  './js/data/idioms.js?v=33',
+  './js/storage.js?v=34',
+  './js/icons.js?v=34',
+  './js/utils.js?v=34',
+  './js/gamification.js?v=34',
+  './js/srs.js?v=34',
+  './js/bookmarks.js?v=34',
+  './js/dailygoals.js?v=34',
+  './js/settings.js?v=34',
+  './js/components.js?v=34',
+  './js/screens.js?v=34',
+  './js/app.js?v=34',
+  './js/data/index.js?v=34',
+  './js/data/vocab-easy.js?v=34',
+  './js/data/vocab-medium.js?v=34',
+  './js/data/vocab-hard.js?v=34',
+  './js/data/acronyms.js?v=34',
+  './js/data/oneword.js?v=34',
+  './js/data/idioms.js?v=34',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',

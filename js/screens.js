@@ -430,7 +430,7 @@ const HomeScreen = ({
               <div style={{ display: 'none', width: 40, height: 40, borderRadius: 8, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: 'white', flexShrink: 0 }}>VP</div>
               <div className="hidden sm:block">
                 <h1 className="text-xl md:text-2xl font-bold text-white">Literary Rides VocabPro</h1>
-                <p className="text-white text-opacity-70 text-xs md:text-sm">Master 6,100+ Vocabulary Items</p>
+                <p className="text-white text-opacity-70 text-xs md:text-sm">Master 5,900+ Vocabulary Items</p>
               </div>
               <div className="sm:hidden">
                 <h1 className="text-lg font-bold text-white">VocabPro</h1>
