@@ -1,6 +1,7 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 36 - Update assetlinks SHA256 fingerprint, add manifest id
+ * Version 37 - Bump cache to invalidate stale gamification.js (StatsManager guest
+ * stats persistence); align PRECACHE_ASSETS with the ?v=30 versioned script URLs
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -9,7 +10,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 36;
+const CACHE_VERSION = 37;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -18,24 +19,24 @@ const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './js/storage.js',
-  './js/icons.js',
-  './js/utils.js',
-  './js/gamification.js',
-  './js/srs.js',
-  './js/bookmarks.js',
-  './js/dailygoals.js',
-  './js/settings.js',
-  './js/components.js',
-  './js/screens.js',
-  './js/app.js',
-  './js/data/index.js',
-  './js/data/vocab-easy.js',
-  './js/data/vocab-medium.js',
-  './js/data/vocab-hard.js',
-  './js/data/acronyms.js',
-  './js/data/oneword.js',
-  './js/data/idioms.js',
+  './js/storage.js?v=30',
+  './js/icons.js?v=30',
+  './js/utils.js?v=30',
+  './js/gamification.js?v=30',
+  './js/srs.js?v=30',
+  './js/bookmarks.js?v=30',
+  './js/dailygoals.js?v=30',
+  './js/settings.js?v=30',
+  './js/components.js?v=30',
+  './js/screens.js?v=30',
+  './js/app.js?v=30',
+  './js/data/index.js?v=30',
+  './js/data/vocab-easy.js?v=30',
+  './js/data/vocab-medium.js?v=30',
+  './js/data/vocab-hard.js?v=30',
+  './js/data/acronyms.js?v=30',
+  './js/data/oneword.js?v=30',
+  './js/data/idioms.js?v=30',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',

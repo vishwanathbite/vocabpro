@@ -22,7 +22,7 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=28';
+    script.src = 'js/data/idioms.js?v=30';
     script.onload = () => {
       console.log('idiomsDB lazy-loaded:', typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0, 'entries');
       resolve();
@@ -54,7 +54,7 @@ function loadVocabDifficulty(level) {
   const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
   _vocabLoadPromises[level] = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `js/data/${file}?v=28`;
+    script.src = `js/data/${file}?v=30`;
     script.onload = () => {
       const globalName = level === 'medium' ? 'vocabMedium' : 'vocabHard';
       if (typeof window[globalName] !== 'undefined' && Array.isArray(window[globalName])) {
@@ -397,7 +397,7 @@ function App() {
   const [showSignupReminder, setShowSignupReminder] = useState(false);
 
   // Gamification State
-  const [stats, setStats] = useState(initializeStats());
+  const [stats, setStats] = useState(StatsManager.loadStats());
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
@@ -514,6 +514,13 @@ function App() {
       ));
     }
   }, [currentUser, stats]);
+
+  // Save stats for guests (no local account) whenever they change
+  useEffect(() => {
+    if (!currentUser) {
+      StatsManager.saveStats(stats);
+    }
+  }, [stats, currentUser]);
 
   // Signup reminder (after 5 questions or 50 points without login)
   useEffect(() => {
@@ -700,7 +707,7 @@ function App() {
   const handleSignOut = () => {
     setCurrentUser(null);
     removeFromStorage('vocabProCurrentUser');
-    setStats(initializeStats());
+    setStats(StatsManager.loadStats());
     setScreen('home');
   };
 

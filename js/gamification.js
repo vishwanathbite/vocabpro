@@ -503,6 +503,42 @@ const StreakProtection = {
   }
 };
 
+// ===========================
+// STATS MANAGER (Guest Persistence)
+// ===========================
+
+/**
+ * Stats Manager - persists gamification stats for guests (no local account)
+ * Uses centralized StorageManager for persistence
+ */
+const StatsManager = {
+  storageKey: 'vocabProStats', // Legacy key for reference
+
+  /**
+   * Load stats from centralized storage
+   */
+  loadStats: () => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      return state.stats || initializeStats();
+    }
+    return loadFromStorage('vocabProStats', initializeStats());
+  },
+
+  /**
+   * Save stats to centralized storage
+   */
+  saveStats: (stats) => {
+    if (typeof StorageManager !== 'undefined') {
+      const state = StorageManager.loadState();
+      state.stats = stats;
+      StorageManager.saveState(state);
+    } else {
+      saveToStorage('vocabProStats', stats);
+    }
+  }
+};
+
 // Expose all exports to window for global access
 window.LEVEL_CONFIG = LEVEL_CONFIG;
 window.getLevelInfo = getLevelInfo;
@@ -515,3 +551,4 @@ window.calculatePoints = calculatePoints;
 window.initializeStats = initializeStats;
 window.updateStats = updateStats;
 window.StreakProtection = StreakProtection;
+window.StatsManager = StatsManager;
