@@ -22,7 +22,7 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=35';
+    script.src = 'js/data/idioms.js?v=36';
     script.onload = () => {
       // onload only means the response executed. A cache-miss offline used to
       // hand us an empty 200, and an empty file still fires onload — so confirm
@@ -74,7 +74,7 @@ function loadVocabDifficulty(level) {
   const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
   _vocabLoadPromises[level] = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `js/data/${file}?v=35`;
+    script.src = `js/data/${file}?v=36`;
     script.onload = () => {
       // onload fires for any response that executed, including an empty one.
       // Only treat this as loaded if the array actually arrived; otherwise clear

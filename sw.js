@@ -1,8 +1,8 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 42 - Bump cache for the medium/hard lazy-load fix (data files now
- * assign to window; loader rejects instead of silently resolving); align
- * PRECACHE_ASSETS with the ?v=35 versioned script URLs.
+ * Version 43 - Bump cache for the SW update-prompt fixes (prompt now withdraws
+ * when no update is pending, survives the mount-order race, and is
+ * dismissible); align PRECACHE_ASSETS with the ?v=36 versioned script URLs.
  *
  * NOTE: CACHE_VERSION below is mirrored by window.VOCABPRO_CACHE_VERSION in
  * index.html (pre-SW cache cleaner). Bump both together or the cleaner will
@@ -15,7 +15,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 42;
+const CACHE_VERSION = 43;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -24,24 +24,24 @@ const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './js/storage.js?v=35',
-  './js/icons.js?v=35',
-  './js/utils.js?v=35',
-  './js/gamification.js?v=35',
-  './js/srs.js?v=35',
-  './js/bookmarks.js?v=35',
-  './js/dailygoals.js?v=35',
-  './js/settings.js?v=35',
-  './js/components.js?v=35',
-  './js/screens.js?v=35',
-  './js/app.js?v=35',
-  './js/data/index.js?v=35',
-  './js/data/vocab-easy.js?v=35',
-  './js/data/vocab-medium.js?v=35',
-  './js/data/vocab-hard.js?v=35',
-  './js/data/acronyms.js?v=35',
-  './js/data/oneword.js?v=35',
-  './js/data/idioms.js?v=35',
+  './js/storage.js?v=36',
+  './js/icons.js?v=36',
+  './js/utils.js?v=36',
+  './js/gamification.js?v=36',
+  './js/srs.js?v=36',
+  './js/bookmarks.js?v=36',
+  './js/dailygoals.js?v=36',
+  './js/settings.js?v=36',
+  './js/components.js?v=36',
+  './js/screens.js?v=36',
+  './js/app.js?v=36',
+  './js/data/index.js?v=36',
+  './js/data/vocab-easy.js?v=36',
+  './js/data/vocab-medium.js?v=36',
+  './js/data/vocab-hard.js?v=36',
+  './js/data/acronyms.js?v=36',
+  './js/data/oneword.js?v=36',
+  './js/data/idioms.js?v=36',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
