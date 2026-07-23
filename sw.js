@@ -1,7 +1,11 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 37 - Bump cache to invalidate stale gamification.js (StatsManager guest
- * stats persistence); align PRECACHE_ASSETS with the ?v=30 versioned script URLs
+ * Version 38 - Bump cache to invalidate assets stale from the v30 -> v31 script
+ * bump; align PRECACHE_ASSETS with the ?v=31 versioned script URLs.
+ *
+ * NOTE: CACHE_VERSION below is mirrored by window.VOCABPRO_CACHE_VERSION in
+ * index.html (pre-SW cache cleaner). Bump both together or the cleaner will
+ * delete the live cache on every page load.
  *
  * Strategy:
  * - Precache all critical assets on install
@@ -10,7 +14,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 37;
+const CACHE_VERSION = 38;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -19,24 +23,24 @@ const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './js/storage.js?v=30',
-  './js/icons.js?v=30',
-  './js/utils.js?v=30',
-  './js/gamification.js?v=30',
-  './js/srs.js?v=30',
-  './js/bookmarks.js?v=30',
-  './js/dailygoals.js?v=30',
-  './js/settings.js?v=30',
-  './js/components.js?v=30',
-  './js/screens.js?v=30',
-  './js/app.js?v=30',
-  './js/data/index.js?v=30',
-  './js/data/vocab-easy.js?v=30',
-  './js/data/vocab-medium.js?v=30',
-  './js/data/vocab-hard.js?v=30',
-  './js/data/acronyms.js?v=30',
-  './js/data/oneword.js?v=30',
-  './js/data/idioms.js?v=30',
+  './js/storage.js?v=31',
+  './js/icons.js?v=31',
+  './js/utils.js?v=31',
+  './js/gamification.js?v=31',
+  './js/srs.js?v=31',
+  './js/bookmarks.js?v=31',
+  './js/dailygoals.js?v=31',
+  './js/settings.js?v=31',
+  './js/components.js?v=31',
+  './js/screens.js?v=31',
+  './js/app.js?v=31',
+  './js/data/index.js?v=31',
+  './js/data/vocab-easy.js?v=31',
+  './js/data/vocab-medium.js?v=31',
+  './js/data/vocab-hard.js?v=31',
+  './js/data/acronyms.js?v=31',
+  './js/data/oneword.js?v=31',
+  './js/data/idioms.js?v=31',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',

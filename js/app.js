@@ -22,7 +22,7 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=30';
+    script.src = 'js/data/idioms.js?v=31';
     script.onload = () => {
       console.log('idiomsDB lazy-loaded:', typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0, 'entries');
       resolve();
@@ -54,7 +54,7 @@ function loadVocabDifficulty(level) {
   const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
   _vocabLoadPromises[level] = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `js/data/${file}?v=30`;
+    script.src = `js/data/${file}?v=31`;
     script.onload = () => {
       const globalName = level === 'medium' ? 'vocabMedium' : 'vocabHard';
       if (typeof window[globalName] !== 'undefined' && Array.isArray(window[globalName])) {
@@ -569,7 +569,7 @@ function App() {
   // Dynamic page titles (Change 9)
   useEffect(() => {
     const titles = {
-      home: 'VocabPro — Master 6,100+ Words for Competitive Exams',
+      home: 'VocabPro — Master 6,100+ Vocabulary Items for Competitive Exams',
       quiz: `VocabPro — ${mode ? mode.charAt(0).toUpperCase() + mode.slice(1) : ''} Quiz`,
       flashcard: 'VocabPro — Flashcards',
       settings: 'VocabPro — Settings',
@@ -1511,7 +1511,7 @@ function App() {
     if (!result) return;
     const streak = DailyChallengeManager.getStreak();
     const accuracy = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
-    const text = `🎯 I just scored ${result.score}/${result.total} on Daily Challenge quiz!\n\n📊 Accuracy: ${accuracy}%\n🔥 Streak: ${streak} day${streak !== 1 ? 's' : ''}\n\n📚 Literary Rides VocabPro\nMaster 6,100+ words for UPSC, SSC, Banking & CAT\n👉 https://vishwanathbite.github.io/vocabpro/\n\n#VocabPro #UPSC #SSC #Banking #CompetitiveExams`;
+    const text = `🎯 I just scored ${result.score}/${result.total} on Daily Challenge quiz!\n\n📊 Accuracy: ${accuracy}%\n🔥 Streak: ${streak} day${streak !== 1 ? 's' : ''}\n\n📚 Literary Rides VocabPro\nMaster 6,100+ vocabulary items for UPSC, SSC, Banking & CAT\n👉 https://vishwanathbite.github.io/vocabpro/\n\n#VocabPro #UPSC #SSC #Banking #CompetitiveExams`;
     const url = 'https://vishwanathbite.github.io/vocabpro/';
 
     if (navigator.share) {
@@ -2020,7 +2020,7 @@ function App() {
                   const modeName = modeNames[mode] || 'Quiz';
                   const hasDifficulty = difficulty && !['oneword', 'acronym'].includes(mode);
                   const difficultyStr = hasDifficulty ? ` (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})` : '';
-                  const text = `🎯 I just scored ${quizResults.correctCount}/${quizResults.totalQuestions} on ${modeName}${difficultyStr} quiz!\n\n📊 Accuracy: ${quizResults.accuracy}%\n⚡ Score: ${quizResults.score} XP\n\n📚 Literary Rides VocabPro\nMaster 6,100+ words for UPSC, SSC, Banking & CAT\n👉 https://vishwanathbite.github.io/vocabpro/\n\n#VocabPro #UPSC #SSC #Banking #CompetitiveExams`;
+                  const text = `🎯 I just scored ${quizResults.correctCount}/${quizResults.totalQuestions} on ${modeName}${difficultyStr} quiz!\n\n📊 Accuracy: ${quizResults.accuracy}%\n⚡ Score: ${quizResults.score} XP\n\n📚 Literary Rides VocabPro\nMaster 6,100+ vocabulary items for UPSC, SSC, Banking & CAT\n👉 https://vishwanathbite.github.io/vocabpro/\n\n#VocabPro #UPSC #SSC #Banking #CompetitiveExams`;
                   const url = 'https://vishwanathbite.github.io/vocabpro/';
 
                   if (navigator.share) {
