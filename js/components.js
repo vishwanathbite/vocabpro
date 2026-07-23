@@ -1716,50 +1716,108 @@ const OfflineBanner = () => {
 // ===========================
 
 const SWUpdateToast = () => {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
+  // Hold the actual waiting worker rather than a boolean, so the prompt can
+  // withdraw itself when the update stops being pending, and so dismissing one
+  // update never suppresses a genuinely different one later.
+  const [waitingWorker, setWaitingWorker] = useState(null);
+  const [dismissedWorker, setDismissedWorker] = useState(null);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
-    const handleUpdate = (registration) => {
-      if (registration.waiting) {
-        setUpdateAvailable(true);
-      }
+    let cancelled = false;
+    let watching = null;
+    let refreshing = false;
+
+    const sync = (registration) => {
+      if (cancelled) return;
+      // Mirror the live state in both directions. Only ever showing the prompt
+      // is what left it stranded on screen after the update stopped pending.
+      setWaitingWorker(registration && registration.waiting ? registration.waiting : null);
+      if (!registration || !registration.waiting) setDismissedWorker(null);
+    };
+
+    const watch = (registration) => {
+      if (cancelled || !registration || watching === registration) return;
+      watching = registration;
+      sync(registration);
+
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              setUpdateAvailable(true);
-            }
-          });
-        }
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (cancelled) return;
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            setWaitingWorker(newWorker);
+            setDismissedWorker(null); // a new update earns a new prompt
+          } else if (newWorker.state === 'activated' || newWorker.state === 'redundant') {
+            sync(registration);
+          }
+        });
       });
     };
 
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg) handleUpdate(reg);
-    });
+    const onFailure = (where) => (err) =>
+      console.warn(`[SWUpdateToast] ${where} failed:`, err);
 
-    // Also listen for controllerchange to auto-reload after skipWaiting
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // Mount-order race: this component can mount before index.html registers the
+    // worker on window.load, in which case getRegistration() resolves undefined
+    // and no updatefound listener is ever attached. serviceWorker.ready does not
+    // settle until a registration is active, so it covers the late case; the
+    // direct call covers a worker that is already waiting when we mount (ready
+    // reports the active worker and would not tell us about that on its own).
+    // Whichever resolves first wins; `watching` stops the other double-binding.
+    navigator.serviceWorker.ready.then(watch).catch(onFailure('serviceWorker.ready'));
+    navigator.serviceWorker.getRegistration()
+      .then(reg => { if (reg) watch(reg); })
+      .catch(onFailure('getRegistration'));
+
+    // controllerchange means the new worker took over: the prompt is spent.
+    const onControllerChange = () => {
+      if (cancelled) return;
+      setWaitingWorker(null);
+      setDismissedWorker(null);
       if (!refreshing) {
         refreshing = true;
         window.location.reload();
       }
-    });
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+
+    return () => {
+      cancelled = true;
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+    };
   }, []);
 
   const handleRefresh = () => {
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg && reg.waiting) {
-        reg.waiting.postMessage('skipWaiting');
-      } else {
+    navigator.serviceWorker.getRegistration()
+      .then(reg => {
+        if (reg && reg.waiting) {
+          reg.waiting.postMessage('skipWaiting');
+          return;
+        }
+        // Nothing is actually pending. Reloading here is what produced the
+        // "tapping does nothing" report: an identical page, no visible change.
+        // Withdraw the stale prompt instead; a real update re-announces itself.
+        console.warn('[SWUpdateToast] no waiting worker; clearing stale update prompt');
+        setWaitingWorker(null);
+        setDismissedWorker(null);
+      })
+      .catch(err => {
+        // A rejection here used to kill the tap silently. Reload so the user is
+        // not stranded with a prompt that cannot do anything.
+        console.warn('[SWUpdateToast] could not reach the registration, reloading:', err);
         window.location.reload();
-      }
-    });
+      });
   };
+
+  const handleDismiss = (e) => {
+    e.stopPropagation(); // don't trigger the refresh handler on the container
+    setDismissedWorker(waitingWorker);
+  };
+
+  const updateAvailable = waitingWorker !== null && waitingWorker !== dismissedWorker;
 
   if (!updateAvailable) return null;
 
@@ -1788,6 +1846,14 @@ const SWUpdateToast = () => {
     >
       <span>🔄</span>
       <span>Update available — tap to refresh</span>
+      <button
+        onClick={handleDismiss}
+        className="text-white text-opacity-70 hover:text-opacity-100 flex-shrink-0"
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
+        aria-label="Dismiss update notification"
+      >
+        <X width="16" height="16" />
+      </button>
     </div>
   );
 };
