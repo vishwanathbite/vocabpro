@@ -1349,7 +1349,6 @@ function App() {
         newStats.idiomsDifficultiesCompleted = newStats.idiomsDifficultiesList.length;
       }
       setStats(newStats);
-      StorageManager.updateStats(newStats);
     }
 
     setQuizResults({
