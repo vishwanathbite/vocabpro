@@ -413,8 +413,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Fight Tooth And",
-    "meaning": "NAIL",
+    "idiom": "To Fight Tooth And Nail",
+    "meaning": "To fight fiercely and with all one's strength",
     "example": "The lawyer promised to fight tooth and nail for the farmers' land rights.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -429,8 +429,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Set The Record",
-    "meaning": "STRAIGHT",
+    "idiom": "Set The Record Straight",
+    "meaning": "To correct a misunderstanding with the true facts",
     "example": "The minister called a press meet to set the record straight.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -557,8 +557,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Take With A Grain Of",
-    "meaning": "SALT",
+    "idiom": "Take With A Grain Of Salt",
+    "meaning": "To accept something with some doubt or scepticism",
     "example": "Take his tall claims with a grain of salt.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
@@ -581,8 +581,8 @@ const idiomsDB = [
     "difficulty": "hard"
   },
   {
-    "idiom": "Reading Between The",
-    "meaning": "LINES",
+    "idiom": "Reading Between The Lines",
+    "meaning": "Understanding the hidden or implied meaning",
     "example": "Reading between the lines, she guessed the letter carried bad news.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -653,8 +653,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Rise Like A Phoenix",
-    "meaning": "FROM THE ASHES",
+    "idiom": "Rise Like A Phoenix From The Ashes",
+    "meaning": "To recover strongly after complete ruin",
     "example": "After bankruptcy, the businessman rose like a phoenix from the ashes.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -701,8 +701,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Cannot Hold A Candle",
-    "meaning": "TO",
+    "idiom": "Cannot Hold A Candle To",
+    "meaning": "To be far inferior in comparison to someone",
     "example": "As a batsman, he cannot hold a candle to the legendary captain.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -765,8 +765,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Struck A Chill To The",
-    "meaning": "HEART",
+    "idiom": "Struck A Chill To The Heart",
+    "meaning": "To fill someone with sudden fear or dread",
     "example": "The eerie silence struck a chill to the heart of the travellers.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -861,16 +861,16 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Let The Cat Out Of The",
-    "meaning": "BAG",
+    "idiom": "Let The Cat Out Of The Bag",
+    "meaning": "To reveal a secret carelessly",
     "example": "She let the cat out of the bag about the transfer news.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "hard"
   },
   {
-    "idiom": "To Have Too Many Iron",
-    "meaning": "IN THE FIRE",
+    "idiom": "To Have Too Many Irons In The Fire",
+    "meaning": "To attempt too many things at the same time",
     "example": "He failed because he had too many irons in the fire.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
@@ -973,8 +973,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Make Ducks And Drakes",
-    "meaning": "OF",
+    "idiom": "Make Ducks And Drakes Of",
+    "meaning": "To waste or squander recklessly",
     "example": "He made ducks and drakes of his inheritance within a few years.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -1029,8 +1029,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "To Take Someone To",
-    "meaning": "TASK",
+    "idiom": "To Take Someone To Task",
+    "meaning": "To scold or reprimand someone",
     "example": "The principal took the latecomers to task in front of everyone.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1053,8 +1053,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Read Between The",
-    "meaning": "Understand the hidden",
+    "idiom": "Read Between The Lines",
+    "meaning": "To understand the hidden or implied meaning",
     "example": "Read between the lines and you will see the letter hides a warning.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1093,8 +1093,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Have Not A Leg To",
-    "meaning": "STAND ON",
+    "idiom": "To Have Not A Leg To Stand On",
+    "meaning": "To have no support or valid argument",
     "example": "With no proof, his complaint had not a leg to stand on.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -1109,8 +1109,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Making Hay While The",
-    "meaning": "SUN SHINES",
+    "idiom": "Making Hay While The Sun Shines",
+    "meaning": "To make the most of a favourable opportunity",
     "example": "The vendors made hay while the sun shone during the festival rush.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "time",
@@ -1181,8 +1181,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Move Heaven And",
-    "meaning": "EARTH",
+    "idiom": "To Move Heaven And Earth",
+    "meaning": "To make every possible effort",
     "example": "His parents moved heaven and earth to fund his coaching.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -1237,8 +1237,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Show A Clean Pair Of",
-    "meaning": "HEELS",
+    "idiom": "To Show A Clean Pair Of Heels",
+    "meaning": "To run away swiftly",
     "example": "At the first sign of danger, the thief showed a clean pair of heels.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -1261,8 +1261,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Sailing In The Same",
-    "meaning": "BOAT",
+    "idiom": "Sailing In The Same Boat",
+    "meaning": "To be in the same difficult situation as others",
     "example": "With exams near, all the hostel students were sailing in the same boat.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1277,8 +1277,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Keep The Wolf From",
-    "meaning": "THE DOOR",
+    "idiom": "To Keep The Wolf From The Door",
+    "meaning": "To earn just enough to avoid hunger and poverty",
     "example": "He took two jobs just to keep the wolf from the door.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -1293,8 +1293,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "A Little Gush Of",
-    "meaning": "GRATITUDE",
+    "idiom": "A Little Gush Of Gratitude",
+    "meaning": "A sudden brief show of thankfulness",
     "example": "A little gush of gratitude filled her heart when the stranger helped.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -1341,8 +1341,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "To Make A Mountain Of",
-    "meaning": "A MOLEHILL",
+    "idiom": "To Make A Mountain Of A Molehill",
+    "meaning": "To exaggerate a small problem",
     "example": "Stop making a mountain of a molehill over one small mistake.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1373,8 +1373,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Go A Long Way Towards",
-    "meaning": "DOING SOMETHING",
+    "idiom": "Go A Long Way Towards Doing Something",
+    "meaning": "To contribute greatly to achieving something",
     "example": "Daily revision goes a long way towards clearing tough exams.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1717,16 +1717,16 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "On The Spur Of The",
-    "meaning": "MOMENT",
+    "idiom": "On The Spur Of The Moment",
+    "meaning": "Suddenly, without any planning",
     "example": "On the spur of the moment, they decided to visit the hill station.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "time",
     "difficulty": "medium"
   },
   {
-    "idiom": "To Explore Every",
-    "meaning": "AVENUE",
+    "idiom": "To Explore Every Avenue",
+    "meaning": "To try every possible course of action",
     "example": "The lawyer promised to explore every avenue to save the case.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1749,8 +1749,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "To Burn Candle At Both",
-    "meaning": "ENDS",
+    "idiom": "To Burn The Candle At Both Ends",
+    "meaning": "To exhaust oneself by overwork day and night",
     "example": "Working days and studying nights, she burned the candle at both ends.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
@@ -1781,8 +1781,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "To Shed Crocodile",
-    "meaning": "TEARS",
+    "idiom": "To Shed Crocodile Tears",
+    "meaning": "To show false or insincere sorrow",
     "example": "The cheat shed crocodile tears to win everyone's sympathy.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -1926,15 +1926,15 @@ const idiomsDB = [
   },
   {
     "idiom": "Put Across",
-    "meaning": "To communicate your ideas,",
+    "meaning": "To communicate your ideas clearly to others",
     "example": "A good teacher can put across tough ideas very simply.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "easy"
   },
   {
-    "idiom": "To Have Second",
-    "meaning": "THOUGHTS",
+    "idiom": "To Have Second Thoughts",
+    "meaning": "To reconsider and feel doubt about a decision",
     "example": "He had second thoughts before signing the risky contract.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -1965,8 +1965,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Feel Like A Fish Out",
-    "meaning": "OF WATER",
+    "idiom": "To Feel Like A Fish Out Of Water",
+    "meaning": "To feel awkward in unfamiliar surroundings",
     "example": "On his first day in the city, he felt like a fish out of water.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -2037,8 +2037,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "On The Horns Of",
-    "meaning": "DILEMMA",
+    "idiom": "On The Horns Of A Dilemma",
+    "meaning": "Facing a choice between two equally bad options",
     "example": "He was on the horns of a dilemma over which job to accept.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -2125,8 +2125,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Live From Hand To",
-    "meaning": "MOUTH",
+    "idiom": "Live From Hand To Mouth",
+    "meaning": "To survive on barely enough to meet daily needs",
     "example": "The daily wager lives from hand to mouth.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -2214,7 +2214,7 @@ const idiomsDB = [
   },
   {
     "idiom": "To Give Vent To",
-    "meaning": "To express a feeling,",
+    "meaning": "To express a strong feeling openly",
     "example": "He gave vent to his frustration by writing in his diary.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "emotion",
@@ -2302,7 +2302,7 @@ const idiomsDB = [
   },
   {
     "idiom": "Out Of Hand",
-    "meaning": "Out of control, at once,",
+    "meaning": "Out of control, or done at once without thought",
     "example": "The small argument soon got out of hand.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -2525,8 +2525,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Keep The Wolf From The",
-    "meaning": "DOOR",
+    "idiom": "Keep The Wolf From The Door",
+    "meaning": "To earn just enough to avoid hunger and poverty",
     "example": "He worked overtime to keep the wolf from the door.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -2557,8 +2557,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Let The Grass Grow",
-    "meaning": "UNDER THE FEET",
+    "idiom": "Let The Grass Grow Under One's Feet",
+    "meaning": "To waste time and delay taking action",
     "example": "A hardworking clerk never lets the grass grow under his feet.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -2605,16 +2605,16 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Casting Pearl Before",
-    "meaning": "SWINE",
+    "idiom": "Casting Pearls Before Swine",
+    "meaning": "To offer something valuable to those unable to appreciate it",
     "example": "Teaching poetry to that careless class felt like casting pearls before swine.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
   },
   {
-    "idiom": "Putting The Cart",
-    "meaning": "BEFORE THE HORSE",
+    "idiom": "Putting The Cart Before The Horse",
+    "meaning": "To do things in the wrong order",
     "example": "Buying furniture before building the house is putting the cart before the horse.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -2669,8 +2669,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Not To Look A Gift",
-    "meaning": "HORSE IN THE MOUTH",
+    "idiom": "Not To Look A Gift Horse In The Mouth",
+    "meaning": "To accept a gift gratefully without finding fault",
     "example": "He accepted the old cycle gladly, not looking a gift horse in the mouth.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -2685,8 +2685,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Born With A Silver",
-    "meaning": "SPOON",
+    "idiom": "Born With A Silver Spoon",
+    "meaning": "Born into a wealthy and privileged family",
     "example": "He was born with a silver spoon and never knew hardship.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "color",
@@ -2725,8 +2725,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Through Thick And",
-    "meaning": "THIN",
+    "idiom": "Through Thick And Thin",
+    "meaning": "Through both good and bad times",
     "example": "Her parents supported her through thick and thin.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -2797,8 +2797,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Have Something Up",
-    "meaning": "YOUR SLEEVE",
+    "idiom": "Have Something Up Your Sleeve",
+    "meaning": "To have a secret plan kept in reserve",
     "example": "The clever lawyer always had something up his sleeve.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -2973,8 +2973,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Keep Wolf Away From The",
-    "meaning": "DOOR",
+    "idiom": "Keep The Wolf Away From The Door",
+    "meaning": "To earn just enough to avoid hunger and poverty",
     "example": "Two part-time jobs helped him keep the wolf away from the door.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -3085,8 +3085,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Batten Down The",
-    "meaning": "HATCHES",
+    "idiom": "Batten Down The Hatches",
+    "meaning": "To prepare for an approaching difficulty",
     "example": "With the storm coming, the fishermen battened down the hatches.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -3149,8 +3149,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Know Beans About",
-    "meaning": "SOMETHING",
+    "idiom": "Know Beans About Something",
+    "meaning": "To know very little or nothing about something",
     "example": "He does not know beans about running a business.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -3165,8 +3165,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Barking Up The Wrong",
-    "meaning": "TREE",
+    "idiom": "Barking Up The Wrong Tree",
+    "meaning": "To pursue a mistaken or misguided course",
     "example": "By blaming the peon, they were barking up the wrong tree.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -3221,8 +3221,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Back To The Drawing",
-    "meaning": "BOARD",
+    "idiom": "Back To The Drawing Board",
+    "meaning": "To start again after a failed attempt",
     "example": "When the plan failed, they went back to the drawing board.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -3253,8 +3253,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Stand / Hold Your",
-    "meaning": "GROUND",
+    "idiom": "Stand Your Ground",
+    "meaning": "To refuse to yield under pressure",
     "example": "Despite the pressure, she stood her ground on the issue.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -3629,8 +3629,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Take The Bull By The",
-    "meaning": "HORNS",
+    "idiom": "Take The Bull By The Horns",
+    "meaning": "To face a difficulty boldly and directly",
     "example": "She took the bull by the horns and confronted the problem directly.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -3709,8 +3709,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Have A Finger In Every",
-    "meaning": "PIE",
+    "idiom": "Have A Finger In Every Pie",
+    "meaning": "To be involved in many activities at once",
     "example": "The busy trustee had a finger in every pie in town.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
@@ -3765,8 +3765,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Make A Mountain Of A",
-    "meaning": "MOLE HILL",
+    "idiom": "Make A Mountain Of A Molehill",
+    "meaning": "To exaggerate a small problem",
     "example": "Do not make a mountain of a molehill over a small error.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -3901,8 +3901,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Catch Time By The",
-    "meaning": "FORELOCK",
+    "idiom": "Catch Time By The Forelock",
+    "meaning": "To seize an opportunity without delay",
     "example": "Successful people catch time by the forelock and never delay.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -3941,8 +3941,8 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Keep The Wolf Away From",
-    "meaning": "THE DOOR",
+    "idiom": "Keep The Wolf Away From The Door",
+    "meaning": "To earn just enough to avoid hunger and poverty",
     "example": "He took extra tuition to keep the wolf away from the door.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
@@ -3981,8 +3981,8 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Set The Thames On",
-    "meaning": "FIRE",
+    "idiom": "To Set The Thames On Fire",
+    "meaning": "To do something remarkable or brilliant",
     "example": "He is hardworking but will never set the Thames on fire.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
@@ -4149,9 +4149,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Show A Clean A Pair Of",
-    "meaning": "HEELS",
-    "example": "The examiner used 'show a clean a pair of' in the sentence to test students.",
+    "idiom": "Show A Clean Pair Of Heels",
+    "meaning": "To run away swiftly",
+    "example": "The thief showed a clean pair of heels the moment the alarm rang.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "hard"
@@ -4229,9 +4229,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "For All Intents And",
-    "meaning": "PURPOSES",
-    "example": "The examiner used 'for all intents and' in the sentence to test students.",
+    "idiom": "For All Intents And Purposes",
+    "meaning": "In every practical sense; virtually",
+    "example": "For all intents and purposes, the project was finished by Friday.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -4277,9 +4277,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Paled Into",
-    "meaning": "INSIGNIFICANCE",
-    "example": "The examiner used 'paled into' in the sentence to test students.",
+    "idiom": "Paled Into Insignificance",
+    "meaning": "To seem unimportant compared with something else",
+    "example": "His earlier troubles paled into insignificance beside this loss.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "easy"
@@ -4477,9 +4477,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Old Head On Young",
-    "meaning": "SHOULDER",
-    "example": "The examiner used 'old head on young' in the sentence to test students.",
+    "idiom": "Old Head On Young Shoulders",
+    "meaning": "A young person who shows unusual maturity",
+    "example": "At just nineteen, she has an old head on young shoulders.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -4669,9 +4669,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Leave No Stone",
-    "meaning": "UNTURNED",
-    "example": "The examiner used 'leave no stone' in the sentence to test students.",
+    "idiom": "Leave No Stone Unturned",
+    "meaning": "To make every possible effort to succeed",
+    "example": "The police left no stone unturned in tracing the missing boy.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -4789,9 +4789,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Too Many Chiefs And Not",
-    "meaning": "ENOUGH INDIANS",
-    "example": "The examiner used 'too many chiefs and not' in the sentence to test students.",
+    "idiom": "Too Many Chiefs And Not Enough Indians",
+    "meaning": "Too many leaders and too few workers",
+    "example": "The committee failed because there were too many chiefs and not enough Indians.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -4829,9 +4829,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Keep Body And Soul",
-    "meaning": "TOGETHER",
-    "example": "The examiner used 'keep body and soul' in the sentence to test students.",
+    "idiom": "Keep Body And Soul Together",
+    "meaning": "To manage to stay alive on minimal means",
+    "example": "The daily wager earned barely enough to keep body and soul together.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -4965,17 +4965,17 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Wrangle Over An Ass",
-    "meaning": "SHADOW",
-    "example": "The examiner used 'wrangle over an ass' in the sentence to test students.",
+    "idiom": "Wrangle Over An Ass's Shadow",
+    "meaning": "To quarrel over something trivial",
+    "example": "The two clerks wrangled over an ass's shadow for an entire afternoon.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
   },
   {
-    "idiom": "To Put One'S Hand To",
-    "meaning": "PLOUGH",
-    "example": "The examiner used 'to put one's hand to' in the sentence to test students.",
+    "idiom": "To Put One's Hand To The Plough",
+    "meaning": "To begin a task in earnest",
+    "example": "Once he put his hand to the plough, he never looked back.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -5053,9 +5053,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Between Horns Of",
-    "meaning": "DILEMMA",
-    "example": "The examiner used 'between horns of' in the sentence to test students.",
+    "idiom": "Between The Horns Of A Dilemma",
+    "meaning": "Facing a choice between two equally bad options",
+    "example": "She was between the horns of a dilemma over which offer to accept.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5069,9 +5069,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Square Peg In A Round",
-    "meaning": "HOLE",
-    "example": "The examiner used 'square peg in a round' in the sentence to test students.",
+    "idiom": "Square Peg In A Round Hole",
+    "meaning": "A person unsuited to their position or surroundings",
+    "example": "As an accountant, the artist felt like a square peg in a round hole.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5109,9 +5109,9 @@ const idiomsDB = [
     "difficulty": "hard"
   },
   {
-    "idiom": "Let The Chips Fall",
-    "meaning": "WHEREVER THEY MAY",
-    "example": "The examiner used 'let the chips fall' in the sentence to test students.",
+    "idiom": "Let The Chips Fall Where They May",
+    "meaning": "To let events unfold without interference",
+    "example": "He told the truth and let the chips fall where they may.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5141,9 +5141,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Kill Two Birds With One",
-    "meaning": "STONE",
-    "example": "The examiner used 'to kill two birds with one' in the sentence to test students.",
+    "idiom": "To Kill Two Birds With One Stone",
+    "meaning": "To achieve two aims with a single action",
+    "example": "By cycling to college, he killed two birds with one stone — saving money and staying fit.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "hard"
@@ -5213,9 +5213,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Wear Your Heart On Your",
-    "meaning": "SLEEVE",
-    "example": "The examiner used 'wear your heart on your' in the sentence to test students.",
+    "idiom": "Wear Your Heart On Your Sleeve",
+    "meaning": "To show one's feelings openly",
+    "example": "He wears his heart on his sleeve and hides nothing from his friends.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -5229,9 +5229,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Action Speaks Louder",
-    "meaning": "THAN WORDS",
-    "example": "The examiner used 'action speaks louder' in the sentence to test students.",
+    "idiom": "Actions Speak Louder Than Words",
+    "meaning": "What people do matters more than what they say",
+    "example": "He promised to help, but actions speak louder than words.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "communication",
     "difficulty": "medium"
@@ -5269,9 +5269,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Practice Makes A Man",
-    "meaning": "PERFECT",
-    "example": "The examiner used 'practice makes a man' in the sentence to test students.",
+    "idiom": "Practice Makes A Man Perfect",
+    "meaning": "Regular practice leads to mastery",
+    "example": "Solve a paper daily; practice makes a man perfect.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
     "difficulty": "medium"
@@ -5325,9 +5325,9 @@ const idiomsDB = [
     "difficulty": "hard"
   },
   {
-    "idiom": "To Bite Off More Than One",
-    "meaning": "CAN CHEW",
-    "example": "The examiner used 'to bite off more than one' in the sentence to test students.",
+    "idiom": "To Bite Off More Than One Can Chew",
+    "meaning": "To take on more than one can handle",
+    "example": "Taking five optional subjects, he bit off more than he could chew.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -5341,17 +5341,17 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "To Make A Long Story",
-    "meaning": "SHORT",
-    "example": "The examiner used 'to make a long story' in the sentence to test students.",
+    "idiom": "To Make A Long Story Short",
+    "meaning": "To tell something briefly, omitting details",
+    "example": "To make a long story short, the deal finally fell through.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
   },
   {
-    "idiom": "To Steal Someone'S",
-    "meaning": "THUNDER",
-    "example": "The examiner used 'to steal someone's' in the sentence to test students.",
+    "idiom": "To Steal Someone's Thunder",
+    "meaning": "To take credit meant for another person",
+    "example": "She stole his thunder by announcing the result before he could.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
     "difficulty": "medium"
@@ -5405,9 +5405,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Rome Was Not Built In A",
-    "meaning": "DAY",
-    "example": "The examiner used 'rome was not built in a' in the sentence to test students.",
+    "idiom": "Rome Was Not Built In A Day",
+    "meaning": "Great achievements take time and patience",
+    "example": "Be patient with your preparation; Rome was not built in a day.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "time",
     "difficulty": "hard"
@@ -5429,17 +5429,17 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Familiarity Breeds",
-    "meaning": "CONTEMPT",
-    "example": "The examiner used 'familiarity breeds' in the sentence to test students.",
+    "idiom": "Familiarity Breeds Contempt",
+    "meaning": "Knowing someone too well can reduce respect",
+    "example": "They quarrelled often after sharing a room, proving familiarity breeds contempt.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "easy"
   },
   {
-    "idiom": "Don'T Put All Eggs In One",
-    "meaning": "BASKET",
-    "example": "The examiner used 'don't put all eggs in one' in the sentence to test students.",
+    "idiom": "Don't Put All Your Eggs In One Basket",
+    "meaning": "Do not risk everything on a single venture",
+    "example": "Apply for several exams; don't put all your eggs in one basket.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -5453,9 +5453,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Put The Cat Among The",
-    "meaning": "PIGEONS",
-    "example": "The examiner used 'to put the cat among the' in the sentence to test students.",
+    "idiom": "To Put The Cat Among The Pigeons",
+    "meaning": "To cause trouble or commotion",
+    "example": "His blunt question put the cat among the pigeons at the meeting.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "hard"
@@ -5541,17 +5541,17 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Beauty Is In The Eye Of The",
-    "meaning": "BEHOLDER",
-    "example": "The examiner used 'beauty is in the eye of the' in the sentence to test students.",
+    "idiom": "Beauty Is In The Eye Of The Beholder",
+    "meaning": "Beauty is a matter of personal opinion",
+    "example": "Some found the painting odd, but beauty is in the eye of the beholder.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "hard"
   },
   {
-    "idiom": "Necessity Is The Mother Of",
-    "meaning": "INVENTION",
-    "example": "The examiner used 'necessity is the mother of' in the sentence to test students.",
+    "idiom": "Necessity Is The Mother Of Invention",
+    "meaning": "Need drives people to find creative solutions",
+    "example": "The villagers built a bamboo bridge — necessity is the mother of invention.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5565,17 +5565,17 @@ const idiomsDB = [
     "difficulty": "hard"
   },
   {
-    "idiom": "Discretion Is The Greater",
-    "meaning": "PART OF VALOUR",
-    "example": "The examiner used 'discretion is the greater' in the sentence to test students.",
+    "idiom": "Discretion Is The Better Part Of Valour",
+    "meaning": "Caution is wiser than reckless bravery",
+    "example": "He withdrew from the argument, knowing discretion is the better part of valour.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
   },
   {
-    "idiom": "Too Many Cooks Spoil The",
-    "meaning": "BROTH",
-    "example": "The examiner used 'too many cooks spoil the' in the sentence to test students.",
+    "idiom": "Too Many Cooks Spoil The Broth",
+    "meaning": "Too many people involved ruin the work",
+    "example": "Five people editing one report proved too many cooks spoil the broth.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5597,9 +5597,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Pull Or Twist Out Of",
-    "meaning": "SHAPE",
-    "example": "The examiner used 'to pull or twist out of' in the sentence to test students.",
+    "idiom": "To Pull Or Twist Out Of Shape",
+    "meaning": "To distort something from its proper form",
+    "example": "The heat pulled the plastic frame out of shape.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -5653,9 +5653,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "All Good Things Must Come",
-    "meaning": "TO AN END",
-    "example": "The examiner used 'all good things must come' in the sentence to test students.",
+    "idiom": "All Good Things Must Come To An End",
+    "meaning": "Nothing pleasant lasts forever",
+    "example": "The holiday ended sadly, but all good things must come to an end.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5663,7 +5663,7 @@ const idiomsDB = [
   {
     "idiom": "Barking Up The Wrong Tree",
     "meaning": "To be pursuing a misguided line of",
-    "example": "The examiner used 'barking up the wrong tree' in the sentence to test students.",
+    "example": "By blaming the peon, the officer was barking up the wrong tree.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -5671,23 +5671,23 @@ const idiomsDB = [
   {
     "idiom": "Back To The Drawing Board",
     "meaning": "An idea has been unsuccessful and that",
-    "example": "The examiner used 'back to the drawing board' in the sentence to test students.",
+    "example": "The prototype failed, so the team went back to the drawing board.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "medium"
   },
   {
-    "idiom": "Blood Is Thicker Than",
-    "meaning": "WATER",
-    "example": "The examiner used 'blood is thicker than' in the sentence to test students.",
+    "idiom": "Blood Is Thicker Than Water",
+    "meaning": "Family bonds are stronger than other ties",
+    "example": "He supported his cousin in the dispute — blood is thicker than water.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
   },
   {
-    "idiom": "A Fool And His Money Are",
-    "meaning": "EASILY PARTED",
-    "example": "The examiner used 'a fool and his money are' in the sentence to test students.",
+    "idiom": "A Fool And His Money Are Easily Parted",
+    "meaning": "Foolish people quickly lose their wealth",
+    "example": "He spent his prize on lottery tickets; a fool and his money are easily parted.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "money",
     "difficulty": "hard"
@@ -5757,9 +5757,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "The Squeaky Wheel Gets",
-    "meaning": "THE GREASE",
-    "example": "The examiner used 'the squeaky wheel gets' in the sentence to test students.",
+    "idiom": "The Squeaky Wheel Gets The Grease",
+    "meaning": "The one who complains loudest gets attention",
+    "example": "She complained daily until her file moved — the squeaky wheel gets the grease.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -5781,9 +5781,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Bite Off More Than You",
-    "meaning": "CAN CHEW",
-    "example": "The examiner used 'to bite off more than you' in the sentence to test students.",
+    "idiom": "To Bite Off More Than You Can Chew",
+    "meaning": "To take on more than you can handle",
+    "example": "Running two businesses at once, he bit off more than he could chew.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -5797,9 +5797,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Birds Of A Feather Flock",
-    "meaning": "TOGETHER",
-    "example": "The examiner used 'birds of a feather flock' in the sentence to test students.",
+    "idiom": "Birds Of A Feather Flock Together",
+    "meaning": "Similar people tend to associate with each other",
+    "example": "The two idlers spent all day together; birds of a feather flock together.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "medium"
@@ -5909,9 +5909,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "Every Cloud Has A Silver",
-    "meaning": "LINING",
-    "example": "The examiner used 'every cloud has a silver' in the sentence to test students.",
+    "idiom": "Every Cloud Has A Silver Lining",
+    "meaning": "Every difficulty has some hidden benefit",
+    "example": "He lost the job but found a better one — every cloud has a silver lining.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "color",
     "difficulty": "medium"
@@ -5997,9 +5997,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Go Down Like A Lad",
-    "meaning": "BALLOON",
-    "example": "The examiner used 'to go down like a lad' in the sentence to test students.",
+    "idiom": "To Go Down Like A Lead Balloon",
+    "meaning": "To fail completely and be badly received",
+    "example": "His joke went down like a lead balloon before the serious panel.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -6021,9 +6021,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Get Up On The Wrong",
-    "meaning": "SIDE OF THE BED",
-    "example": "The examiner used 'to get up on the wrong' in the sentence to test students.",
+    "idiom": "To Get Up On The Wrong Side Of The Bed",
+    "meaning": "To be in a bad mood all day",
+    "example": "He snapped at everyone; clearly he got up on the wrong side of the bed.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -6349,9 +6349,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Put One Out Of",
-    "meaning": "COUNTENANCE",
-    "example": "The examiner used 'to put one out of' in the sentence to test students.",
+    "idiom": "To Put One Out Of Countenance",
+    "meaning": "To embarrass or disconcert someone",
+    "example": "The sharp question put the speaker out of countenance.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -6573,9 +6573,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Keep The Wolf From The",
-    "meaning": "DOOR",
-    "example": "The examiner used 'to keep the wolf from the' in the sentence to test students.",
+    "idiom": "To Keep The Wolf From The Door",
+    "meaning": "To earn just enough to avoid hunger and poverty",
+    "example": "He took evening tuitions to keep the wolf from the door.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "hard"
@@ -6629,9 +6629,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Put A Spoke In One'S",
-    "meaning": "WHEEL",
-    "example": "The examiner used 'to put a spoke in one's' in the sentence to test students.",
+    "idiom": "To Put A Spoke In One's Wheel",
+    "meaning": "To obstruct someone's plans",
+    "example": "His rival put a spoke in his wheel by delaying the paperwork.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "hard"
@@ -6685,9 +6685,9 @@ const idiomsDB = [
     "difficulty": "easy"
   },
   {
-    "idiom": "To Go Through Fire And",
-    "meaning": "WATER",
-    "example": "The examiner used 'to go through fire and' in the sentence to test students.",
+    "idiom": "To Go Through Fire And Water",
+    "meaning": "To face any danger for someone's sake",
+    "example": "A mother will go through fire and water for her children.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
     "difficulty": "medium"
@@ -6711,7 +6711,7 @@ const idiomsDB = [
   {
     "idiom": "Live From Hand To Mouth",
     "meaning": "To have enough money to live on and",
-    "example": "The examiner used 'live from hand to mouth' in the sentence to test students.",
+    "example": "The family lived from hand to mouth after the factory closed.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -6765,9 +6765,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "The Thin End Of The",
-    "meaning": "Start of harmful development",
-    "example": "The examiner used 'the thin end of the' in the sentence to test students.",
+    "idiom": "The Thin End Of The Wedge",
+    "meaning": "A small change that leads to something much worse",
+    "example": "Allowing one exception may be the thin end of the wedge.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -6781,9 +6781,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Wrangle Over An Ass'S",
-    "meaning": "SHADOW",
-    "example": "The examiner used 'to wrangle over an ass's' in the sentence to test students.",
+    "idiom": "To Wrangle Over An Ass's Shadow",
+    "meaning": "To quarrel over something trivial",
+    "example": "They wrangled over an ass's shadow instead of solving the real issue.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "medium"
@@ -6813,9 +6813,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Have A Finger In Every",
-    "meaning": "PIE",
-    "example": "The examiner used 'to have a finger in every' in the sentence to test students.",
+    "idiom": "To Have A Finger In Every Pie",
+    "meaning": "To be involved in many activities at once",
+    "example": "The busy trustee has a finger in every pie in the town.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "hard"
@@ -6829,9 +6829,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Hit The Nail On The",
-    "meaning": "HEAD",
-    "example": "The examiner used 'to hit the nail on the' in the sentence to test students.",
+    "idiom": "To Hit The Nail On The Head",
+    "meaning": "To describe something exactly right",
+    "example": "Her comment hit the nail on the head and ended the debate.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "hard"
@@ -6861,9 +6861,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Have Something On The",
-    "meaning": "BRAIN",
-    "example": "The examiner used 'to have something on the' in the sentence to test students.",
+    "idiom": "To Have Something On The Brain",
+    "meaning": "To be obsessed with one thought",
+    "example": "Ever since the result, he has the interview on the brain.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "nature",
     "difficulty": "medium"
@@ -6885,9 +6885,9 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "To Have At One'S",
-    "meaning": "FINGERTIPS",
-    "example": "The examiner used 'to have at one's' in the sentence to test students.",
+    "idiom": "To Have At One's Fingertips",
+    "meaning": "To know something thoroughly and readily",
+    "example": "A good teacher has the whole syllabus at her fingertips.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
@@ -7069,17 +7069,17 @@ const idiomsDB = [
     "difficulty": "medium"
   },
   {
-    "idiom": "Let Something Slip",
-    "meaning": "THROUGH ONE'S",
-    "example": "The examiner used 'let something slip' in the sentence to test students.",
+    "idiom": "Let Something Slip Through One's Fingers",
+    "meaning": "To lose an opportunity through carelessness",
+    "example": "He let a golden opportunity slip through his fingers.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
     "difficulty": "medium"
   },
   {
-    "idiom": "Get Up On The Wrong Side",
-    "meaning": "OF THE BED",
-    "example": "The examiner used 'get up on the wrong side' in the sentence to test students.",
+    "idiom": "Get Up On The Wrong Side Of The Bed",
+    "meaning": "To be in a bad mood all day",
+    "example": "She was grumpy all morning, having got up on the wrong side of the bed.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "hard"
@@ -7310,7 +7310,7 @@ const idiomsDB = [
   },
   {
     "idiom": "Make or break",
-    "meaning": "Cause either total success or total ruin,",
+    "meaning": "To cause either total success or total ruin",
     "example": "The recent Europe tour was expected to be the make-or-break outing for the Dutchman and a final decision will be taken when the Hockey India panel, formed to evaluate the teams pe",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "success",
@@ -7318,7 +7318,7 @@ const idiomsDB = [
   },
   {
     "idiom": "Step up",
-    "meaning": "to make something go or run faster, increase,",
+    "meaning": "To increase the pace, effort or intensity of something",
     "example": "What he has done so far is appreciated but there is now need to step up to another level, compete and win against the top-four.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -7662,7 +7662,7 @@ const idiomsDB = [
   },
   {
     "idiom": "Fend off",
-    "meaning": "prevent the occurrence of; prevent from happening;",
+    "meaning": "To prevent something harmful from happening",
     "example": "The spotlight, though, was on the 36-year-old Dhoni, who now has to fend off questions about his future with alarming regularity.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
@@ -8118,16 +8118,16 @@ const idiomsDB = [
   },
   {
     "idiom": "In the dock",
-    "meaning": "On trial or under intense scrutiny. Example : Under attack fro diluting the case of alleged stalking and attempted kidnap of a young woman on Friday night by Vikas Barala , son of the Haryana state BJP president Subahsh barala and his Ashish , the Chandigarh police on Monday fount itself again in the dock after it was reported that CCTV footage from at least five locations was missing as the cameras were non-functional.",
-    "example": "The examiner used 'in the dock' in the sentence to test students.",
+    "meaning": "On trial or under intense scrutiny",
+    "example": "The police found itself in the dock after the missing CCTV footage was reported.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "medium"
   },
   {
     "idiom": "Hover over",
-    "meaning": "to stay close to someone or something, waiting, ready to advise or interfere. Example :Please don't hover over me, watching what I am doing. I have to hover over this project or someone will mess it up.",
-    "example": "The examiner used 'hover over' in the sentence to test students.",
+    "meaning": "To stay close to someone, ready to advise or interfere",
+    "example": "Please don't hover over me while I am working on this file.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "success",
     "difficulty": "easy"
@@ -8142,7 +8142,7 @@ const idiomsDB = [
   },
   {
     "idiom": "Call on someone",
-    "meaning": "to visit someone, usually for a short time ,",
+    "meaning": "To visit someone briefly",
     "example": "Mr. Sonowal brought up the idea when he called on the president on Saturday",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "time",
@@ -8150,8 +8150,8 @@ const idiomsDB = [
   },
   {
     "idiom": "Beat someone down",
-    "meaning": "to defeat or demoralize someone. Example :Samir Singh got to within 36 km of his goal of running 10000km I n100 days when pain and exhaustion beat him down",
-    "example": "The examiner used 'beat someone down' in the sentence to test students.",
+    "meaning": "To defeat or demoralize someone",
+    "example": "Pain and exhaustion finally beat him down near the end of the run.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "animal",
     "difficulty": "medium"
@@ -8166,8 +8166,8 @@ const idiomsDB = [
   },
   {
     "idiom": "Boxed into a corner",
-    "meaning": "To create a predicament or unpleasant situation for oneself whereby there are no or very few favourable solutions or outcomes Example : This is not the first time that Jadeja has found himself boxed into a corner.",
-    "example": "The examiner used 'boxed into a corner' in the sentence to test students.",
+    "meaning": "Trapped in a situation with very few favourable options",
+    "example": "The captain found himself boxed into a corner after the early wickets fell.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "color",
     "difficulty": "medium"
@@ -8255,7 +8255,7 @@ const idiomsDB = [
   {
     "idiom": "Calls off",
     "meaning": "to decide that something will not happen , cancel",
-    "example": "Example : Following appeals by film-makers and producers , the Film Employees Federation of South india (FEFSI) on Thursday called off its strike",
+    "example": "The federation called off its strike after appeals from the producers.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "general",
     "difficulty": "easy"
@@ -8271,7 +8271,7 @@ const idiomsDB = [
   {
     "idiom": "Run up",
     "meaning": "to raise or hoist something, such as a flag , to cause something to go higher, such as the price of stocks or commodities",
-    "example": "Example : In the Run up to the implementation of GST , we did expect many challenges including an impact on trade pipeline inventory",
+    "example": "In the run up to the GST rollout, traders expected many challenges.",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "money",
     "difficulty": "easy"
@@ -8454,7 +8454,7 @@ const idiomsDB = [
   },
   {
     "idiom": "Spruced Up",
-    "meaning": "to improve the appearance of someone or something, Make neat and trim,",
+    "meaning": "To make someone or something neat and smart in appearance",
     "example": "The Karnataka Golf Association has undergone much work to be ready for this weeks TAKE SOLUTIONS MASTERS, the first Asian Tour event at the venue since the Indian open in",
     "exam": ["SSC", "Banking", "Railways"],
     "category": "body",
