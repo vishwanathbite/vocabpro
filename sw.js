@@ -1,8 +1,8 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 41 - Bump cache to invalidate vocab-easy.js and vocab-medium.js after
- * the PRC de-duplication (201 cross-file duplicate headwords removed); align
- * PRECACHE_ASSETS with the ?v=34 versioned script URLs.
+ * Version 42 - Bump cache for the medium/hard lazy-load fix (data files now
+ * assign to window; loader rejects instead of silently resolving); align
+ * PRECACHE_ASSETS with the ?v=35 versioned script URLs.
  *
  * NOTE: CACHE_VERSION below is mirrored by window.VOCABPRO_CACHE_VERSION in
  * index.html (pre-SW cache cleaner). Bump both together or the cleaner will
@@ -15,7 +15,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 41;
+const CACHE_VERSION = 42;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -24,24 +24,24 @@ const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './js/storage.js?v=34',
-  './js/icons.js?v=34',
-  './js/utils.js?v=34',
-  './js/gamification.js?v=34',
-  './js/srs.js?v=34',
-  './js/bookmarks.js?v=34',
-  './js/dailygoals.js?v=34',
-  './js/settings.js?v=34',
-  './js/components.js?v=34',
-  './js/screens.js?v=34',
-  './js/app.js?v=34',
-  './js/data/index.js?v=34',
-  './js/data/vocab-easy.js?v=34',
-  './js/data/vocab-medium.js?v=34',
-  './js/data/vocab-hard.js?v=34',
-  './js/data/acronyms.js?v=34',
-  './js/data/oneword.js?v=34',
-  './js/data/idioms.js?v=34',
+  './js/storage.js?v=35',
+  './js/icons.js?v=35',
+  './js/utils.js?v=35',
+  './js/gamification.js?v=35',
+  './js/srs.js?v=35',
+  './js/bookmarks.js?v=35',
+  './js/dailygoals.js?v=35',
+  './js/settings.js?v=35',
+  './js/components.js?v=35',
+  './js/screens.js?v=35',
+  './js/app.js?v=35',
+  './js/data/index.js?v=35',
+  './js/data/vocab-easy.js?v=35',
+  './js/data/vocab-medium.js?v=35',
+  './js/data/vocab-hard.js?v=35',
+  './js/data/acronyms.js?v=35',
+  './js/data/oneword.js?v=35',
+  './js/data/idioms.js?v=35',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
@@ -222,8 +222,15 @@ async function handleLocalRequest(request) {
     // Network failed and not in cache
     console.warn('[SW] Request failed:', request.url);
 
-    // For JS files, return empty response to prevent breaking the app
-    if (request.destination === 'script') {
+    // Data files carry the vocabulary itself. An empty 200 here would execute
+    // fine, fire the loader's onload and leave it with no data — a silent
+    // failure the user sees as "No words available for this difficulty".
+    // Return a real error so the loader's onerror path fires instead.
+    const isDataFile = new URL(request.url).pathname.includes('/js/data/');
+
+    // For other JS, an empty response still degrades more gracefully than a
+    // hard failure — a missing UI module should not take the whole app down.
+    if (request.destination === 'script' && !isDataFile) {
       return new Response('/* offline */', {
         headers: { 'Content-Type': 'application/javascript' }
       });

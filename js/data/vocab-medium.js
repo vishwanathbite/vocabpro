@@ -1715,3 +1715,4 @@ const vocabMedium = [
 	{word:"Debatable",definition:"Open to discussion or argument",pronunciation:"di-BAY-tuh-buhl",synonyms:["questionable","arguable","disputable","controversial"],antonyms:["certain","indisputable","definite","unquestionable"],example:"Effectiveness of policy remains debatable.",mnemonic:"DEBATE-ABLE: Can be debated",usage:"Controversy and open to argument",exam:"UPSC/SSC",difficulty:"medium"}
 
 ];
+window.vocabMedium = vocabMedium;
