@@ -1,0 +1,546 @@
+[
+ {
+  "word": "Apotheosis",
+  "usage": "Literary criticism and cultural commentary"
+ },
+ {
+  "word": "Appall",
+  "usage": "Reactions to atrocity and scandal"
+ },
+ {
+  "word": "Appease",
+  "usage": "Diplomatic history and foreign policy"
+ },
+ {
+  "word": "Apposite",
+  "usage": "Academic and editorial argument"
+ },
+ {
+  "word": "Apropos",
+  "usage": "Formal correspondence and discussion"
+ },
+ {
+  "word": "Archaic",
+  "usage": "Language study and legal drafting"
+ },
+ {
+  "word": "Ardent",
+  "usage": "Describing committed supporters or believers"
+ },
+ {
+  "word": "Aristocrat",
+  "usage": "Historical and social hierarchy contexts"
+ },
+ {
+  "word": "Armistice",
+  "usage": "Wartime diplomacy and treaty reporting"
+ },
+ {
+  "word": "Arraign",
+  "usage": "Criminal procedure and court reporting"
+ },
+ {
+  "word": "Arrogant",
+  "usage": "Describing overbearing conduct"
+ },
+ {
+  "word": "Artifice",
+  "usage": "Rhetoric and critiques of manipulation"
+ },
+ {
+  "word": "Ascendancy",
+  "usage": "Political and economic dominance"
+ },
+ {
+  "word": "Ascribe",
+  "usage": "Attributing causes in analysis"
+ },
+ {
+  "word": "Asperity",
+  "usage": "Describing sharp or curt manner"
+ },
+ {
+  "word": "Aspersion",
+  "usage": "Defamation and political mudslinging"
+ },
+ {
+  "word": "Assail",
+  "usage": "Physical attack and forceful criticism"
+ },
+ {
+  "word": "Assay",
+  "usage": "Metallurgy and rigorous evaluation"
+ },
+ {
+  "word": "Assent",
+  "usage": "Parliamentary and constitutional procedure"
+ },
+ {
+  "word": "Assuage",
+  "usage": "Easing fears, anger or grief"
+ },
+ {
+  "word": "Astute",
+  "usage": "Praising sharp political or business judgement"
+ },
+ {
+  "word": "Asylum",
+  "usage": "Refugee law and international protection"
+ },
+ {
+  "word": "Atrocity",
+  "usage": "War crimes and human rights reporting"
+ },
+ {
+  "word": "Atrophy",
+  "usage": "Medical decline and institutional decay"
+ },
+ {
+  "word": "Attenuate",
+  "usage": "Scientific and policy discussion of weakening"
+ },
+ {
+  "word": "Attrition",
+  "usage": "Warfare, workforce and gradual loss"
+ },
+ {
+  "word": "Audacious",
+  "usage": "Describing bold plans or claims"
+ },
+ {
+  "word": "Augur",
+  "usage": "Forecasting outcomes and prospects"
+ },
+ {
+  "word": "August",
+  "usage": "Formal reference to venerable institutions"
+ },
+ {
+  "word": "Auspicious",
+  "usage": "Ceremonial and calendrical contexts"
+ },
+ {
+  "word": "Austerity",
+  "usage": "Fiscal policy and public spending debate"
+ },
+ {
+  "word": "Authoritarian",
+  "usage": "Political science and governance critique"
+ },
+ {
+  "word": "Autonomous",
+  "usage": "Governance, technology and federalism"
+ },
+ {
+  "word": "Avarice",
+  "usage": "Moral criticism of greed"
+ },
+ {
+  "word": "Aversion",
+  "usage": "Describing strong dislike or reluctance"
+ },
+ {
+  "word": "Benign",
+  "usage": "Medical diagnosis and describing harmlessness"
+ },
+ {
+  "word": "Berate",
+  "usage": "Describing angry public rebuke"
+ },
+ {
+  "word": "Beseech",
+  "usage": "Literary and impassioned appeals"
+ },
+ {
+  "word": "Besiege",
+  "usage": "Military history and figurative pressure"
+ },
+ {
+  "word": "Blatant",
+  "usage": "Describing open violations and bias"
+ },
+ {
+  "word": "Blight",
+  "usage": "Agriculture and urban decay"
+ },
+ {
+  "word": "Boon",
+  "usage": "Describing welcome benefits or windfalls"
+ },
+ {
+  "word": "Brazen",
+  "usage": "Describing shameless defiance"
+ },
+ {
+  "word": "Brevity",
+  "usage": "Writing and communication skills"
+ },
+ {
+  "word": "Bureaucracy",
+  "usage": "Public administration and governance"
+ },
+ {
+  "word": "Cajole",
+  "usage": "Persuasion and negotiation tactics"
+ },
+ {
+  "word": "Calamity",
+  "usage": "Disaster reporting and relief"
+ },
+ {
+  "word": "Canon",
+  "usage": "Literature, law and religious doctrine"
+ },
+ {
+  "word": "Capitulate",
+  "usage": "Warfare and negotiation surrender"
+ },
+ {
+  "word": "Castigate",
+  "usage": "Judicial and editorial condemnation"
+ },
+ {
+  "word": "Catalyst",
+  "usage": "Chemistry and drivers of social change"
+ },
+ {
+  "word": "Censure",
+  "usage": "Parliamentary and professional discipline"
+ },
+ {
+  "word": "Cessation",
+  "usage": "Ceasefires and formal ending of activity"
+ },
+ {
+  "word": "Chagrin",
+  "usage": "Describing embarrassment after failure"
+ },
+ {
+  "word": "Charlatan",
+  "usage": "Exposing fraudulent experts and quacks"
+ },
+ {
+  "word": "Chasm",
+  "usage": "Geography and describing deep divisions"
+ },
+ {
+  "word": "Chastise",
+  "usage": "Formal rebuke and disciplinary contexts"
+ },
+ {
+  "word": "Chicanery",
+  "usage": "Legal and electoral malpractice"
+ },
+ {
+  "word": "Chide",
+  "usage": "Mild reproof and gentle correction"
+ },
+ {
+  "word": "Chimerical",
+  "usage": "Dismissing unrealistic schemes"
+ },
+ {
+  "word": "Choleric",
+  "usage": "Classical temperament theory and character description"
+ },
+ {
+  "word": "Churlish",
+  "usage": "Describing ungracious behaviour"
+ },
+ {
+  "word": "Circumlocution",
+  "usage": "Criticising evasive official language"
+ },
+ {
+  "word": "Circumvent",
+  "usage": "Evading rules, sanctions and obstacles"
+ },
+ {
+  "word": "Clemency",
+  "usage": "Presidential pardons and sentencing"
+ },
+ {
+  "word": "Clique",
+  "usage": "Describing exclusive social or political groups"
+ },
+ {
+  "word": "Cloister",
+  "usage": "Monastic life and withdrawal from society"
+ },
+ {
+  "word": "Coalesce",
+  "usage": "Political alliances and merging movements"
+ },
+ {
+  "word": "Cognizant",
+  "usage": "Formal acknowledgement of awareness"
+ },
+ {
+  "word": "Colloquial",
+  "usage": "Linguistics and register analysis"
+ },
+ {
+  "word": "Collusion",
+  "usage": "Antitrust, electoral and corporate fraud"
+ },
+ {
+  "word": "Colossal",
+  "usage": "Emphasising vast scale or failure"
+ },
+ {
+  "word": "Commiserate",
+  "usage": "Expressing sympathy after loss"
+ },
+ {
+  "word": "Commodious",
+  "usage": "Property description and architecture"
+ },
+ {
+  "word": "Compelling",
+  "usage": "Assessing evidence and argument"
+ },
+ {
+  "word": "Compendium",
+  "usage": "Reference works and study material"
+ },
+ {
+  "word": "Complicity",
+  "usage": "Criminal liability and moral responsibility"
+ },
+ {
+  "word": "Comport",
+  "usage": "Formal reference to conduct and bearing"
+ },
+ {
+  "word": "Composure",
+  "usage": "Describing calm under pressure"
+ },
+ {
+  "word": "Compunction",
+  "usage": "Moral hesitation and remorse"
+ },
+ {
+  "word": "Conceit",
+  "usage": "Character criticism and literary devices"
+ },
+ {
+  "word": "Conciliate",
+  "usage": "Dispute resolution and industrial relations"
+ },
+ {
+  "word": "Conclusive",
+  "usage": "Evidence assessment in law and science"
+ },
+ {
+  "word": "Concoct",
+  "usage": "Fabricating stories, excuses and schemes"
+ },
+ {
+  "word": "Concord",
+  "usage": "Treaties and harmonious relations"
+ },
+ {
+  "word": "Condescend",
+  "usage": "Criticising patronising behaviour"
+ },
+ {
+  "word": "Condone",
+  "usage": "Moral and legal tolerance of wrongdoing"
+ },
+ {
+  "word": "Conducive",
+  "usage": "Describing favourable conditions"
+ },
+ {
+  "word": "Confederation",
+  "usage": "Comparative politics and federal structures"
+ },
+ {
+  "word": "Confound",
+  "usage": "Defying expectations and confusing analysis"
+ },
+ {
+  "word": "Congeal",
+  "usage": "Physical solidifying and stalled processes"
+ },
+ {
+  "word": "Congenial",
+  "usage": "Describing agreeable company or surroundings"
+ },
+ {
+  "word": "Connive",
+  "usage": "Complicity through deliberate inaction"
+ },
+ {
+  "word": "Connoisseur",
+  "usage": "Art, wine and cultural expertise"
+ },
+ {
+  "word": "Connotation",
+  "usage": "Semantics and rhetorical analysis"
+ },
+ {
+  "word": "Connubial",
+  "usage": "Legal and literary references to marriage"
+ },
+ {
+  "word": "Consecrate",
+  "usage": "Religious ceremony and solemn dedication"
+ },
+ {
+  "word": "Consensus",
+  "usage": "Committee decisions and scientific agreement"
+ },
+ {
+  "word": "Consequential",
+  "usage": "Distinguishing significant from trivial outcomes"
+ },
+ {
+  "word": "Consternation",
+  "usage": "Public reaction to alarming news"
+ },
+ {
+  "word": "Construe",
+  "usage": "Statutory interpretation and textual analysis"
+ },
+ {
+  "word": "Consul",
+  "usage": "Diplomatic service and Roman history"
+ },
+ {
+  "word": "Consummate",
+  "usage": "Praising complete mastery of a skill"
+ },
+ {
+  "word": "Contaminate",
+  "usage": "Environmental pollution and food safety"
+ },
+ {
+  "word": "Contempt",
+  "usage": "Court proceedings and expressions of scorn"
+ },
+ {
+  "word": "Contentious",
+  "usage": "Disputed policy and legal questions"
+ },
+ {
+  "word": "Contiguous",
+  "usage": "Geography and territorial boundaries"
+ },
+ {
+  "word": "Contort",
+  "usage": "Physical distortion and twisting arguments"
+ },
+ {
+  "word": "Contraband",
+  "usage": "Customs enforcement and smuggling"
+ },
+ {
+  "word": "Contravene",
+  "usage": "Breaches of law, treaty and regulation"
+ },
+ {
+  "word": "Contrite",
+  "usage": "Apologies and expressions of remorse"
+ },
+ {
+  "word": "Contrive",
+  "usage": "Engineering outcomes and forced plots"
+ },
+ {
+  "word": "Controversial",
+  "usage": "Disputed public figures and decisions"
+ },
+ {
+  "word": "Conversant",
+  "usage": "Claiming familiarity with a subject"
+ },
+ {
+  "word": "Convivial",
+  "usage": "Describing warm sociable gatherings"
+ },
+ {
+  "word": "Convoke",
+  "usage": "Summoning assemblies and formal meetings"
+ },
+ {
+  "word": "Cosmopolitan",
+  "usage": "Urban culture and global outlook"
+ },
+ {
+  "word": "Countenance",
+  "usage": "Formal refusal or approval of conduct"
+ },
+ {
+  "word": "Coup",
+  "usage": "Political upheaval and sudden seizures of power"
+ },
+ {
+  "word": "Covenant",
+  "usage": "Contract law and religious agreements"
+ },
+ {
+  "word": "Covert",
+  "usage": "Intelligence operations and concealed activity"
+ },
+ {
+  "word": "Covet",
+  "usage": "Moral criticism of envious desire"
+ },
+ {
+  "word": "Cower",
+  "usage": "Describing fearful submission"
+ },
+ {
+  "word": "Coy",
+  "usage": "Evasive answers and affected shyness"
+ },
+ {
+  "word": "Craven",
+  "usage": "Condemning cowardice in leadership"
+ },
+ {
+  "word": "Credence",
+  "usage": "Weighing the reliability of claims"
+ },
+ {
+  "word": "Creed",
+  "usage": "Religious doctrine and guiding principles"
+ },
+ {
+  "word": "Crescendo",
+  "usage": "Music and building intensity"
+ },
+ {
+  "word": "Crestfallen",
+  "usage": "Describing visible disappointment"
+ },
+ {
+  "word": "Critique",
+  "usage": "Academic and artistic evaluation"
+ },
+ {
+  "word": "Cryptic",
+  "usage": "Puzzles, ciphers and ambiguous statements"
+ },
+ {
+  "word": "Culminate",
+  "usage": "Describing the outcome of long processes"
+ },
+ {
+  "word": "Cumbersome",
+  "usage": "Criticising unwieldy procedure or equipment"
+ },
+ {
+  "word": "Cunning",
+  "usage": "Describing crafty and calculated behaviour"
+ },
+ {
+  "word": "Cursory",
+  "usage": "Criticising inadequate inspection or reading"
+ },
+ {
+  "word": "Curtail",
+  "usage": "Restricting rights, spending and freedoms"
+ }
+]
