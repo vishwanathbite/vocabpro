@@ -433,7 +433,7 @@ const OnboardingManager = {
     {
       id: 'welcome',
       title: 'Welcome to VocabPro!',
-      description: 'Master 6,100+ vocabulary words for competitive exams like UPSC, SSC, Banking & more.',
+      description: 'Master 6,100+ vocabulary items for competitive exams like UPSC, SSC, Banking & more.',
       icon: '📚',
       highlight: null
     },
@@ -526,4 +526,4 @@ const KeyboardShortcuts = {
 window.SettingsManager = SettingsManager;
 window.QuizHistoryManager = QuizHistoryManager;
 window.OnboardingManager = OnboardingManager;
-window.KEYBOARD_SHORTCUTS = KEYBOARD_SHORTCUTS;
+window.KeyboardShortcuts = KeyboardShortcuts;

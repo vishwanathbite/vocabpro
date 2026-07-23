@@ -430,7 +430,7 @@ const HomeScreen = ({
               <div style={{ display: 'none', width: 40, height: 40, borderRadius: 8, background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: 'white', flexShrink: 0 }}>VP</div>
               <div className="hidden sm:block">
                 <h1 className="text-xl md:text-2xl font-bold text-white">Literary Rides VocabPro</h1>
-                <p className="text-white text-opacity-70 text-xs md:text-sm">Master 6,100+ Words</p>
+                <p className="text-white text-opacity-70 text-xs md:text-sm">Master 6,100+ Vocabulary Items</p>
               </div>
               <div className="sm:hidden">
                 <h1 className="text-lg font-bold text-white">VocabPro</h1>
@@ -854,7 +854,7 @@ const HomeScreen = ({
           <div className="text-center text-white text-opacity-70 text-sm">
             <p className="mb-2">© {new Date().getFullYear()} Literary Rides VocabPro. Created by Dr. Vishwanath Bite.</p>
             <p>Master vocabulary for UPSC, SSC, Banking, Railways & State PSC exams</p>
-            <p className="mt-2"><a href="https://vishwanathbite.github.io/vocabpro/privacy.html" target="_blank" rel="noopener noreferrer" className="text-white text-opacity-50 hover:text-opacity-75 transition-all text-xs">Privacy Policy</a></p>
+            <p className="mt-2"><a href="https://literaryrides.com/privacy-policy/" target="_blank" rel="noopener noreferrer" className="text-white text-opacity-50 hover:text-opacity-75 transition-all text-xs">Privacy Policy</a></p>
           </div>
         </div>
       </footer>
