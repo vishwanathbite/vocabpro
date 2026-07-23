@@ -2,7 +2,7 @@
 
 **Free vocabulary builder for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways**
 
-Master **6,100+ vocabulary items** with spaced repetition, 9 quiz modes, flashcards, gamification, and full offline support. Built by an educator, for students. Always free.
+Master **5,900+ vocabulary items** with spaced repetition, 9 quiz modes, flashcards, gamification, and full offline support. Built by an educator, for students. Always free.
 
 🔗 **[Try VocabPro Now →](https://vishwanathbite.github.io/vocabpro/)**
 
@@ -12,13 +12,13 @@ Master **6,100+ vocabulary items** with spaced repetition, 9 quiz modes, flashca
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| Easy Words | 1,000 | Foundational vocabulary for all exams |
-| Medium Words | 1,709 | Intermediate vocabulary for SSC/Banking |
+| Easy Words | 957 | Foundational vocabulary for all exams |
+| Medium Words | 1,551 | Intermediate vocabulary for SSC/Banking |
 | Hard Words | 1,501 | Advanced vocabulary for UPSC/CAT |
 | Acronyms | 300 | Common acronyms with smart distractors |
 | One-Word Substitutes | 500 | Phrase-to-word patterns for exam MCQs |
-| Idioms & Phrases | 1,116 | SSC/Banking/UPSC tested idioms with meanings |
-| **Total** | **6,126** | **Comprehensive exam-ready coverage** |
+| Idioms & Phrases | 1,105 | SSC/Banking/UPSC tested idioms with meanings |
+| **Total** | **5,914** | **Comprehensive exam-ready coverage** |
 
 Every item includes: definition, pronunciation, synonyms, antonyms, mnemonic, example sentence with Indian exam context, and exam relevance tag.
 
@@ -190,9 +190,9 @@ const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 ## 📈 Roadmap
 
 ### ✅ Completed
-- 6,126 vocabulary items across all categories
+- 5,914 vocabulary items across all categories
 - 9 quiz modes including Idioms & Phrases + Idioms Reverse
-- 1,116 idioms sourced from SSC/Banking/UPSC past papers
+- 1,105 idioms sourced from SSC/Banking/UPSC past papers
 - SM-2 spaced repetition engine
 - Gamification (25+ badges, 10 levels, streaks, XP)
 - Idiom-specific badges (Phrase Hunter, Idiom Master, Wordsmith)

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Literary Rides VocabPro - Master 6,100+ vocabulary practice questions for UPSC, SSC, Banking, Railways exams. 9 quiz modes including idioms. Created by Dr. Vishwanath Bite">
+  <meta name="description" content="Literary Rides VocabPro - Master 5,900+ vocabulary practice questions for UPSC, SSC, Banking, Railways exams. 9 quiz modes including idioms. Created by Dr. Vishwanath Bite">
   <meta name="keywords" content="vocabulary, UPSC, SSC, Banking, competitive exams, English learning, word power">
   <meta name="author" content="Dr. Vishwanath Bite">
   <!-- Content Security Policy (unsafe-inline/eval needed for Babel standalone — tighten after Vite migration) -->
@@ -20,7 +20,7 @@
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Telegram) -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="VocabPro — Free Vocabulary Builder for UPSC, SSC, Banking & CAT" />
-  <meta property="og:description" content="6,100+ vocabulary items with definitions, synonyms, antonyms, mnemonics & Indian exam context. Spaced repetition, 9 quiz modes including idioms, offline support. 100% free by Dr. Vishwanath Bite." />
+  <meta property="og:description" content="5,900+ vocabulary items with definitions, synonyms, antonyms, mnemonics & Indian exam context. Spaced repetition, 9 quiz modes including idioms, offline support. 100% free by Dr. Vishwanath Bite." />
   <meta property="og:url" content="https://vishwanathbite.github.io/vocabpro/" />
   <meta property="og:site_name" content="Literary Rides VocabPro" />
   <meta property="og:locale" content="en_IN" />
@@ -30,7 +30,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="VocabPro — Free Vocabulary Builder for UPSC, SSC, Banking & CAT" />
-  <meta name="twitter:description" content="6,100+ practice questions with spaced repetition, 9 quiz modes including idioms, offline support. Built for Indian competitive exams. 100% free." />
+  <meta name="twitter:description" content="5,900+ practice questions with spaced repetition, 9 quiz modes including idioms, offline support. Built for Indian competitive exams. 100% free." />
   <meta name="twitter:image" content="https://vishwanathbite.github.io/vocabpro/og-image.png" />
 
   <!-- JSON-LD Structured Data -->
@@ -40,7 +40,7 @@
     "@type": "WebApplication",
     "name": "Literary Rides VocabPro",
     "alternateName": "VocabPro",
-    "description": "Free vocabulary builder app for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways. 6,100+ vocabulary items with definitions, synonyms, antonyms, mnemonics, and exam-relevant example sentences.",
+    "description": "Free vocabulary builder app for Indian competitive exams — UPSC, SSC CGL, Banking/IBPS PO, CAT, and Railways. 5,900+ vocabulary items with definitions, synonyms, antonyms, mnemonics, and exam-relevant example sentences.",
     "url": "https://vishwanathbite.github.io/vocabpro/",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Any (Progressive Web App)",
@@ -72,7 +72,7 @@
       "audienceType": "UPSC, SSC, Banking, CAT, Railways aspirants"
     },
     "featureList": [
-      "6,100+ vocabulary items (words, idioms, acronyms, one-word substitutes)",
+      "5,900+ vocabulary items (words, idioms, acronyms, one-word substitutes)",
       "Spaced repetition (SM-2 algorithm)",
       "9 quiz modes including idioms",
       "Flashcard learning",
@@ -109,7 +109,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
   <link rel="apple-touch-icon" sizes="152x152" href="icons/apple-touch-icon-152.png">
-  <title>Literary Rides VocabPro - Master 6,100+ Vocabulary Items for Competitive Exams</title>
+  <title>Literary Rides VocabPro - Master 5,900+ Vocabulary Items for Competitive Exams</title>
 
   <!-- React + ReactDOM (UMD) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -535,7 +535,7 @@
     // Single source of truth for the cache version used by this page.
     // MUST match CACHE_VERSION in sw.js. If the two drift, this cleaner deletes
     // the live cache on every page load and offline mode stops working.
-    window.VOCABPRO_CACHE_VERSION = 40;
+    window.VOCABPRO_CACHE_VERSION = 41;
 
     // Delete only our own stale caches (vocabpro-v*), never the current one.
     if ('caches' in window) {
@@ -565,13 +565,13 @@
 
   <!-- 1. DATA FILES FIRST - Must load before any Babel scripts -->
   <!-- These are plain JavaScript, no JSX, load synchronously -->
-  <script src="js/data/vocab-easy.js?v=33" onerror="onScriptError('vocab-easy.js')"></script>
+  <script src="js/data/vocab-easy.js?v=34" onerror="onScriptError('vocab-easy.js')"></script>
   <!-- vocab-medium.js and vocab-hard.js are lazy-loaded when user selects that difficulty -->
-  <script defer src="js/data/acronyms.js?v=33" onerror="onScriptError('acronyms.js')"></script>
-  <script defer src="js/data/oneword.js?v=33" onerror="onScriptError('oneword.js')"></script>
+  <script defer src="js/data/acronyms.js?v=34" onerror="onScriptError('acronyms.js')"></script>
+  <script defer src="js/data/oneword.js?v=34" onerror="onScriptError('oneword.js')"></script>
   <!-- idioms.js is lazy-loaded when user enters Idioms Quiz mode (improves LCP) -->
   <!-- defer so this runs after acronyms.js/oneword.js; deferred scripts keep document order -->
-  <script defer src="js/data/index.js?v=33" onerror="onScriptError('index.js')"></script>
+  <script defer src="js/data/index.js?v=34" onerror="onScriptError('index.js')"></script>
 
   <!-- Verify data loaded correctly.
        Runs on DOMContentLoaded, which fires after all deferred scripts above have
@@ -606,38 +606,38 @@
   </script>
 
   <!-- 2. Storage layer - must load before other modules -->
-  <script src="js/storage.js?v=33" onerror="onScriptError('storage.js')"></script>
+  <script src="js/storage.js?v=34" onerror="onScriptError('storage.js')"></script>
 
   <!-- 3. Now load Babel-processed scripts (async, but data is already available) -->
   <!-- Icons - SVG components -->
-  <script type="text/babel" src="js/icons.js?v=33"></script>
+  <script type="text/babel" src="js/icons.js?v=34"></script>
 
   <!-- 4. Utilities - Helper functions -->
-  <script type="text/babel" src="js/utils.js?v=33"></script>
+  <script type="text/babel" src="js/utils.js?v=34"></script>
 
   <!-- 5. Gamification - XP, levels, badges -->
-  <script type="text/babel" src="js/gamification.js?v=33"></script>
+  <script type="text/babel" src="js/gamification.js?v=34"></script>
 
   <!-- 6. Spaced Repetition System -->
-  <script type="text/babel" src="js/srs.js?v=33"></script>
+  <script type="text/babel" src="js/srs.js?v=34"></script>
 
   <!-- 7. Bookmarks System -->
-  <script type="text/babel" src="js/bookmarks.js?v=33"></script>
+  <script type="text/babel" src="js/bookmarks.js?v=34"></script>
 
   <!-- 8. Daily Goals System -->
-  <script type="text/babel" src="js/dailygoals.js?v=33"></script>
+  <script type="text/babel" src="js/dailygoals.js?v=34"></script>
 
   <!-- 9. Settings, History & Onboarding -->
-  <script type="text/babel" src="js/settings.js?v=33"></script>
+  <script type="text/babel" src="js/settings.js?v=34"></script>
 
   <!-- 10. Components - Reusable UI components -->
-  <script type="text/babel" src="js/components.js?v=33"></script>
+  <script type="text/babel" src="js/components.js?v=34"></script>
 
   <!-- 11. Screens - Main screen components -->
-  <script type="text/babel" src="js/screens.js?v=33"></script>
+  <script type="text/babel" src="js/screens.js?v=34"></script>
 
   <!-- 12. App - Main application component -->
-  <script type="text/babel" src="js/app.js?v=33"></script>
+  <script type="text/babel" src="js/app.js?v=34"></script>
 
   <!-- 13. Initialize the app with comprehensive error handling and retry logic -->
   <script type="text/babel">
