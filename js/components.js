@@ -939,22 +939,8 @@ const Modal = ({ children, isOpen, onClose, title, maxWidth = 'max-w-md' }) => {
 /**
  * Sign Up Modal — Collects user details and posts to Google Sheets
  */
-const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-  'Andaman & Nicobar', 'Chandigarh', 'Dadra & Nagar Haveli', 'Daman & Diu',
-  'Delhi', 'Jammu & Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
-];
-
-const EXAM_OPTIONS = ['UPSC', 'SSC CGL', 'Banking/IBPS', 'CAT', 'Railways', 'UGC NET', 'State PSC', 'Other'];
-
 const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
-  const [formData, setFormData] = useState({
-    name: '', email: '', whatsapp: '', exam: [], city: '', state: ''
-  });
+  const [formData, setFormData] = useState({ name: '', email: '' });
   const nameRef = useRef(null);
   const signupModalRef = useRef(null);
   useFocusTrap(signupModalRef, isOpen);
@@ -965,16 +951,9 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
       setTimeout(() => nameRef.current.focus(), 100);
     }
     if (isOpen) {
-      setFormData({ name: '', email: '', whatsapp: '', exam: [], city: '', state: '' });
+      setFormData({ name: '', email: '' });
     }
   }, [isOpen]);
-
-  const toggleExam = (exam) => {
-    setFormData(prev => ({
-      ...prev,
-      exam: prev.exam.includes(exam) ? prev.exam.filter(e => e !== exam) : [...prev.exam, exam]
-    }));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -1034,68 +1013,6 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
             />
           </div>
 
-          <div>
-            <label htmlFor="signup-whatsapp" className="sr-only">WhatsApp Number</label>
-            <input
-              id="signup-whatsapp"
-              type="tel"
-              placeholder="WhatsApp number (optional)"
-              className={inputClass}
-              value={formData.whatsapp}
-              onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-            />
-          </div>
-
-          <div>
-            <p className="text-white text-opacity-70 text-sm mb-2">Which exam are you preparing for?</p>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Select exams you are preparing for">
-              {EXAM_OPTIONS.map(exam => (
-                <button
-                  key={exam}
-                  type="button"
-                  role="checkbox"
-                  aria-checked={formData.exam.includes(exam)}
-                  onClick={() => toggleExam(exam)}
-                  className={`px-3 py-2 rounded-full text-sm border transition-all min-h-[44px] ${
-                    formData.exam.includes(exam)
-                      ? 'bg-purple-500 border-purple-500 text-white'
-                      : 'border-white border-opacity-20 text-white text-opacity-70 hover:border-opacity-40'
-                  }`}
-                >
-                  {exam}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="signup-city" className="sr-only">City or Town</label>
-            <input
-              id="signup-city"
-              type="text"
-              placeholder="City / Town"
-              className={inputClass}
-              value={formData.city}
-              onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="signup-state" className="sr-only">State</label>
-            <select
-              id="signup-state"
-              className={`${inputClass} appearance-none`}
-              value={formData.state}
-              onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-              style={{ color: formData.state ? 'white' : 'rgba(255,255,255,0.4)' }}
-            >
-              <option value="" style={{ color: '#333' }}>Select State</option>
-              {INDIAN_STATES.map(s => (
-                <option key={s} value={s} style={{ color: '#333' }}>{s}</option>
-              ))}
-            </select>
-          </div>
-
           <button
             type="submit"
             disabled={submitting}
@@ -1104,6 +1021,10 @@ const SignUpModal = ({ isOpen, onClose, onSubmit, submitting }) => {
           >
             {submitting ? 'Joining...' : 'Join VocabPro Community'}
           </button>
+
+          <SecondaryButton onClick={onClose} className="w-full">
+            Maybe later
+          </SecondaryButton>
 
           <p className="text-white text-opacity-40 text-xs text-center">
             Your data is safe. We only send vocabulary tips and app updates.

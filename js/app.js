@@ -394,7 +394,6 @@ function App() {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showSignupReminder, setShowSignupReminder] = useState(false);
 
   // Gamification State
   const [stats, setStats] = useState(StatsManager.loadStats());
@@ -521,13 +520,6 @@ function App() {
       StatsManager.saveStats(stats);
     }
   }, [stats, currentUser]);
-
-  // Signup reminder (after 5 questions or 50 points without login)
-  useEffect(() => {
-    if (!currentUser && (stats.totalAnswered >= 5 || stats.totalPoints >= 50)) {
-      setShowSignupReminder(true);
-    }
-  }, [stats.totalAnswered, stats.totalPoints, currentUser]);
 
   // Cleanup speech on unmount
   useEffect(() => {
@@ -687,7 +679,6 @@ function App() {
       setCurrentUser(newUser);
       setStats(newUser.stats);
       setShowAuthModal(false);
-      setShowSignupReminder(false);
 
       toast.success(`Welcome, ${formData.firstName}! Your account has been created.`);
     } else {
@@ -736,11 +727,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name.trim(),
-          email: formData.email.trim(),
-          whatsapp: formData.whatsapp.trim(),
-          exam: formData.exam.join(', '),
-          city: formData.city.trim(),
-          state: formData.state
+          email: formData.email.trim()
         })
       });
 
@@ -1967,35 +1954,6 @@ function App() {
           totalPoints={stats.totalPoints}
         />
       )}
-
-      {/* Signup Reminder Modal */}
-      <Modal
-        isOpen={showSignupReminder && !currentUser}
-        onClose={() => setShowSignupReminder(false)}
-        title="Save Your Progress!"
-      >
-        <div className="text-center">
-          <div className="text-6xl mb-4">🎯</div>
-          <p className="text-white mb-4">
-            You've earned {stats.totalPoints} points! Create an account to save your progress and unlock badges.
-          </p>
-          <PrimaryButton
-            onClick={() => {
-              setShowSignupReminder(false);
-              setShowAuthModal(true);
-            }}
-            className="w-full mb-3"
-          >
-            Create Account
-          </PrimaryButton>
-          <SecondaryButton
-            onClick={() => setShowSignupReminder(false)}
-            className="w-full"
-          >
-            Maybe Later
-          </SecondaryButton>
-        </div>
-      </Modal>
 
       {/* Search Modal */}
       <SearchModal
