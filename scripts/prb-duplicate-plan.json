@@ -1,0 +1,68 @@
+[
+ {
+  "normalised": "back to the drawing board",
+  "keep": 402,
+  "delete": 708,
+  "why": "708 meaning truncated ('...and that'); 402 complete. 708 also miscategorised 'animal'."
+ },
+ {
+  "normalised": "barking up the wrong tree",
+  "keep": 395,
+  "delete": 707,
+  "why": "707 meaning truncated ('misguided line of'); 395 complete."
+ },
+ {
+  "normalised": "every cloud has a silver lining",
+  "keep": 738,
+  "delete": 922,
+  "why": "Both complete; 738 gloss is sharper and example is cleaner. 922 example is a news fragment."
+ },
+ {
+  "normalised": "keep the wolf away from the door",
+  "keep": 371,
+  "delete": 492,
+  "why": "Identical meanings; keep earlier index."
+ },
+ {
+  "normalised": "leave no stone unturned",
+  "keep": 583,
+  "delete": 869,
+  "why": "869 meaning truncated ('course of action in') and example is a truncated news scrape."
+ },
+ {
+  "normalised": "live from hand to mouth",
+  "keep": 265,
+  "delete": 838,
+  "why": "838 meaning truncated ('to live on and'); 265 complete."
+ },
+ {
+  "normalised": "read between the lines",
+  "keep": 131,
+  "delete": 106,
+  "why": "106 meaning truncated ('Understanding the hidden'); 131 complete."
+ },
+ {
+  "normalised": "reading between the lines",
+  "keep": 72,
+  "delete": 44,
+  "why": "44 meaning truncated ('Understanding the hidden'); 72 complete."
+ },
+ {
+  "normalised": "through thick and thin",
+  "keep": 340,
+  "delete": 262,
+  "why": "Both valid; 340 gloss ('both good and bad times') is clearer than 262 ('Under all circumstances')."
+ },
+ {
+  "normalised": "to fight tooth and nail",
+  "keep": 51,
+  "delete": 225,
+  "why": "225 meaning truncated ('in very') and difficulty tagged easy vs medium elsewhere."
+ },
+ {
+  "normalised": "to keep the wolf from the door",
+  "keep": 159,
+  "delete": 821,
+  "why": "Identical meanings; keep earlier index. 821 also tagged hard vs medium."
+ }
+]
