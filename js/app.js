@@ -22,13 +22,23 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=34';
+    script.src = 'js/data/idioms.js?v=35';
     script.onload = () => {
-      console.log('idiomsDB lazy-loaded:', typeof idiomsDB !== 'undefined' ? idiomsDB.length : 0, 'entries');
+      // onload only means the response executed. A cache-miss offline used to
+      // hand us an empty 200, and an empty file still fires onload — so confirm
+      // the data actually landed before calling this a success.
+      if (!Array.isArray(window.idiomsDB) || window.idiomsDB.length === 0) {
+        _idiomsLoadPromise = null;
+        script.remove();
+        reject(new Error('idioms.js loaded but idiomsDB is missing or empty'));
+        return;
+      }
+      console.log('idiomsDB lazy-loaded:', window.idiomsDB.length, 'entries');
       resolve();
     };
     script.onerror = () => {
       _idiomsLoadPromise = null;
+      script.remove();
       reject(new Error('Failed to load idioms.js'));
     };
     document.head.appendChild(script);
@@ -50,21 +60,39 @@ function loadVocabDifficulty(level) {
   if (vocabularyDB[level] && vocabularyDB[level].length > 0) {
     return Promise.resolve();
   }
+  const globalName = level === 'medium' ? 'vocabMedium' : 'vocabHard';
+
+  // The data files declare their array with `const`, so a second execution of
+  // the same file is a redeclaration error. If the script already ran (and we
+  // simply never adopted the result), take the global instead of re-injecting.
+  if (Array.isArray(window[globalName]) && window[globalName].length > 0) {
+    vocabularyDB[level] = window[globalName];
+    return Promise.resolve();
+  }
+
   if (_vocabLoadPromises[level]) return _vocabLoadPromises[level];
   const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
   _vocabLoadPromises[level] = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `js/data/${file}?v=34`;
+    script.src = `js/data/${file}?v=35`;
     script.onload = () => {
-      const globalName = level === 'medium' ? 'vocabMedium' : 'vocabHard';
-      if (typeof window[globalName] !== 'undefined' && Array.isArray(window[globalName])) {
-        vocabularyDB[level] = window[globalName];
-        console.log(`${file} lazy-loaded:`, vocabularyDB[level].length, 'entries');
+      // onload fires for any response that executed, including an empty one.
+      // Only treat this as loaded if the array actually arrived; otherwise clear
+      // the cached promise so a retry can genuinely re-fetch.
+      const data = window[globalName];
+      if (!Array.isArray(data) || data.length === 0) {
+        _vocabLoadPromises[level] = null;
+        script.remove();
+        reject(new Error(`${file} loaded but ${globalName} is missing or empty`));
+        return;
       }
+      vocabularyDB[level] = data;
+      console.log(`${file} lazy-loaded:`, vocabularyDB[level].length, 'entries');
       resolve();
     };
     script.onerror = () => {
       _vocabLoadPromises[level] = null;
+      script.remove();
       reject(new Error(`Failed to load ${file}`));
     };
     document.head.appendChild(script);
