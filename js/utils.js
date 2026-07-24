@@ -499,11 +499,19 @@ const SoundManager = {
   },
 
   /**
-   * Load and apply saved sound settings
+   * Load and apply saved sound settings.
+   *
+   * Reads the unified store, the same place the Settings screen writes to.
+   * This used to read the legacy `vocabProSoundEnabled` key while the Settings
+   * screen wrote only to state.settings.soundEnabled, so turning sound off in
+   * Settings never survived a reload — and once migrateLegacyData deleted the
+   * legacy key, boot silently fell back to the default of on.
    */
   loadSettings: () => {
     if (!SoundManager._initialized) {
-      SoundManager.enabled = loadFromStorage('vocabProSoundEnabled', true);
+      SoundManager.enabled = typeof SettingsManager !== 'undefined'
+        ? SettingsManager.get('soundEnabled')
+        : true;
       SoundManager._initialized = true;
     }
     return SoundManager.enabled;
@@ -520,11 +528,17 @@ const SoundManager = {
   },
 
   /**
-   * Toggle sound on/off
+   * Toggle sound on/off.
+   *
+   * Writes through SettingsManager so the keyboard shortcut and the Settings
+   * screen land in the same place; previously this wrote only the legacy key,
+   * leaving the Settings checkbox showing the opposite of what was audible.
    */
   toggle: () => {
     SoundManager.enabled = !SoundManager.enabled;
-    saveToStorage('vocabProSoundEnabled', SoundManager.enabled);
+    if (typeof SettingsManager !== 'undefined') {
+      SettingsManager.set('soundEnabled', SoundManager.enabled);
+    }
     return SoundManager.enabled;
   },
 
