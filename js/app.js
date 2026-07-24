@@ -22,7 +22,7 @@ function loadIdiomsDB() {
   if (_idiomsLoadPromise) return _idiomsLoadPromise;
   _idiomsLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'js/data/idioms.js?v=36';
+    script.src = 'js/data/idioms.js?v=37';
     script.onload = () => {
       // onload only means the response executed. A cache-miss offline used to
       // hand us an empty 200, and an empty file still fires onload — so confirm
@@ -74,7 +74,7 @@ function loadVocabDifficulty(level) {
   const file = level === 'medium' ? 'vocab-medium.js' : 'vocab-hard.js';
   _vocabLoadPromises[level] = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `js/data/${file}?v=36`;
+    script.src = `js/data/${file}?v=37`;
     script.onload = () => {
       // onload fires for any response that executed, including an empty one.
       // Only treat this as loaded if the array actually arrived; otherwise clear
@@ -388,6 +388,124 @@ const DailyChallengeManager = {
 
 window.DailyChallengeManager = DailyChallengeManager;
 
+// ===========================
+// ACCOUNT & SESSION STATE
+// ===========================
+
+/**
+ * Account Manager
+ *
+ * Owns local accounts, the signed-in session pointer, and the pending referral
+ * code. These used to live in raw localStorage keys (`vocabProUsers`,
+ * `vocabProCurrentUser`, `pendingReferral`) which the legacy migration deletes,
+ * so every read had to move onto the unified store alongside them.
+ *
+ * Writes that must survive an immediate tab close use saveStateSync, because
+ * the default save path is debounced by 300ms (see storage.js DEBOUNCE_MS).
+ */
+const AccountManager = {
+  loadUsers() {
+    const state = StorageManager.loadState();
+    return Array.isArray(state.users) ? state.users : [];
+  },
+
+  saveUsers(users) {
+    const state = StorageManager.loadState();
+    state.users = users;
+    StorageManager.saveState(state);
+  },
+
+  loadCurrentUser() {
+    const state = StorageManager.loadState();
+    return state.currentUser || null;
+  },
+
+  saveCurrentUser(user) {
+    const state = StorageManager.loadState();
+    state.currentUser = user;
+    StorageManager.saveState(state);
+  },
+
+  /**
+   * Clear the session pointer. Written synchronously: a sign-out that is still
+   * sitting in the debounce queue when the tab closes leaves the user signed in.
+   */
+  clearCurrentUser() {
+    const state = StorageManager.loadState();
+    state.currentUser = null;
+    StorageManager.saveStateSync(state);
+  },
+
+  loadPendingReferral() {
+    const state = StorageManager.loadState();
+    return state.pendingReferral || null;
+  },
+
+  /**
+   * Record a referral code from the URL. Written synchronously because a user
+   * arriving on a ?ref= link may close the tab well inside the debounce window.
+   */
+  savePendingReferral(code) {
+    const state = StorageManager.loadState();
+    state.pendingReferral = code;
+    StorageManager.saveStateSync(state);
+  },
+
+  /**
+   * Consume the referral code. Written synchronously so the bonus cannot be
+   * awarded twice if the tab closes before a debounced save lands.
+   */
+  clearPendingReferral() {
+    const state = StorageManager.loadState();
+    state.pendingReferral = null;
+    StorageManager.saveStateSync(state);
+  },
+
+  /**
+   * Fill any gaps in a stats object from the defaults.
+   *
+   * Account stats are stored verbatim inside `users[]`, so unlike the guest
+   * bucket they never pass through validateState's merge. One written by an
+   * older schema — or recovered incomplete by a partial salvage — can be missing
+   * fields the UI reads unguarded (stats.averageAccuracy.toFixed(1)).
+   *
+   * @param {Object} raw Stats object to normalize
+   * @returns {Object} Stats with every default field present
+   */
+  normalizeStats(raw) {
+    return { ...initializeStats(), ...(raw || {}) };
+  },
+
+  /**
+   * Resolve the stats that belong to the current session.
+   *
+   * A signed-in user's progress lives in their `users[]` entry, never in
+   * `state.stats` (the guest bucket is only written when signed out). Reading
+   * state.stats directly on boot therefore hands a signed-in user a zeroed
+   * profile, which the stats-save effect then writes back over their real
+   * totals. Always resolve through the account first.
+   *
+   * @returns {Object} Stats for whoever owns this session
+   */
+  loadSessionStats() {
+    const currentUser = AccountManager.loadCurrentUser();
+    if (!currentUser) {
+      return StatsManager.loadStats();
+    }
+
+    const account = AccountManager.loadUsers().find(u => u.email === currentUser.email);
+    // Account row missing or statless (possible after a partial salvage) — fall
+    // back to the snapshot on the session pointer before conceding to defaults.
+    const accountStats = (account && account.stats) || currentUser.stats;
+    if (!accountStats) {
+      return StatsManager.loadStats();
+    }
+    return AccountManager.normalizeStats(accountStats);
+  }
+};
+
+window.AccountManager = AccountManager;
+
 /**
  * Main Application Component
  */
@@ -419,12 +537,16 @@ function App() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
   // User & Authentication
-  const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  // Seeded straight from the unified store: loading these in a mount effect
+  // instead renders one signed-out frame first, and lets the save effects below
+  // observe empty state before the real accounts arrive.
+  const [users, setUsers] = useState(() => AccountManager.loadUsers());
+  const [currentUser, setCurrentUser] = useState(() => AccountManager.loadCurrentUser());
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Gamification State
-  const [stats, setStats] = useState(StatsManager.loadStats());
+  // Resolved through the account, not the guest bucket — see loadSessionStats.
+  const [stats, setStats] = useState(() => AccountManager.loadSessionStats());
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
@@ -498,41 +620,33 @@ function App() {
   // INITIALIZATION & PERSISTENCE
   // ===========================
 
-  // Load users and current user from localStorage on mount
+  // Seed achievement baselines for a restored session, and capture referral codes
   useEffect(() => {
-    const savedUsers = loadFromStorage('vocabProUsers', []);
-    setUsers(savedUsers);
-
-    const savedCurrentUser = loadFromStorage('vocabProCurrentUser');
-    if (savedCurrentUser) {
-      setCurrentUser(savedCurrentUser);
-      // Load user's stats
-      const user = savedUsers.find(u => u.email === savedCurrentUser.email);
-      if (user && user.stats) {
-        setStats(user.stats);
-        setPreviousBadges(user.stats.earnedBadges || []);
-        setPreviousLevel(user.stats.level || 1);
-      }
+    if (currentUser) {
+      // Baseline off the same stats the session was seeded with, so a returning
+      // signed-in user is not re-notified about badges they already earned.
+      setPreviousBadges(stats.earnedBadges || []);
+      setPreviousLevel(stats.level || 1);
     }
 
     // Check for referral code in URL
     const ref = getUrlParam('ref');
     if (ref) {
-      saveToStorage('pendingReferral', ref);
+      AccountManager.savePendingReferral(ref);
     }
   }, []);
 
   // Save users whenever they change
   useEffect(() => {
     if (users.length > 0) {
-      saveToStorage('vocabProUsers', users);
+      AccountManager.saveUsers(users);
     }
   }, [users]);
 
   // Save current user whenever it changes
   useEffect(() => {
     if (currentUser) {
-      saveToStorage('vocabProCurrentUser', currentUser);
+      AccountManager.saveCurrentUser(currentUser);
       // Update user stats in users array
       setUsers(prev => prev.map(u =>
         u.email === currentUser.email
@@ -694,12 +808,12 @@ function App() {
       };
 
       // Check for pending referral
-      const pendingRef = loadFromStorage('pendingReferral');
+      const pendingRef = AccountManager.loadPendingReferral();
       if (pendingRef) {
         // Award referral bonus
         newUser.stats.totalPoints += 150;
         newUser.stats.referrals = 1;
-        removeFromStorage('pendingReferral');
+        AccountManager.clearPendingReferral();
         toast.success('Referral bonus: +150 points!', 4000);
       }
 
@@ -714,7 +828,9 @@ function App() {
       const user = users.find(u => u.email === formData.email && u.password === formData.password);
       if (user) {
         setCurrentUser(user);
-        setStats(user.stats || initializeStats());
+        // Same normalization as the boot path: a stored account can be missing
+        // fields the UI reads unguarded.
+        setStats(AccountManager.normalizeStats(user.stats));
         setShowAuthModal(false);
         toast.success(`Welcome back, ${user.firstName}!`);
       } else {
@@ -725,7 +841,8 @@ function App() {
 
   const handleSignOut = () => {
     setCurrentUser(null);
-    removeFromStorage('vocabProCurrentUser');
+    AccountManager.clearCurrentUser();
+    // Back to the guest bucket, which is what state.stats holds.
     setStats(StatsManager.loadStats());
     setScreen('home');
   };

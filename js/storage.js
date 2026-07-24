@@ -26,8 +26,16 @@ const LEGACY_KEYS = [
   'vocabProCurrentUser',
   'vocabProWOTD',
   'vocabProSoundEnabled',
+  'vocabProStats',
   'pendingReferral'
 ];
+
+// Prefix for preserved copies of state blobs that failed to load. A corrupt blob
+// may be the only remaining copy of the user's data, so these are kept rather
+// than dropped — but capped, since unbounded backups would eat the very quota
+// whose exhaustion causes truncated writes in the first place.
+const CORRUPT_BACKUP_PREFIX = STORAGE_KEY + '_CORRUPT_';
+const MAX_CORRUPT_BACKUPS = 3;
 
 // In-memory fallback when localStorage is unavailable
 let memoryState = null;
@@ -189,6 +197,21 @@ const validateState = (state) => {
   const validated = deepMerge(defaults, state);
   validated.version = STORAGE_VERSION;
 
+  // deepMerge copies scalars through verbatim, so a blob carrying a wrong-typed
+  // account section (users as a string, currentUser as a number) would survive
+  // merging and be treated as a real session. Reset only sections whose shape is
+  // wrong; a well-formed section is never touched.
+  if (!Array.isArray(validated.users)) {
+    validated.users = defaults.users;
+  }
+  if (validated.currentUser !== null &&
+      (typeof validated.currentUser !== 'object' || Array.isArray(validated.currentUser))) {
+    validated.currentUser = defaults.currentUser;
+  }
+  if (!validated.stats || typeof validated.stats !== 'object' || Array.isArray(validated.stats)) {
+    validated.stats = defaults.stats;
+  }
+
   return validated;
 };
 
@@ -310,6 +333,28 @@ const migrateLegacyData = () => {
       state.pendingReferral = pendingReferral;
     }
 
+    // Migrate guest stats. This key predates the unified store and was never
+    // migrated, so pre-unification guest progress was being silently orphaned.
+    const legacyStats = localStorage.getItem('vocabProStats');
+    if (legacyStats) {
+      hasLegacyData = true;
+      try {
+        const parsed = JSON.parse(legacyStats);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          // Adopt-if-greater, measured on totalPoints: only take the legacy blob
+          // when it represents at least as much progress as what state.stats
+          // already holds, so a stale guest blob can never roll back real
+          // progress. Spread over the existing value rather than replacing it so
+          // fields the old schema never had arrive populated, not undefined.
+          const currentPoints = (state.stats && state.stats.totalPoints) || 0;
+          const legacyPoints = parsed.totalPoints || 0;
+          if (legacyPoints >= currentPoints) {
+            state.stats = { ...state.stats, ...parsed };
+          }
+        }
+      } catch (e) { /* ignore parse errors */ }
+    }
+
     // If we migrated data, clean up legacy keys
     if (hasLegacyData) {
       state.createdAt = new Date().toISOString();
@@ -329,6 +374,223 @@ const migrateLegacyData = () => {
   }
 
   return null;
+};
+
+/**
+ * Decide whether a parsed state blob is structurally usable.
+ * A blob can parse cleanly and still be unusable (an array, a string, null),
+ * in which case deepMerge would silently coerce it into nonsense rather than
+ * letting us notice and salvage.
+ * @param {*} parsed Result of JSON.parse on the stored blob
+ * @returns {boolean}
+ */
+const isUsableState = (parsed) =>
+  !!parsed && typeof parsed === 'object' && !Array.isArray(parsed);
+
+/**
+ * Extract one complete JSON value for `"<key>":` out of a damaged blob.
+ *
+ * Scans forward from the key to its opening bracket, then walks the string
+ * tracking depth (and string/escape context, so brackets inside values do not
+ * throw off the count) until the value closes. The candidate is only returned
+ * if it parses cleanly on its own, so a value that ran into the truncation
+ * point is discarded rather than half-recovered.
+ *
+ * @param {string} raw Raw stored blob
+ * @param {string} key Top-level key to extract
+ * @returns {*} Parsed value, or undefined if not cleanly recoverable
+ */
+const extractJSONValue = (raw, key) => {
+  const marker = `"${key}":`;
+
+  // Locate the key at the root level only. A plain indexOf would also match the
+  // same name nested inside a value — "stats" appears inside every user object —
+  // and lift the wrong one into a top-level section.
+  let keyAt = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let j = 0; j < raw.length; j++) {
+    const ch = raw[j];
+
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\') { escaped = true; continue; }
+
+    if (ch === '"') {
+      // A key of the root object starts while depth is 1 and we are outside a string.
+      if (!inString && depth === 1 && raw.startsWith(marker, j)) {
+        keyAt = j;
+        break;
+      }
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (ch === '{' || ch === '[') depth++;
+    else if (ch === '}' || ch === ']') depth--;
+  }
+
+  if (keyAt === -1) return undefined;
+
+  let i = keyAt + marker.length;
+  while (i < raw.length && /\s/.test(raw[i])) i++;
+
+  const open = raw[i];
+  if (open !== '{' && open !== '[') return undefined;
+  const close = open === '{' ? '}' : ']';
+
+  // Walk the value tracking depth, so brackets inside nested values and inside
+  // strings do not throw off the count.
+  let valueDepth = 0;
+  inString = false;
+  escaped = false;
+
+  for (let j = i; j < raw.length; j++) {
+    const ch = raw[j];
+
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\') { escaped = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+
+    if (ch === open) valueDepth++;
+    else if (ch === close) {
+      valueDepth--;
+      if (valueDepth === 0) {
+        try {
+          return JSON.parse(raw.slice(i, j + 1));
+        } catch (e) {
+          return undefined;
+        }
+      }
+    }
+  }
+
+  // Never closed — the value was cut off by the truncation.
+  return undefined;
+};
+
+/**
+ * Sections worth recovering from a damaged blob, with the shape each must have
+ * to be trusted.
+ *
+ * Deliberately excluded:
+ *   - pendingReferral: re-arming a referral that may already have been consumed
+ *     would award the bonus twice. Losing it is the safer failure.
+ *   - wordOfTheDay: rebuilds itself on the next load.
+ *   - version/createdAt/updatedAt: metadata, reset by validateState anyway.
+ */
+const SALVAGEABLE_SECTIONS = {
+  users: 'array',
+  currentUser: 'object',
+  stats: 'object',
+  settings: 'object',
+  srs: 'object',
+  bookmarks: 'array',
+  quizHistory: 'array',
+  dailyGoals: 'object',
+  onboarding: 'object',
+  streakProtection: 'object',
+  dailyChallenge: 'object'
+};
+
+/**
+ * Recover whatever is structurally sound from a state blob that failed to load.
+ *
+ * Since account data now lives only in the unified blob, discarding a corrupt
+ * blob outright destroys the sole copy.
+ *
+ * Handles three damage shapes, in descending order of confidence:
+ *   1. Parses to a usable object — read sections off it directly.
+ *   2. Parses to an array wrapping a usable object — unwrap it.
+ *   3. Does not parse at all (truncated mid-write, the common quota failure) —
+ *      extract individual top-level values by bracket matching. Each candidate
+ *      must parse standalone, so a section that ran into the cut is dropped.
+ *
+ * @param {string} raw Raw stored blob
+ * @returns {Object|null} Partial state with whatever was recoverable, or null
+ */
+const salvageAccountState = (raw) => {
+  let source = null;
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (isUsableState(parsed)) {
+      source = parsed;
+    } else if (Array.isArray(parsed)) {
+      source = parsed.find(isUsableState) || null;
+    }
+  } catch (e) {
+    source = null;
+  }
+
+  const salvaged = {};
+
+  for (const key in SALVAGEABLE_SECTIONS) {
+    // Read either off the recovered object or, for a blob that never parsed,
+    // straight out of the raw text.
+    const value = source ? source[key] : extractJSONValue(raw, key);
+
+    if (SALVAGEABLE_SECTIONS[key] === 'array') {
+      if (Array.isArray(value)) salvaged[key] = value;
+    } else if (isUsableState(value)) {
+      salvaged[key] = value;
+    }
+  }
+
+  return Object.keys(salvaged).length > 0 ? salvaged : null;
+};
+
+/**
+ * Handle a state blob that could not be loaded.
+ * Preserves the original under a timestamped recovery key, salvages what it can,
+ * and still falls back to legacy migration for users who never migrated.
+ * @param {string} stored The raw blob that failed to load
+ * @returns {Object} Best-effort recovered state
+ */
+const recoverFromCorruptState = (stored) => {
+  // Preserve before anything else. Timestamped so a second corruption cannot
+  // overwrite the first recovery point.
+  try {
+    localStorage.setItem(CORRUPT_BACKUP_PREFIX + Date.now(), stored);
+
+    // Keep only the newest few. Keys sort chronologically by their timestamp
+    // suffix, so the oldest are simply the first ones off the front.
+    const backups = Object.keys(localStorage)
+      .filter(k => k.indexOf(CORRUPT_BACKUP_PREFIX) === 0)
+      .sort();
+    for (let i = 0; i < backups.length - MAX_CORRUPT_BACKUPS; i++) {
+      localStorage.removeItem(backups[i]);
+    }
+  } catch (e) { /* quota or unavailable — salvage below still applies */ }
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) { /* ignore */ }
+
+  const salvaged = salvageAccountState(stored);
+
+  // A user can hold a corrupt unified blob *and* un-migrated legacy keys. Keep
+  // the legacy fallthrough so their old data is not stranded, then let anything
+  // salvaged from the unified blob win — it is the newer of the two.
+  const base = migrateLegacyData() || getDefaultState();
+  const recovered = validateState(salvaged ? deepMerge(base, salvaged) : base);
+
+  saveStateImmediate(recovered);
+
+  setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('storage-corrupted', {
+      detail: {
+        hasBackup: true,
+        salvaged: !!salvaged,
+        salvagedSections: salvaged ? Object.keys(salvaged) : []
+      }
+    }));
+  }, 0);
+
+  return recovered;
 };
 
 /**
@@ -374,25 +636,27 @@ const loadState = () => {
     const stored = localStorage.getItem(STORAGE_KEY);
 
     if (stored) {
+      let parsed;
+      let parseFailed = false;
+
       try {
-        const parsed = JSON.parse(stored);
+        parsed = JSON.parse(stored);
+      } catch (parseError) {
+        parseFailed = true;
+      }
+
+      // Parseable-but-invalid is just as corrupt as unparseable: validateState
+      // would coerce an array or a bare string into a defaults-shaped object and
+      // report success, silently dropping whatever the blob really held.
+      if (!parseFailed && isUsableState(parsed)) {
         const migrated = migrateState(parsed);
         memoryState = migrated;
         return migrated;
-      } catch (parseError) {
-        console.warn('Storage: Corrupted state detected, attempting backup');
-        // Back up the corrupted data so user can potentially recover it
-        try {
-          localStorage.setItem(STORAGE_KEY + '_corrupted_backup', stored);
-        } catch (e) { /* ignore */ }
-        localStorage.removeItem(STORAGE_KEY);
-        // Notify the UI about corruption
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('storage-corrupted', {
-            detail: { hasBackup: true }
-          }));
-        }, 0);
       }
+
+      console.warn('Storage: Corrupted state detected, preserving and salvaging');
+      memoryState = recoverFromCorruptState(stored);
+      return memoryState;
     }
 
     // Try to migrate legacy data
