@@ -1,0 +1,906 @@
+[
+  {
+    "index": 4,
+    "idiom": "Fell Foul Of",
+    "meaning": "Got into trouble with",
+    "example": "The contractor fell foul of the new safety regulations and was fined heavily.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 28,
+    "idiom": "Make No Bones About",
+    "meaning": "Do not have any hesitation in",
+    "example": "The professor made no bones about his dislike for rote learning.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 45,
+    "idiom": "Get The Sack",
+    "meaning": "Dismissed from",
+    "example": "The employee feared he would get the sack after the merger.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 71,
+    "idiom": "To Give The Devil His Due",
+    "meaning": "To give encouragement even to",
+    "example": "To give the devil his due, even his rivals admired his hard work.",
+    "category": "time",
+    "difficulty": "hard"
+  },
+  {
+    "index": 78,
+    "idiom": "A Bolt From The Blue",
+    "meaning": "Something unexpected and",
+    "example": "The sudden transfer order came as a bolt from the blue.",
+    "category": "color",
+    "difficulty": "medium"
+  },
+  {
+    "index": 79,
+    "idiom": "On The Verge Of",
+    "meaning": "On the brink of",
+    "example": "The exhausted runner was on the verge of collapse near the finish line.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 83,
+    "idiom": "Fair- Weather Friend",
+    "meaning": "A friend that deserts in",
+    "example": "A fair-weather friend vanishes the moment you face trouble.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 92,
+    "idiom": "Dropping Names",
+    "meaning": "Hinting at high connections/ To",
+    "example": "He kept dropping names to impress the interview panel.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 94,
+    "idiom": "Bone To Pick",
+    "meaning": "Cause of quarrel/ Bone of",
+    "example": "The captain had a bone to pick with the umpire after the match.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 99,
+    "idiom": "Take For Granted",
+    "meaning": "To accept readily / To pre-",
+    "example": "We often take our parents' sacrifices for granted.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 101,
+    "idiom": "Currying Favour With",
+    "meaning": "Ingratiating / Trying too hard to",
+    "example": "He was always currying favour with the senior officers.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 102,
+    "idiom": "Strom In A Tea Cup",
+    "meaning": "Commotion (angry/worry) over a",
+    "example": "The office dispute was just a storm in a teacup and soon settled.",
+    "category": "emotion",
+    "difficulty": "medium"
+  },
+  {
+    "index": 111,
+    "idiom": "Have The Last Laugh",
+    "meaning": "To be victorious at the end of",
+    "example": "Rejected early, she topped the merit list and had the last laugh.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 130,
+    "idiom": "To Play To The Gallery",
+    "meaning": "To behave in an",
+    "example": "The politician played to the gallery with grand but empty promises.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 132,
+    "idiom": "Sitting On The Fence",
+    "meaning": "Hesitating which side to",
+    "example": "During the debate he kept sitting on the fence, supporting neither side.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 146,
+    "idiom": "To Take To Hearts",
+    "meaning": "Deeply affected by",
+    "example": "She took the harsh criticism to heart and cried all night.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 170,
+    "idiom": "Cope With",
+    "meaning": "To face and deal with",
+    "example": "It was hard to cope with the syllabus and a job together.",
+    "category": "body",
+    "difficulty": "easy"
+  },
+  {
+    "index": 177,
+    "idiom": "Leave In The Lurch",
+    "meaning": "Abandon in the",
+    "example": "His partner left him in the lurch just before the deadline.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 179,
+    "idiom": "On The Brink Of",
+    "meaning": "On the point of",
+    "example": "The exhausted climbers were on the brink of giving up.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 183,
+    "idiom": "Scapegoat",
+    "meaning": "A person who is blamed for",
+    "example": "The junior clerk was made a scapegoat for the whole department's error.",
+    "category": "animal",
+    "difficulty": "hard"
+  },
+  {
+    "index": 193,
+    "idiom": "In Lieu Of",
+    "meaning": "Despite of",
+    "example": "He was given a certificate in lieu of a cash prize.",
+    "category": "communication",
+    "difficulty": "medium"
+  },
+  {
+    "index": 199,
+    "idiom": "Take To Task",
+    "meaning": "To criticize severely / To",
+    "example": "The examiner took him to task for copying in the test.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 204,
+    "idiom": "To Cut Teeth",
+    "meaning": "To gain experience of",
+    "example": "She cut her teeth as a clerk before becoming an officer.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 228,
+    "idiom": "High Handed",
+    "meaning": "Using authority in an",
+    "example": "The staff resented the manager's high-handed decisions.",
+    "category": "body",
+    "difficulty": "easy"
+  },
+  {
+    "index": 242,
+    "idiom": "Not My Cup Of Tea",
+    "meaning": "Not what somebody likes or",
+    "example": "Long meetings are simply not my cup of tea.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 244,
+    "idiom": "To Add Fuel To Fire",
+    "meaning": "To worsen the matter / To",
+    "example": "His sarcastic comment only added fuel to the fire.",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "index": 247,
+    "idiom": "Take To Heart",
+    "meaning": "To be very upset by",
+    "example": "Do not take every small failure to heart.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 255,
+    "idiom": "Send Packing",
+    "meaning": "To tell somebody firmly or",
+    "example": "The manager sent the dishonest agent packing.",
+    "category": "communication",
+    "difficulty": "easy"
+  },
+  {
+    "index": 256,
+    "idiom": "Kick Up A Row",
+    "meaning": "Make a great fuss / To",
+    "example": "The passengers kicked up a row over the cancelled train.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 266,
+    "idiom": "To Hail From",
+    "meaning": "To come from",
+    "example": "The new officer hails from a small town in Maharashtra.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 272,
+    "idiom": "Fall Flat",
+    "meaning": "Fail to amuse people / Fail to",
+    "example": "His joke fell flat before the serious audience.",
+    "category": "success",
+    "difficulty": "easy"
+  },
+  {
+    "index": 273,
+    "idiom": "Under The Thumb Of",
+    "meaning": "Under the control of",
+    "example": "The junior clerk was completely under the thumb of his boss.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 275,
+    "idiom": "Part And Parcel",
+    "meaning": "An essential part of",
+    "example": "Hard work is part and parcel of exam preparation.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 281,
+    "idiom": "A Hard Nut To Crack",
+    "meaning": "A difficult problem or",
+    "example": "The reasoning section proved a hard nut to crack.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 285,
+    "idiom": "Water Under The Bridge",
+    "meaning": "Something that happened in",
+    "example": "That old quarrel is water under the bridge now.",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "index": 289,
+    "idiom": "Looking Forward To",
+    "meaning": "To expect something or",
+    "example": "The students were looking forward to the summer break.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 292,
+    "idiom": "In A Pickle",
+    "meaning": "In an embarrassing or",
+    "example": "Having lost his admit card, he was in a real pickle.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 296,
+    "idiom": "Break Down",
+    "meaning": "To lose control of your",
+    "example": "She broke down in tears when she heard the sad news.",
+    "category": "success",
+    "difficulty": "easy"
+  },
+  {
+    "index": 316,
+    "idiom": "Fish In Troubled Water",
+    "meaning": "To make a profit out of",
+    "example": "Some traders fish in troubled waters during a crisis.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 318,
+    "idiom": "Smell The Rat",
+    "meaning": "Suspect that something is",
+    "example": "When the deal seemed too good, she smelt a rat.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 327,
+    "idiom": "Not Fit To Hold Candle",
+    "meaning": "Not so good as somebody or",
+    "example": "As a singer, he is not fit to hold a candle to the maestro.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 341,
+    "idiom": "Live-Wire",
+    "meaning": "A person who is lively or",
+    "example": "The class monitor was a live-wire, full of energy and ideas.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 347,
+    "idiom": "Eat Humble Pie",
+    "meaning": "To say or show that you are",
+    "example": "After his wrong prediction, the expert had to eat humble pie.",
+    "category": "communication",
+    "difficulty": "medium"
+  },
+  {
+    "index": 348,
+    "idiom": "Rule The Roost",
+    "meaning": "Exercise authority / To be the",
+    "example": "In that office, the senior clerk rules the roost.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 354,
+    "idiom": "Give And Take",
+    "meaning": "Adjustment / Willingness in",
+    "example": "Every good partnership needs some give and take.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 360,
+    "idiom": "Cordon Off",
+    "meaning": "Isolate / To stop people from",
+    "example": "The police cordoned off the area after the accident.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 369,
+    "idiom": "A Cut Above",
+    "meaning": "Rather superior to",
+    "example": "Her essay was a cut above the rest.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 387,
+    "idiom": "Red Herrings",
+    "meaning": "Clues intended to distract or mislead / An",
+    "example": "The clever author planted red herrings throughout the mystery.",
+    "category": "color",
+    "difficulty": "hard"
+  },
+  {
+    "index": 403,
+    "idiom": "In The Air",
+    "meaning": "Certain / Able to be firmly relied on to",
+    "example": "With results due, a sense of excitement was in the air.",
+    "category": "communication",
+    "difficulty": "medium"
+  },
+  {
+    "index": 409,
+    "idiom": "To The Letter",
+    "meaning": "Paying attention to every detail / Doing or",
+    "example": "He followed the exam instructions to the letter.",
+    "category": "money",
+    "difficulty": "medium"
+  },
+  {
+    "index": 411,
+    "idiom": "Come To Light",
+    "meaning": "Been revealed / To become known to",
+    "example": "New facts came to light during the inquiry.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 417,
+    "idiom": "Cool About Working",
+    "meaning": "Not tense about working / Reading to",
+    "example": "She stayed cool about working late during the busy season.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 420,
+    "idiom": "Hold Water",
+    "meaning": "With logical backing / To stand up to",
+    "example": "His explanation simply did not hold water.",
+    "category": "body",
+    "difficulty": "easy"
+  },
+  {
+    "index": 421,
+    "idiom": "Other Fish To Fry",
+    "meaning": "Some important work to attend to",
+    "example": "He skipped the party as he had other fish to fry.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 428,
+    "idiom": "Make A Mockery",
+    "meaning": "To make something seem ridiculous or",
+    "example": "The careless referee made a mockery of the whole match.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 473,
+    "idiom": "Leave High And Dry",
+    "meaning": "In a difficult situation without help or",
+    "example": "The sudden strike left the passengers high and dry.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 494,
+    "idiom": "Gut Feeling",
+    "meaning": "Strong instinct (based on feelings and",
+    "example": "His gut feeling told him to double-check the accounts.",
+    "category": "emotion",
+    "difficulty": "easy"
+  },
+  {
+    "index": 495,
+    "idiom": "Finish With Something",
+    "meaning": "Be through / To have something at the",
+    "example": "Once he finished with his exams, he took a long holiday.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 509,
+    "idiom": "Feather Your Nest",
+    "meaning": "To make yourself richer, especially by",
+    "example": "The examiner used 'feather your nest' in the sentence to test students.",
+    "category": "money",
+    "difficulty": "medium"
+  },
+  {
+    "index": 520,
+    "idiom": "Sit On The Fence",
+    "meaning": "To avoid becoming involved in deciding or",
+    "example": "The examiner used 'sit on the fence' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 521,
+    "idiom": "Shake Off",
+    "meaning": "Forget / To get away from somebody who",
+    "example": "The examiner used 'shake off' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 522,
+    "idiom": "Pull A Long Face",
+    "meaning": "Look dejected / An unhappy or",
+    "example": "The examiner used 'pull a long face' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 543,
+    "idiom": "Be Down With",
+    "meaning": "Suffering from",
+    "example": "The examiner used 'be down with' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 561,
+    "idiom": "Burn Your Boats",
+    "meaning": "Do something that makes it impossible to",
+    "example": "The examiner used 'burn your boats' in the sentence to test students.",
+    "category": "nature",
+    "difficulty": "medium"
+  },
+  {
+    "index": 605,
+    "idiom": "Cloak-And-Dagger",
+    "meaning": "An activity that involves mystery and",
+    "example": "The examiner used 'cloak-and-dagger' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 607,
+    "idiom": "From Stem To Stern",
+    "meaning": "All the way from the front of a ship to",
+    "example": "The examiner used 'from stem to stern' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 639,
+    "idiom": "Whole Bag Of Tricks",
+    "meaning": "Make use of all the possibilities or",
+    "example": "The examiner used 'whole bag of tricks' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 641,
+    "idiom": "Make A Long Story Short",
+    "meaning": "To be precise and avoid giving the",
+    "example": "The examiner used 'make a long story short' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 655,
+    "idiom": "Against The Clock",
+    "meaning": "To do a job fast to finish it before a",
+    "example": "The examiner used 'against the clock' in the sentence to test students.",
+    "category": "time",
+    "difficulty": "medium"
+  },
+  {
+    "index": 657,
+    "idiom": "A Drop In The Bucket",
+    "meaning": "A very small amount compared with",
+    "example": "The examiner used 'a drop in the bucket' in the sentence to test students.",
+    "category": "color",
+    "difficulty": "medium"
+  },
+  {
+    "index": 661,
+    "idiom": "A Hot Potato",
+    "meaning": "A controversial situation which is",
+    "example": "The examiner used 'a hot potato' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 662,
+    "idiom": "Wag The Dog",
+    "meaning": "To divert attention from something of",
+    "example": "The examiner used 'wag the dog' in the sentence to test students.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 676,
+    "idiom": "Rule Of Thumb",
+    "meaning": "A broadly accurate guide based on",
+    "example": "The examiner used 'rule of thumb' in the sentence to test students.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 677,
+    "idiom": "Up A Blind Alley",
+    "meaning": "Following a course of action that is",
+    "example": "The examiner used 'up a blind alley' in the sentence to test students.",
+    "category": "success",
+    "difficulty": "medium"
+  },
+  {
+    "index": 707,
+    "idiom": "Barking Up The Wrong Tree",
+    "meaning": "To be pursuing a misguided line of",
+    "example": "By blaming the peon, the officer was barking up the wrong tree.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 708,
+    "idiom": "Back To The Drawing Board",
+    "meaning": "An idea has been unsuccessful and that",
+    "example": "The prototype failed, so the team went back to the drawing board.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 712,
+    "idiom": "Back To Square One",
+    "meaning": "To be back to where one started, with",
+    "example": "The examiner used 'back to square one' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "easy"
+  },
+  {
+    "index": 713,
+    "idiom": "An Arm And A Leg",
+    "meaning": "A large, possibly exorbitant, amount of",
+    "example": "The examiner used 'an arm and a leg' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 725,
+    "idiom": "Beggars Can'T Be Choosers",
+    "meaning": "People with no other options must be",
+    "example": "The examiner used 'beggars can't be choosers' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 726,
+    "idiom": "To Chip On His Shoulder",
+    "meaning": "Holding a grudge or grievance that",
+    "example": "The examiner used 'to chip on his shoulder' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 728,
+    "idiom": "Feeding Frenzy",
+    "meaning": "An episode of frantic competition for",
+    "example": "The examiner used 'feeding frenzy' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 730,
+    "idiom": "Dry Run",
+    "meaning": "A rehearsal of a performance before the",
+    "example": "The examiner used 'dry run' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "easy"
+  },
+  {
+    "index": 731,
+    "idiom": "To Cross Your Fingers",
+    "meaning": "To hope that things will happen in the",
+    "example": "The examiner used 'to cross your fingers' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 733,
+    "idiom": "Down To The Wire",
+    "meaning": "To denote a situation whose outcome is",
+    "example": "The examiner used 'down to the wire' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 739,
+    "idiom": "Dead Ringer",
+    "meaning": "A candidate fraudulently substituted for",
+    "example": "The examiner used 'dead ringer' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 741,
+    "idiom": "Flesh And Blood",
+    "meaning": "A person's physical body and their",
+    "example": "The examiner used 'flesh and blood' in the sentence to test students.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 745,
+    "idiom": "Flash In The Pan",
+    "meaning": "A thing or person whose sudden but",
+    "example": "The examiner used 'flash in the pan' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 747,
+    "idiom": "Fuddy-Duddy",
+    "meaning": "A person who is very old-fashioned and",
+    "example": "The examiner used 'fuddy-duddy' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 748,
+    "idiom": "Great Minds Think Alike",
+    "meaning": "It is said when two people have the",
+    "example": "The examiner used 'great minds think alike' in the sentence to test students.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 750,
+    "idiom": "Graveyard Shift",
+    "meaning": "A work shift that runs through the",
+    "example": "The examiner used 'graveyard shift' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 751,
+    "idiom": "To Get Over It",
+    "meaning": "To accept something that happened in",
+    "example": "The examiner used 'to get over it' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 824,
+    "idiom": "Put One'S Foot Down",
+    "meaning": "Adopt a firm policy when faced with",
+    "example": "The examiner used 'put one's foot down' in the sentence to test students.",
+    "category": "animal",
+    "difficulty": "medium"
+  },
+  {
+    "index": 834,
+    "idiom": "Willothe Wisp",
+    "meaning": "Something that is impossible to get or",
+    "example": "The examiner used 'willothe wisp' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 837,
+    "idiom": "Sow Wild Oats",
+    "meaning": "To waste time by doing foolish things in",
+    "example": "The examiner used 'sow wild oats' in the sentence to test students.",
+    "category": "time",
+    "difficulty": "medium"
+  },
+  {
+    "index": 838,
+    "idiom": "Live From Hand To Mouth",
+    "meaning": "To have enough money to live on and",
+    "example": "The family lived from hand to mouth after the factory closed.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 863,
+    "idiom": "It Goes Without Saying",
+    "meaning": "Something which is implied to be",
+    "example": "The examiner used 'it goes without saying' in the sentence to test students.",
+    "category": "communication",
+    "difficulty": "medium"
+  },
+  {
+    "index": 867,
+    "idiom": "Best Of Both Worlds",
+    "meaning": "A situation wherein someone has the",
+    "example": "The examiner used 'best of both worlds' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 869,
+    "idiom": "Leave No Stone Unturned",
+    "meaning": "Try every possible course of action in",
+    "example": "Ahead of its return to the IPL in , Chennai Super Kings is leaving no stone unturned to get its campaign back on the track. One of the key reasons for its success in the first eigh",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 870,
+    "idiom": "Get The Message",
+    "meaning": "Understand what is implied by a",
+    "example": "The examiner used 'get the message' in the sentence to test students.",
+    "category": "time",
+    "difficulty": "medium"
+  },
+  {
+    "index": 873,
+    "idiom": "To Make A Fuss About",
+    "meaning": "An excessive display of attention or",
+    "example": "The examiner used 'to make a fuss about' in the sentence to test students.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 915,
+    "idiom": "In the scheme of things",
+    "meaning": "the way things are organized or happen in a particular situation, or the way someone wants them to be organized:",
+    "example": "He insisted that R. Ashwin, despite playing only 15 ODI matches since the 2015 World Cup, is very much in the scheme of things",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 954,
+    "idiom": "Picked up",
+    "meaning": "become better; improve, to come down with",
+    "example": "Tests carried out on Thursday morning confirm that the Uruguayan has a distension in the posterior articular capsule in his right knew picked up in the second half of the Clasico i",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 962,
+    "idiom": "Put on airs",
+    "meaning": "Pretend to be better than one is",
+    "example": "He didnt have to put on airs. He was the nicest guy.",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 974,
+    "idiom": "Sketched out",
+    "meaning": "to give a short description of something, containing few details:",
+    "example": "In his shortest Independence Day address yet, Prime Minister Narendra Modi on Tuesday sketched out the broad contours of his idea of a New India as one that was free of communali",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 1004,
+    "idiom": "Passed himself off",
+    "meaning": "pretend to be",
+    "example": "He passed himself off as a great and rich man",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 1006,
+    "idiom": "Scaling up",
+    "meaning": "to make something larger in size, amount etc than it used to be",
+    "example": "This includes scaling up its manufacturing, developing localized features on its OS, setting up self-owned retail outlets and creating an ecosystem for developers to shift from and",
+    "category": "general",
+    "difficulty": "easy"
+  },
+  {
+    "index": 1030,
+    "idiom": "Wiped out",
+    "meaning": "to kill someone , a decisive defeat , to clean completely by wiping:",
+    "example": "Malawi on Thursday celebrated successful conclusion of a two year project moving 520 sedated elephants by truck to a reserve where the animals had been nearly wiped out They wiped ",
+    "category": "success",
+    "difficulty": "easy"
+  },
+  {
+    "index": 1035,
+    "idiom": "to be in two minds",
+    "meaning": "Meaning : to be unable to decide about something:",
+    "example": "Im in two minds about accepting the job",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 1042,
+    "idiom": "Zero in on",
+    "meaning": "to direct all your attention to one thing , If you zero in a weapon, you aim it directly at something you want to hit:",
+    "example": "This was not the first time . he had come to meet his wife on two occasions earlier, and he followed the same pattern and time .It was easy for the police to zero in on him. Said",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 1044,
+    "idiom": "Live something down",
+    "meaning": "to make people forget that you made a big mistake or did something very embarrassing in the past:",
+    "example": "Having mishandled NEET is one failure that the Tamilnadu government will struggle to live down",
+    "category": "general",
+    "difficulty": "medium"
+  },
+  {
+    "index": 1046,
+    "idiom": "Lavish something on someone",
+    "meaning": "to give someone a lot, or too much, of something such as money, presents, or attention:",
+    "example": "MR.Trump lavished praise on Gen.Kelly after he was sworn in , but that may not necessarily guarantee anything in the long term.",
+    "category": "money",
+    "difficulty": "medium"
+  },
+  {
+    "index": 1050,
+    "idiom": "Chip on ones shoulder",
+    "meaning": "an angry attitude from someone who feels unfairly treated:",
+    "example": "Shes not going to make any friends if she walks around with a chip on her shoulder like that.",
+    "category": "body",
+    "difficulty": "medium"
+  },
+  {
+    "index": 1110,
+    "idiom": "To hold a brief for",
+    "meaning": "be retained as counsel for , to argue for",
+    "example": "Often counsel holding a brief for another does not read it in the confident expectation that the case would be postponed",
+    "category": "communication",
+    "difficulty": "medium"
+  }
+]

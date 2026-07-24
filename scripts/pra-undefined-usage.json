@@ -1,0 +1,818 @@
+[
+  {
+    "word": "Apotheosis",
+    "definition": "Perfect example or highest point",
+    "example": "Performance was apotheosis of excellence in classical dance.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Appall",
+    "definition": "To greatly dismay or horrify",
+    "example": "Corruption levels appall honest citizens across India.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Appease",
+    "definition": "To pacify by concessions",
+    "example": "Government tried to appease farmers with loan waivers.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Apposite",
+    "definition": "Apt in circumstances",
+    "example": "Made apposite remarks during parliamentary debate.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Apropos",
+    "definition": "With reference to",
+    "example": "Comment apropos recent policy changes was insightful.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Archaic",
+    "definition": "Extremely old-fashioned",
+    "example": "Many archaic laws were repealed by Parliament.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Ardent",
+    "definition": "Enthusiastic or passionate",
+    "example": "Ardent supporters gathered for election rally.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Aristocrat",
+    "definition": "Member of nobility",
+    "example": "British aristocrats ruled India before independence.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Armistice",
+    "definition": "Truce or ceasefire",
+    "example": "Nations signed armistice ending prolonged conflict.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Arraign",
+    "definition": "To call before court",
+    "example": "Accused was arraigned on corruption charges.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Arrogant",
+    "definition": "Having excessive pride",
+    "example": "Arrogant officials often ignore public grievances.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Artifice",
+    "definition": "Clever trick or deception",
+    "example": "Politician used artifice to win voter support.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Ascendancy",
+    "definition": "Dominant position",
+    "example": "Party gained ascendancy in state politics.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Ascribe",
+    "definition": "To attribute to",
+    "example": "Historians ascribe economic reforms to liberalization.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Asperity",
+    "definition": "Harshness of manner",
+    "example": "Spoke with asperity about governance failures.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Aspersion",
+    "definition": "Damaging criticism",
+    "example": "Cast aspersions on rival political party.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Assail",
+    "definition": "To attack violently",
+    "example": "Opposition assailed government on unemployment issue.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Assay",
+    "definition": "To test or analyze",
+    "example": "Laboratory assayed gold purity for certification.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Assent",
+    "definition": "Agreement or approval",
+    "example": "President gave assent to constitutional amendment.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Assuage",
+    "definition": "To make less severe",
+    "example": "Government measures assuaged public concerns.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Astute",
+    "definition": "Shrewdly perceptive",
+    "example": "Astute investors predicted market downturn.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Asylum",
+    "definition": "Protection or sanctuary",
+    "example": "Refugees sought asylum from persecution.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Atrocity",
+    "definition": "Extremely wicked act",
+    "example": "War crimes tribunal prosecuted atrocities.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Atrophy",
+    "definition": "Waste away or decline",
+    "example": "Muscles atrophy without regular exercise.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Attenuate",
+    "definition": "To weaken or reduce",
+    "example": "Medication attenuated symptoms of disease.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Attrition",
+    "definition": "Gradual reduction",
+    "example": "High attrition rate affects company productivity.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Audacious",
+    "definition": "Daring or bold",
+    "example": "Made audacious bid to transform education sector.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Augur",
+    "definition": "To predict or foretell",
+    "example": "Economic indicators augur well for growth.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "August",
+    "definition": "Respected and impressive",
+    "example": "Supreme Court is august institution of democracy.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Auspicious",
+    "definition": "Favorable or promising",
+    "example": "Independence Day marks auspicious beginning.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Austerity",
+    "definition": "Sternness or severity",
+    "example": "Economic crisis demanded austerity measures.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Authoritarian",
+    "definition": "Favoring strict obedience",
+    "example": "Colonial rule was authoritarian and oppressive.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Autonomous",
+    "definition": "Self-governing",
+    "example": "States have autonomous powers in federal system.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Avarice",
+    "definition": "Extreme greed",
+    "example": "Avarice led to corrupt practices in administration.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Aversion",
+    "definition": "Strong dislike",
+    "example": "Many people have aversion to public speaking.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Benign",
+    "definition": "Gentle and harmless",
+    "example": "Tumor was benign and easily removed.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Berate",
+    "definition": "To scold angrily",
+    "example": "Coach berated players for poor performance.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Beseech",
+    "definition": "To beg earnestly",
+    "example": "Victims beseeched authorities for help.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Besiege",
+    "definition": "To surround and attack",
+    "example": "Army besieged enemy fortress for months.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Blatant",
+    "definition": "Completely obvious",
+    "example": "Blatant violation of constitutional rights occurred.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Blight",
+    "definition": "Something that spoils",
+    "example": "Unemployment is blight on economy.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Boon",
+    "definition": "Something beneficial",
+    "example": "Technology is boon for modern education.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Brazen",
+    "definition": "Bold and shameless",
+    "example": "Brazen display of corruption shocked entire nation.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Brevity",
+    "definition": "Concise expression",
+    "example": "Brevity is key to effective communication.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Bureaucracy",
+    "definition": "System of administration",
+    "example": "Reducing bureaucracy improves efficiency in governance.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Cajole",
+    "definition": "Persuade by flattery",
+    "example": "Leaders cajoled voters with false promises.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Calamity",
+    "definition": "Disastrous event",
+    "example": "Earthquake was major calamity for region.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Canon",
+    "definition": "General law or principle",
+    "example": "Follows canons of judicial interpretation.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Capitulate",
+    "definition": "Cease to resist",
+    "example": "Army refused to capitulate to enemy demands.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Castigate",
+    "definition": "Reprimand severely",
+    "example": "Court castigated police for negligence.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Catalyst",
+    "definition": "Agent of change",
+    "example": "Education is catalyst for social transformation.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Censure",
+    "definition": "Express severe disapproval",
+    "example": "Parliament voted to censure errant minister.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Cessation",
+    "definition": "Fact or process of ending",
+    "example": "Demanded immediate cessation of violence.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Chagrin",
+    "definition": "Distress or embarrassment",
+    "example": "Much to his chagrin, proposal was rejected.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Charlatan",
+    "definition": "Person falsely claiming expertise",
+    "example": "Exposed as charlatan with fake credentials.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Chasm",
+    "definition": "Deep fissure or divide",
+    "example": "Wide chasm exists between rich and poor.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Chastise",
+    "definition": "Rebuke or reprimand severely",
+    "example": "Teacher chastised students for misbehavior.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Chicanery",
+    "definition": "Use of trickery",
+    "example": "Electoral chicanery undermines democracy.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Chide",
+    "definition": "Scold or rebuke",
+    "example": "Parents chided children for poor grades.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Chimerical",
+    "definition": "Wildly unrealistic",
+    "example": "Plan dismissed as chimerical and impractical.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Choleric",
+    "definition": "Bad-tempered or irritable",
+    "example": "Choleric boss created hostile work environment.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Churlish",
+    "definition": "Rude in mean way",
+    "example": "Churlish behavior offended diplomatic guests.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Circumlocution",
+    "definition": "Evasive or indirect speech",
+    "example": "Avoid circumlocution in official communications.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Circumvent",
+    "definition": "Find way around obstacle",
+    "example": "Companies circumvent tax laws through loopholes.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Clemency",
+    "definition": "Mercy or lenience",
+    "example": "President granted clemency to death row prisoner.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Clique",
+    "definition": "Small exclusive group",
+    "example": "Ruling clique controls party decisions.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Cloister",
+    "definition": "Seclude in monastery",
+    "example": "Monks cloister themselves for meditation.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Coalesce",
+    "definition": "Come together to form whole",
+    "example": "Opposition parties coalesced against government.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Cognizant",
+    "definition": "Having knowledge or awareness",
+    "example": "Officials must be cognizant of legal requirements.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Colloquial",
+    "definition": "Used in ordinary conversation",
+    "example": "Avoid colloquial expressions in formal writing.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Collusion",
+    "definition": "Secret cooperation for deceit",
+    "example": "Investigation revealed collusion between officials.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Colossal",
+    "definition": "Extremely large",
+    "example": "Project requires colossal investment of resources.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Commiserate",
+    "definition": "Express sympathy for",
+    "example": "Friends commiserated with family after tragedy.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Commodious",
+    "definition": "Roomy and comfortable",
+    "example": "Office has commodious conference facilities.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Compelling",
+    "definition": "Evoking strong interest",
+    "example": "Documentary presents compelling case for reform.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Compendium",
+    "definition": "Collection of information",
+    "example": "Published compendium of government schemes.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Complicity",
+    "definition": "Partnership in wrongdoing",
+    "example": "Investigation revealed complicity of senior officers.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Comport",
+    "definition": "Conduct oneself in particular way",
+    "example": "Officials must comport themselves with dignity.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Composure",
+    "definition": "State of being calm",
+    "example": "Maintained composure during crisis.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Compunction",
+    "definition": "Feeling of guilt",
+    "example": "Showed no compunction about betraying trust.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Conceit",
+    "definition": "Excessive pride in oneself",
+    "example": "His conceit made him unpopular among peers.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Conciliate",
+    "definition": "Stop anger by being pleasant",
+    "example": "Mediator tried to conciliate warring factions.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Conclusive",
+    "definition": "Serving to prove a case",
+    "example": "DNA evidence provided conclusive proof of guilt.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Concoct",
+    "definition": "Make by mixing ingredients",
+    "example": "Accused concocted false alibi for crime.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Concord",
+    "definition": "Agreement or harmony",
+    "example": "Nations signed concord for regional cooperation.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Condescend",
+    "definition": "Show superiority while doing something",
+    "example": "Should not condescend to junior colleagues.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Condone",
+    "definition": "Accept behavior that is wrong",
+    "example": "Cannot condone corruption in public office.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Conducive",
+    "definition": "Making outcome likely",
+    "example": "Environment conducive to learning and growth.",
+    "exam": "Banking/SSC"
+  },
+  {
+    "word": "Confederation",
+    "definition": "Alliance of states or groups",
+    "example": "Nations formed confederation for mutual defense.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Confound",
+    "definition": "Cause surprise or confusion",
+    "example": "Results confounded expert predictions.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Congeal",
+    "definition": "Solidify or coagulate",
+    "example": "Blood began to congeal at wound site.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Congenial",
+    "definition": "Pleasant because similar",
+    "example": "Found congenial atmosphere for work.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Connive",
+    "definition": "Secretly allow wrongdoing",
+    "example": "Officials connived with criminals.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Connoisseur",
+    "definition": "Expert judge in matters of taste",
+    "example": "Art connoisseur authenticated painting.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Connotation",
+    "definition": "Idea suggested by word",
+    "example": "Word carries negative connotations.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Connubial",
+    "definition": "Relating to marriage",
+    "example": "Enjoyed connubial bliss for decades.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Consecrate",
+    "definition": "Make or declare sacred",
+    "example": "Temple consecrated by religious ceremony.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Consensus",
+    "definition": "General agreement",
+    "example": "Reached consensus on policy reforms.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Consequential",
+    "definition": "Following as result",
+    "example": "Made consequential decision affecting millions.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Consternation",
+    "definition": "Anxiety causing dismay",
+    "example": "News caused consternation among investors.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Construe",
+    "definition": "Interpret in particular way",
+    "example": "Courts construe laws strictly.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Consul",
+    "definition": "Official appointed by government",
+    "example": "Indian consul assists citizens abroad.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Consummate",
+    "definition": "Complete or perfect",
+    "example": "Diplomat with consummate negotiating skills.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Contaminate",
+    "definition": "Make impure by exposure",
+    "example": "Factory waste contaminated river water.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Contempt",
+    "definition": "Feeling that something is worthless",
+    "example": "Held corrupt officials in contempt.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Contentious",
+    "definition": "Causing heated disagreement",
+    "example": "Contentious bill sparked fierce debate.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Contiguous",
+    "definition": "Sharing common border",
+    "example": "States share contiguous borders.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Contort",
+    "definition": "Twist into abnormal shape",
+    "example": "Face contorted in pain and anguish.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Contraband",
+    "definition": "Goods imported illegally",
+    "example": "Customs seized contraband at border.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Contravene",
+    "definition": "Conflict with right or law",
+    "example": "Law contravenes constitutional provisions.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Contrite",
+    "definition": "Feeling remorse",
+    "example": "Offered contrite apology for mistake.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Contrive",
+    "definition": "Create or bring about",
+    "example": "Managed to contrive solution to problem.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Controversial",
+    "definition": "Giving rise to controversy",
+    "example": "Passed controversial legislation despite opposition.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Conversant",
+    "definition": "Familiar with or knowledgeable",
+    "example": "Judge conversant with constitutional law.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Convivial",
+    "definition": "Cheerful and friendly",
+    "example": "Enjoyed convivial atmosphere at gathering.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Convoke",
+    "definition": "Call together for meeting",
+    "example": "President convoked emergency cabinet meeting.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Cosmopolitan",
+    "definition": "Familiar with many countries",
+    "example": "Mumbai has cosmopolitan culture and diversity.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Countenance",
+    "definition": "Admit as acceptable",
+    "example": "Will not countenance corruption in administration.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Coup",
+    "definition": "Sudden seizure of power",
+    "example": "Military coup overthrew elected government.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Covenant",
+    "definition": "Formal agreement",
+    "example": "Nations signed international covenant on rights.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Covert",
+    "definition": "Not openly shown",
+    "example": "Intelligence agencies conduct covert operations.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Covet",
+    "definition": "Yearn to possess something",
+    "example": "Should not covet others property or success.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Cower",
+    "definition": "Crouch in fear",
+    "example": "Citizens refuse to cower before tyranny.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Coy",
+    "definition": "Making show of being shy",
+    "example": "Gave coy response to direct question.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Craven",
+    "definition": "Contemptibly lacking courage",
+    "example": "Condemned craven surrender to pressure.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Credence",
+    "definition": "Belief in truth of something",
+    "example": "Story gained credence after investigation.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Creed",
+    "definition": "System of religious belief",
+    "example": "Constitution respects all creeds and religions.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Crescendo",
+    "definition": "Gradual increase in loudness",
+    "example": "Protests reached crescendo before elections.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Crestfallen",
+    "definition": "Sad and disappointed",
+    "example": "Team looked crestfallen after defeat.",
+    "exam": "SSC/Banking"
+  },
+  {
+    "word": "Critique",
+    "definition": "Detailed analysis",
+    "example": "Scholar published critique of economic policy.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Cryptic",
+    "definition": "Having hidden meaning",
+    "example": "Left cryptic message before disappearing.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Culminate",
+    "definition": "Reach climax or point",
+    "example": "Efforts culminated in historic agreement.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Cumbersome",
+    "definition": "Slow or complicated",
+    "example": "Cumbersome procedures delay project approvals.",
+    "exam": "UPSC/Banking"
+  },
+  {
+    "word": "Cunning",
+    "definition": "Skilled at deception",
+    "example": "Used cunning tactics to win election.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Cursory",
+    "definition": "Hasty and superficial",
+    "example": "Made cursory inspection of facilities.",
+    "exam": "UPSC/SSC"
+  },
+  {
+    "word": "Curtail",
+    "definition": "Reduce in extent",
+    "example": "Budget cuts curtailed social programs.",
+    "exam": "Banking/SSC"
+  }
+]

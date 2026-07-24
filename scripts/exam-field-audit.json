@@ -1,0 +1,928 @@
+{
+  "generatedAt": "2026-07-24T07:29:52.068Z",
+  "note": "Read-only audit. No data file was modified.",
+  "method": "Each data file evaluated in a Node VM sandbox; arrays read directly (no regex parsing).",
+  "files": {
+    "acronyms.js": {
+      "globalName": "acronymsDB",
+      "examStorageShape": {
+        "string": 300
+      },
+      "totalEntries": 300,
+      "entriesWithExam": 300,
+      "distinctRawValues": 10,
+      "distinctTokens": 3,
+      "rawValues": {
+        "UPSC/SSC": 149,
+        "Banking/SSC": 78,
+        "SSC/Banking": 28,
+        "UPSC/Banking": 13,
+        "Banking": 12,
+        "SSC/UPSC": 6,
+        "SSC": 5,
+        "UPSC": 5,
+        "UPSC/SSC/Banking": 3,
+        "UPSC/Banking/SSC": 1
+      },
+      "tokens": {
+        "SSC": 270,
+        "UPSC": 177,
+        "Banking": 135
+      }
+    },
+    "idioms.js": {
+      "globalName": "idiomsDB",
+      "examStorageShape": {
+        "array": 1105
+      },
+      "totalEntries": 1105,
+      "entriesWithExam": 1105,
+      "distinctRawValues": 3,
+      "distinctTokens": 5,
+      "rawValues": {
+        "[\"SSC\",\"Banking\",\"Railways\"]": 1091,
+        "[\"SSC\",\"Banking\",\"CAT\",\"Railways\"]": 10,
+        "[\"SSC\",\"Banking\",\"UPSC\",\"Railways\"]": 4
+      },
+      "tokens": {
+        "Banking": 1105,
+        "Railways": 1105,
+        "SSC": 1105,
+        "CAT": 10,
+        "UPSC": 4
+      }
+    },
+    "oneword.js": {
+      "globalName": "oneWordDB",
+      "examStorageShape": {
+        "string": 500
+      },
+      "totalEntries": 500,
+      "entriesWithExam": 500,
+      "distinctRawValues": 9,
+      "distinctTokens": 4,
+      "rawValues": {
+        "SSC CGL/Banking": 268,
+        "SSC CGL/UPSC": 73,
+        "UPSC/SSC CGL": 67,
+        "SSC/Banking": 34,
+        "UPSC/SSC": 27,
+        "UPSC/Banking": 15,
+        "Banking/SSC": 9,
+        "Banking/SSC CGL": 5,
+        "SSC": 2
+      },
+      "tokens": {
+        "SSC CGL": 413,
+        "Banking": 331,
+        "UPSC": 182,
+        "SSC": 72
+      }
+    },
+    "vocab-easy.js": {
+      "globalName": "vocabEasy",
+      "examStorageShape": {
+        "string": 957
+      },
+      "totalEntries": 957,
+      "entriesWithExam": 957,
+      "distinctRawValues": 9,
+      "distinctTokens": 4,
+      "rawValues": {
+        "Banking/SSC": 332,
+        "SSC/Banking": 295,
+        "UPSC/SSC/Banking": 234,
+        "UPSC/SSC": 32,
+        "UPSC/Banking": 29,
+        "SSC": 25,
+        "Banking": 6,
+        "SSC/Railways": 3,
+        "Banking/UPSC": 1
+      },
+      "tokens": {
+        "SSC": 921,
+        "Banking": 897,
+        "UPSC": 296,
+        "Railways": 3
+      }
+    },
+    "vocab-hard.js": {
+      "globalName": "vocabHard",
+      "examStorageShape": {
+        "string": 1501
+      },
+      "totalEntries": 1501,
+      "entriesWithExam": 1501,
+      "distinctRawValues": 16,
+      "distinctTokens": 6,
+      "rawValues": {
+        "UPSC/CAT": 456,
+        "UPSC/SSC": 298,
+        "UPSC": 283,
+        "UPSC/Banking": 171,
+        "UPSC/IBPS PO": 110,
+        "UPSC/SSC CGL": 84,
+        "SSC/Banking": 51,
+        "UPSC/SSC/Banking": 26,
+        "Banking/SSC": 9,
+        "Banking/UPSC": 4,
+        "Banking/IBPS PO": 3,
+        "SSC CGL/Banking": 2,
+        "CAT": 1,
+        "CAT/Banking": 1,
+        "CAT/UPSC": 1,
+        "SSC CGL/IBPS PO": 1
+      },
+      "tokens": {
+        "UPSC": 1433,
+        "CAT": 459,
+        "SSC": 384,
+        "Banking": 267,
+        "IBPS PO": 114,
+        "SSC CGL": 87
+      }
+    },
+    "vocab-medium.js": {
+      "globalName": "vocabMedium",
+      "examStorageShape": {
+        "string": 1551
+      },
+      "totalEntries": 1551,
+      "entriesWithExam": 1551,
+      "distinctRawValues": 9,
+      "distinctTokens": 3,
+      "rawValues": {
+        "SSC/Banking": 441,
+        "UPSC/SSC": 376,
+        "UPSC/Banking": 355,
+        "Banking/SSC": 237,
+        "Banking/UPSC": 38,
+        "UPSC/SSC/Banking": 31,
+        "SSC": 27,
+        "Banking": 24,
+        "UPSC": 22
+      },
+      "tokens": {
+        "Banking": 1126,
+        "SSC": 1112,
+        "UPSC": 822
+      }
+    }
+  },
+  "summary": {
+    "filesAudited": 6,
+    "totalEntries": 5914,
+    "entriesWithExam": 5914,
+    "examStorageShapes": {
+      "string": 4809,
+      "array": 1105
+    },
+    "distinctRawValues": 26,
+    "distinctTokens": 7,
+    "tokensUnder10": 0,
+    "tokensAtLeast10": 7,
+    "nearDuplicateGroups": 0,
+    "entriesMissingExam": 0,
+    "entriesEmptyExam": 0,
+    "entriesNonStringExam": 0,
+    "entriesPlaceholderExam": 0,
+    "entriesWithEdgeWhitespace": 0
+  },
+  "rawValuesGlobal": [
+    {
+      "value": "[\"SSC\",\"Banking\",\"Railways\"]",
+      "count": 1091,
+      "perFile": {
+        "idioms.js": 1091
+      }
+    },
+    {
+      "value": "UPSC/SSC",
+      "count": 882,
+      "perFile": {
+        "acronyms.js": 149,
+        "oneword.js": 27,
+        "vocab-easy.js": 32,
+        "vocab-hard.js": 298,
+        "vocab-medium.js": 376
+      }
+    },
+    {
+      "value": "SSC/Banking",
+      "count": 849,
+      "perFile": {
+        "acronyms.js": 28,
+        "oneword.js": 34,
+        "vocab-easy.js": 295,
+        "vocab-hard.js": 51,
+        "vocab-medium.js": 441
+      }
+    },
+    {
+      "value": "Banking/SSC",
+      "count": 665,
+      "perFile": {
+        "acronyms.js": 78,
+        "oneword.js": 9,
+        "vocab-easy.js": 332,
+        "vocab-hard.js": 9,
+        "vocab-medium.js": 237
+      }
+    },
+    {
+      "value": "UPSC/Banking",
+      "count": 583,
+      "perFile": {
+        "acronyms.js": 13,
+        "oneword.js": 15,
+        "vocab-easy.js": 29,
+        "vocab-hard.js": 171,
+        "vocab-medium.js": 355
+      }
+    },
+    {
+      "value": "UPSC/CAT",
+      "count": 456,
+      "perFile": {
+        "vocab-hard.js": 456
+      }
+    },
+    {
+      "value": "UPSC",
+      "count": 310,
+      "perFile": {
+        "acronyms.js": 5,
+        "vocab-hard.js": 283,
+        "vocab-medium.js": 22
+      }
+    },
+    {
+      "value": "UPSC/SSC/Banking",
+      "count": 294,
+      "perFile": {
+        "acronyms.js": 3,
+        "vocab-easy.js": 234,
+        "vocab-hard.js": 26,
+        "vocab-medium.js": 31
+      }
+    },
+    {
+      "value": "SSC CGL/Banking",
+      "count": 270,
+      "perFile": {
+        "oneword.js": 268,
+        "vocab-hard.js": 2
+      }
+    },
+    {
+      "value": "UPSC/SSC CGL",
+      "count": 151,
+      "perFile": {
+        "oneword.js": 67,
+        "vocab-hard.js": 84
+      }
+    },
+    {
+      "value": "UPSC/IBPS PO",
+      "count": 110,
+      "perFile": {
+        "vocab-hard.js": 110
+      }
+    },
+    {
+      "value": "SSC CGL/UPSC",
+      "count": 73,
+      "perFile": {
+        "oneword.js": 73
+      }
+    },
+    {
+      "value": "SSC",
+      "count": 59,
+      "perFile": {
+        "acronyms.js": 5,
+        "oneword.js": 2,
+        "vocab-easy.js": 25,
+        "vocab-medium.js": 27
+      }
+    },
+    {
+      "value": "Banking/UPSC",
+      "count": 43,
+      "perFile": {
+        "vocab-easy.js": 1,
+        "vocab-hard.js": 4,
+        "vocab-medium.js": 38
+      }
+    },
+    {
+      "value": "Banking",
+      "count": 42,
+      "perFile": {
+        "acronyms.js": 12,
+        "vocab-easy.js": 6,
+        "vocab-medium.js": 24
+      }
+    },
+    {
+      "value": "[\"SSC\",\"Banking\",\"CAT\",\"Railways\"]",
+      "count": 10,
+      "perFile": {
+        "idioms.js": 10
+      }
+    },
+    {
+      "value": "SSC/UPSC",
+      "count": 6,
+      "perFile": {
+        "acronyms.js": 6
+      }
+    },
+    {
+      "value": "Banking/SSC CGL",
+      "count": 5,
+      "perFile": {
+        "oneword.js": 5
+      }
+    },
+    {
+      "value": "[\"SSC\",\"Banking\",\"UPSC\",\"Railways\"]",
+      "count": 4,
+      "perFile": {
+        "idioms.js": 4
+      }
+    },
+    {
+      "value": "Banking/IBPS PO",
+      "count": 3,
+      "perFile": {
+        "vocab-hard.js": 3
+      }
+    },
+    {
+      "value": "SSC/Railways",
+      "count": 3,
+      "perFile": {
+        "vocab-easy.js": 3
+      }
+    },
+    {
+      "value": "CAT",
+      "count": 1,
+      "perFile": {
+        "vocab-hard.js": 1
+      }
+    },
+    {
+      "value": "CAT/Banking",
+      "count": 1,
+      "perFile": {
+        "vocab-hard.js": 1
+      }
+    },
+    {
+      "value": "CAT/UPSC",
+      "count": 1,
+      "perFile": {
+        "vocab-hard.js": 1
+      }
+    },
+    {
+      "value": "SSC CGL/IBPS PO",
+      "count": 1,
+      "perFile": {
+        "vocab-hard.js": 1
+      }
+    },
+    {
+      "value": "UPSC/Banking/SSC",
+      "count": 1,
+      "perFile": {
+        "acronyms.js": 1
+      }
+    }
+  ],
+  "tokensGlobal": [
+    {
+      "token": "SSC",
+      "count": 3864,
+      "perFile": {
+        "acronyms.js": 270,
+        "idioms.js": 1105,
+        "oneword.js": 72,
+        "vocab-easy.js": 921,
+        "vocab-hard.js": 384,
+        "vocab-medium.js": 1112
+      },
+      "fileCount": 6
+    },
+    {
+      "token": "Banking",
+      "count": 3861,
+      "perFile": {
+        "acronyms.js": 135,
+        "idioms.js": 1105,
+        "oneword.js": 331,
+        "vocab-easy.js": 897,
+        "vocab-hard.js": 267,
+        "vocab-medium.js": 1126
+      },
+      "fileCount": 6
+    },
+    {
+      "token": "UPSC",
+      "count": 2914,
+      "perFile": {
+        "acronyms.js": 177,
+        "idioms.js": 4,
+        "oneword.js": 182,
+        "vocab-easy.js": 296,
+        "vocab-hard.js": 1433,
+        "vocab-medium.js": 822
+      },
+      "fileCount": 6
+    },
+    {
+      "token": "Railways",
+      "count": 1108,
+      "perFile": {
+        "idioms.js": 1105,
+        "vocab-easy.js": 3
+      },
+      "fileCount": 2
+    },
+    {
+      "token": "SSC CGL",
+      "count": 500,
+      "perFile": {
+        "oneword.js": 413,
+        "vocab-hard.js": 87
+      },
+      "fileCount": 2
+    },
+    {
+      "token": "CAT",
+      "count": 469,
+      "perFile": {
+        "idioms.js": 10,
+        "vocab-hard.js": 459
+      },
+      "fileCount": 2
+    },
+    {
+      "token": "IBPS PO",
+      "count": 114,
+      "perFile": {
+        "vocab-hard.js": 114
+      },
+      "fileCount": 1
+    }
+  ],
+  "nearDuplicates": {},
+  "orderInsensitiveGroups": [
+    {
+      "tokenSet": [
+        "Banking",
+        "SSC"
+      ],
+      "totalCount": 1514,
+      "spellings": [
+        {
+          "literal": "SSC/Banking",
+          "shape": "string",
+          "count": 849,
+          "perFile": {
+            "acronyms.js": 28,
+            "oneword.js": 34,
+            "vocab-easy.js": 295,
+            "vocab-hard.js": 51,
+            "vocab-medium.js": 441
+          }
+        },
+        {
+          "literal": "Banking/SSC",
+          "shape": "string",
+          "count": 665,
+          "perFile": {
+            "acronyms.js": 78,
+            "oneword.js": 9,
+            "vocab-easy.js": 332,
+            "vocab-hard.js": 9,
+            "vocab-medium.js": 237
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "Railways",
+        "SSC"
+      ],
+      "totalCount": 1091,
+      "spellings": [
+        {
+          "literal": "[\"SSC\",\"Banking\",\"Railways\"]",
+          "shape": "array",
+          "count": 1091,
+          "perFile": {
+            "idioms.js": 1091
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "SSC",
+        "UPSC"
+      ],
+      "totalCount": 888,
+      "spellings": [
+        {
+          "literal": "UPSC/SSC",
+          "shape": "string",
+          "count": 882,
+          "perFile": {
+            "acronyms.js": 149,
+            "oneword.js": 27,
+            "vocab-easy.js": 32,
+            "vocab-hard.js": 298,
+            "vocab-medium.js": 376
+          }
+        },
+        {
+          "literal": "SSC/UPSC",
+          "shape": "string",
+          "count": 6,
+          "perFile": {
+            "acronyms.js": 6
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "UPSC"
+      ],
+      "totalCount": 626,
+      "spellings": [
+        {
+          "literal": "UPSC/Banking",
+          "shape": "string",
+          "count": 583,
+          "perFile": {
+            "acronyms.js": 13,
+            "oneword.js": 15,
+            "vocab-easy.js": 29,
+            "vocab-hard.js": 171,
+            "vocab-medium.js": 355
+          }
+        },
+        {
+          "literal": "Banking/UPSC",
+          "shape": "string",
+          "count": 43,
+          "perFile": {
+            "vocab-easy.js": 1,
+            "vocab-hard.js": 4,
+            "vocab-medium.js": 38
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "CAT",
+        "UPSC"
+      ],
+      "totalCount": 457,
+      "spellings": [
+        {
+          "literal": "UPSC/CAT",
+          "shape": "string",
+          "count": 456,
+          "perFile": {
+            "vocab-hard.js": 456
+          }
+        },
+        {
+          "literal": "CAT/UPSC",
+          "shape": "string",
+          "count": 1,
+          "perFile": {
+            "vocab-hard.js": 1
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "UPSC"
+      ],
+      "totalCount": 310,
+      "spellings": [
+        {
+          "literal": "UPSC",
+          "shape": "string",
+          "count": 310,
+          "perFile": {
+            "acronyms.js": 5,
+            "vocab-hard.js": 283,
+            "vocab-medium.js": 22
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "SSC",
+        "UPSC"
+      ],
+      "totalCount": 295,
+      "spellings": [
+        {
+          "literal": "UPSC/SSC/Banking",
+          "shape": "string",
+          "count": 294,
+          "perFile": {
+            "acronyms.js": 3,
+            "vocab-easy.js": 234,
+            "vocab-hard.js": 26,
+            "vocab-medium.js": 31
+          }
+        },
+        {
+          "literal": "UPSC/Banking/SSC",
+          "shape": "string",
+          "count": 1,
+          "perFile": {
+            "acronyms.js": 1
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "SSC CGL"
+      ],
+      "totalCount": 275,
+      "spellings": [
+        {
+          "literal": "SSC CGL/Banking",
+          "shape": "string",
+          "count": 270,
+          "perFile": {
+            "oneword.js": 268,
+            "vocab-hard.js": 2
+          }
+        },
+        {
+          "literal": "Banking/SSC CGL",
+          "shape": "string",
+          "count": 5,
+          "perFile": {
+            "oneword.js": 5
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "SSC CGL",
+        "UPSC"
+      ],
+      "totalCount": 224,
+      "spellings": [
+        {
+          "literal": "UPSC/SSC CGL",
+          "shape": "string",
+          "count": 151,
+          "perFile": {
+            "oneword.js": 67,
+            "vocab-hard.js": 84
+          }
+        },
+        {
+          "literal": "SSC CGL/UPSC",
+          "shape": "string",
+          "count": 73,
+          "perFile": {
+            "oneword.js": 73
+          }
+        }
+      ],
+      "spellingCount": 2
+    },
+    {
+      "tokenSet": [
+        "IBPS PO",
+        "UPSC"
+      ],
+      "totalCount": 110,
+      "spellings": [
+        {
+          "literal": "UPSC/IBPS PO",
+          "shape": "string",
+          "count": 110,
+          "perFile": {
+            "vocab-hard.js": 110
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "SSC"
+      ],
+      "totalCount": 59,
+      "spellings": [
+        {
+          "literal": "SSC",
+          "shape": "string",
+          "count": 59,
+          "perFile": {
+            "acronyms.js": 5,
+            "oneword.js": 2,
+            "vocab-easy.js": 25,
+            "vocab-medium.js": 27
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Banking"
+      ],
+      "totalCount": 42,
+      "spellings": [
+        {
+          "literal": "Banking",
+          "shape": "string",
+          "count": 42,
+          "perFile": {
+            "acronyms.js": 12,
+            "vocab-easy.js": 6,
+            "vocab-medium.js": 24
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "CAT",
+        "Railways",
+        "SSC"
+      ],
+      "totalCount": 10,
+      "spellings": [
+        {
+          "literal": "[\"SSC\",\"Banking\",\"CAT\",\"Railways\"]",
+          "shape": "array",
+          "count": 10,
+          "perFile": {
+            "idioms.js": 10
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "Railways",
+        "SSC",
+        "UPSC"
+      ],
+      "totalCount": 4,
+      "spellings": [
+        {
+          "literal": "[\"SSC\",\"Banking\",\"UPSC\",\"Railways\"]",
+          "shape": "array",
+          "count": 4,
+          "perFile": {
+            "idioms.js": 4
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "IBPS PO"
+      ],
+      "totalCount": 3,
+      "spellings": [
+        {
+          "literal": "Banking/IBPS PO",
+          "shape": "string",
+          "count": 3,
+          "perFile": {
+            "vocab-hard.js": 3
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Railways",
+        "SSC"
+      ],
+      "totalCount": 3,
+      "spellings": [
+        {
+          "literal": "SSC/Railways",
+          "shape": "string",
+          "count": 3,
+          "perFile": {
+            "vocab-easy.js": 3
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "CAT"
+      ],
+      "totalCount": 1,
+      "spellings": [
+        {
+          "literal": "CAT",
+          "shape": "string",
+          "count": 1,
+          "perFile": {
+            "vocab-hard.js": 1
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "Banking",
+        "CAT"
+      ],
+      "totalCount": 1,
+      "spellings": [
+        {
+          "literal": "CAT/Banking",
+          "shape": "string",
+          "count": 1,
+          "perFile": {
+            "vocab-hard.js": 1
+          }
+        }
+      ],
+      "spellingCount": 1
+    },
+    {
+      "tokenSet": [
+        "IBPS PO",
+        "SSC CGL"
+      ],
+      "totalCount": 1,
+      "spellings": [
+        {
+          "literal": "SSC CGL/IBPS PO",
+          "shape": "string",
+          "count": 1,
+          "perFile": {
+            "vocab-hard.js": 1
+          }
+        }
+      ],
+      "spellingCount": 1
+    }
+  ],
+  "summary_orderVariantGroups": 7,
+  "rareTokens": [],
+  "anomalies": {
+    "missing": [],
+    "empty": [],
+    "nonString": [],
+    "placeholder": [],
+    "whitespaceEdges": []
+  },
+  "delimiters": {
+    "/": 4397,
+    "(none — JS array)": 1105,
+    "(single token, no delimiter)": 412
+  }
+}

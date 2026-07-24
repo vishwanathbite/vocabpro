@@ -1,0 +1,233 @@
+[
+  {
+    "normalised": "back to the drawing board",
+    "occurrences": [
+      {
+        "index": 402,
+        "idiom": "Back To The Drawing Board",
+        "meaning": "To start again after a failed attempt",
+        "example": "When the plan failed, they went back to the drawing board.",
+        "category": "body",
+        "difficulty": "medium"
+      },
+      {
+        "index": 708,
+        "idiom": "Back To The Drawing Board",
+        "meaning": "An idea has been unsuccessful and that",
+        "example": "The prototype failed, so the team went back to the drawing board.",
+        "category": "animal",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "barking up the wrong tree",
+    "occurrences": [
+      {
+        "index": 395,
+        "idiom": "Barking Up The Wrong Tree",
+        "meaning": "To pursue a mistaken or misguided course",
+        "example": "By blaming the peon, they were barking up the wrong tree.",
+        "category": "general",
+        "difficulty": "medium"
+      },
+      {
+        "index": 707,
+        "idiom": "Barking Up The Wrong Tree",
+        "meaning": "To be pursuing a misguided line of",
+        "example": "By blaming the peon, the officer was barking up the wrong tree.",
+        "category": "general",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "every cloud has a silver lining",
+    "occurrences": [
+      {
+        "index": 738,
+        "idiom": "Every Cloud Has A Silver Lining",
+        "meaning": "Every difficulty has some hidden benefit",
+        "example": "He lost the job but found a better one — every cloud has a silver lining.",
+        "category": "color",
+        "difficulty": "medium"
+      },
+      {
+        "index": 922,
+        "idiom": "Every cloud has a silver lining",
+        "meaning": "Good things come after bad things",
+        "example": "It seems that if you're big, rich and powerful enough, every cloud has a silver lining.",
+        "category": "color",
+        "difficulty": "hard"
+      }
+    ]
+  },
+  {
+    "normalised": "keep the wolf away from the door",
+    "occurrences": [
+      {
+        "index": 371,
+        "idiom": "Keep The Wolf Away From The Door",
+        "meaning": "To earn just enough to avoid hunger and poverty",
+        "example": "Two part-time jobs helped him keep the wolf away from the door.",
+        "category": "animal",
+        "difficulty": "medium"
+      },
+      {
+        "index": 492,
+        "idiom": "Keep The Wolf Away From The Door",
+        "meaning": "To earn just enough to avoid hunger and poverty",
+        "example": "He took extra tuition to keep the wolf away from the door.",
+        "category": "animal",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "leave no stone unturned",
+    "occurrences": [
+      {
+        "index": 583,
+        "idiom": "Leave No Stone Unturned",
+        "meaning": "To make every possible effort to succeed",
+        "example": "The police left no stone unturned in tracing the missing boy.",
+        "category": "general",
+        "difficulty": "medium"
+      },
+      {
+        "index": 869,
+        "idiom": "Leave No Stone Unturned",
+        "meaning": "Try every possible course of action in",
+        "example": "Ahead of its return to the IPL in , Chennai Super Kings is leaving no stone unturned to get its campaign back on the track. One of the key reasons for its success in the first eigh",
+        "category": "general",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "live from hand to mouth",
+    "occurrences": [
+      {
+        "index": 265,
+        "idiom": "Live From Hand To Mouth",
+        "meaning": "To survive on barely enough to meet daily needs",
+        "example": "The daily wager lives from hand to mouth.",
+        "category": "body",
+        "difficulty": "medium"
+      },
+      {
+        "index": 838,
+        "idiom": "Live From Hand To Mouth",
+        "meaning": "To have enough money to live on and",
+        "example": "The family lived from hand to mouth after the factory closed.",
+        "category": "body",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "read between the lines",
+    "occurrences": [
+      {
+        "index": 106,
+        "idiom": "Read Between The Lines",
+        "meaning": "Understanding the hidden",
+        "example": "Reading between the lines, he understood the boss was unhappy.",
+        "category": "general",
+        "difficulty": "medium"
+      },
+      {
+        "index": 131,
+        "idiom": "Read Between The Lines",
+        "meaning": "To understand the hidden or implied meaning",
+        "example": "Read between the lines and you will see the letter hides a warning.",
+        "category": "general",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "reading between the lines",
+    "occurrences": [
+      {
+        "index": 44,
+        "idiom": "Reading Between The Lines",
+        "meaning": "Understanding the hidden",
+        "example": "Reading between the lines, the officer sensed the report was hiding something.",
+        "category": "general",
+        "difficulty": "medium"
+      },
+      {
+        "index": 72,
+        "idiom": "Reading Between The Lines",
+        "meaning": "Understanding the hidden or implied meaning",
+        "example": "Reading between the lines, she guessed the letter carried bad news.",
+        "category": "general",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "through thick and thin",
+    "occurrences": [
+      {
+        "index": 262,
+        "idiom": "Through Thick And Thin",
+        "meaning": "Under all circumstances",
+        "example": "True friends stand by you through thick and thin.",
+        "category": "general",
+        "difficulty": "medium"
+      },
+      {
+        "index": 340,
+        "idiom": "Through Thick And Thin",
+        "meaning": "Through both good and bad times",
+        "example": "Her parents supported her through thick and thin.",
+        "category": "general",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "normalised": "to fight tooth and nail",
+    "occurrences": [
+      {
+        "index": 51,
+        "idiom": "To Fight Tooth And Nail",
+        "meaning": "To fight fiercely and with all one's strength",
+        "example": "The lawyer promised to fight tooth and nail for the farmers' land rights.",
+        "category": "body",
+        "difficulty": "medium"
+      },
+      {
+        "index": 225,
+        "idiom": "To Fight Tooth And Nail",
+        "meaning": "To fight heroically, in very",
+        "example": "The villagers fought tooth and nail to protect their forest.",
+        "category": "body",
+        "difficulty": "easy"
+      }
+    ]
+  },
+  {
+    "normalised": "to keep the wolf from the door",
+    "occurrences": [
+      {
+        "index": 159,
+        "idiom": "To Keep The Wolf From The Door",
+        "meaning": "To earn just enough to avoid hunger and poverty",
+        "example": "He took two jobs just to keep the wolf from the door.",
+        "category": "animal",
+        "difficulty": "medium"
+      },
+      {
+        "index": 821,
+        "idiom": "To Keep The Wolf From The Door",
+        "meaning": "To earn just enough to avoid hunger and poverty",
+        "example": "He took evening tuitions to keep the wolf from the door.",
+        "category": "animal",
+        "difficulty": "hard"
+      }
+    ]
+  }
+]
