@@ -2,7 +2,7 @@
  * Service Worker for VocabPro PWA
  * Version 43 - Bump cache for the SW update-prompt fixes (prompt now withdraws
  * when no update is pending, survives the mount-order race, and is
- * dismissible); align PRECACHE_ASSETS with the ?v=38 versioned script URLs.
+ * dismissible); align PRECACHE_ASSETS with the ?v=39 versioned script URLs.
  *
  * NOTE: CACHE_VERSION below is mirrored by window.VOCABPRO_CACHE_VERSION in
  * index.html (pre-SW cache cleaner). Bump both together or the cleaner will
@@ -15,7 +15,7 @@
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 45;
+const CACHE_VERSION = 46;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -24,24 +24,24 @@ const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './js/storage.js?v=38',
-  './js/icons.js?v=38',
-  './js/utils.js?v=38',
-  './js/gamification.js?v=38',
-  './js/srs.js?v=38',
-  './js/bookmarks.js?v=38',
-  './js/dailygoals.js?v=38',
-  './js/settings.js?v=38',
-  './js/components.js?v=38',
-  './js/screens.js?v=38',
-  './js/app.js?v=38',
-  './js/data/index.js?v=38',
-  './js/data/vocab-easy.js?v=38',
-  './js/data/vocab-medium.js?v=38',
-  './js/data/vocab-hard.js?v=38',
-  './js/data/acronyms.js?v=38',
-  './js/data/oneword.js?v=38',
-  './js/data/idioms.js?v=38',
+  './js/storage.js?v=39',
+  './js/icons.js?v=39',
+  './js/utils.js?v=39',
+  './js/gamification.js?v=39',
+  './js/srs.js?v=39',
+  './js/bookmarks.js?v=39',
+  './js/dailygoals.js?v=39',
+  './js/settings.js?v=39',
+  './js/components.js?v=39',
+  './js/screens.js?v=39',
+  './js/app.js?v=39',
+  './js/data/index.js?v=39',
+  './js/data/vocab-easy.js?v=39',
+  './js/data/vocab-medium.js?v=39',
+  './js/data/vocab-hard.js?v=39',
+  './js/data/acronyms.js?v=39',
+  './js/data/oneword.js?v=39',
+  './js/data/idioms.js?v=39',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
