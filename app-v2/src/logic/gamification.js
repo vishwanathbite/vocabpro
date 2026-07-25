@@ -249,9 +249,10 @@ const initializeStats = () => {
  * @param {string} difficulty - Difficulty level
  * @param {string} word - The word being tested
  * @param {string} mode - Quiz mode
+ * @param {string} [nowISO] - Timestamp for lastPlayedDate; defaults to now
  * @returns {Object} - Updated statistics
  */
-const updateStats = (stats, isCorrect, difficulty, word, mode) => {
+const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date().toISOString()) => {
   const newStats = { ...stats };
 
   // Update answer counts
@@ -341,7 +342,7 @@ const updateStats = (stats, isCorrect, difficulty, word, mode) => {
     : 0;
 
   // Update last played date
-  newStats.lastPlayedDate = new Date().toISOString();
+  newStats.lastPlayedDate = nowISO;
 
   // Check for new badges
   const earnedBadges = getEarnedBadges(newStats);
