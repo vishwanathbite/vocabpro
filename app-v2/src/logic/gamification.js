@@ -255,6 +255,26 @@ const initializeStats = () => {
 const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date().toISOString()) => {
   const newStats = { ...stats };
 
+  // The spread is shallow, so every array field still points at the caller's
+  // arrays and the .push calls below would mutate the input. De-alias all six
+  // array fields up front rather than just the four mutated today: the invariant
+  // we want is "updateStats never aliases its input", and that has to survive
+  // someone adding a seventh .push later. Scoping the clone to the current
+  // mutation sites would break silently the next time this function changes.
+  // earnedBadges is already replaced by its .map() below and idiomsDifficultiesList
+  // is not touched here, so cloning those two is behaviourally a no-op — it just
+  // buys the invariant for free.
+  //
+  // Guarded on Array.isArray so a missing field stays missing: the backward-compat
+  // `= []` inits below must still see an absent list as absent, and a non-array
+  // value from corrupt data is left exactly as it was.
+  for (const key of ['masteredWordsList', 'learningWordsList', 'strugglingWordsList',
+                     'modesPlayedList', 'earnedBadges', 'idiomsDifficultiesList']) {
+    if (Array.isArray(newStats[key])) {
+      newStats[key] = [...newStats[key]];
+    }
+  }
+
   // Update answer counts
   newStats.totalAnswered += 1;
   if (isCorrect) {
