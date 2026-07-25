@@ -3,11 +3,14 @@
  * Literary Rides VocabPro - Modular Architecture
  *
  * Web Audio sound effects + the sound on/off flag. Extracted verbatim from
- * js/utils.js (SoundManager). Imports nothing yet: its only cross-file coupling
- * is SettingsManager, which is still a browser global (settings.js not yet a
- * module). Both SettingsManager references are runtime-only and typeof-guarded,
- * so they safely no-op here until wired up in step 6b.
+ * js/utils.js (SoundManager). Its only cross-file coupling is SettingsManager,
+ * now imported from ./settings.js. This forms a circular import (settings.js
+ * imports SoundManager back), which is load-safe because every reference on
+ * both sides is runtime-only (inside methods), never dereferenced at module
+ * top level.
  */
+
+import { SettingsManager } from './settings.js';
 
 export const SoundManager = {
   audioContext: null,
@@ -47,11 +50,8 @@ export const SoundManager = {
    */
   loadSettings: () => {
     if (!SoundManager._initialized) {
-      // PHASE-3 SEAM: SettingsManager coupling completed when settings.js is ported (step 6b).
-      // Currently guarded; will become an explicit import of SettingsManager from './settings.js'.
-      SoundManager.enabled = typeof SettingsManager !== 'undefined'
-        ? SettingsManager.get('soundEnabled')
-        : true;
+      // Cycle completed: SettingsManager imported from ./settings.js (runtime-only use).
+      SoundManager.enabled = SettingsManager.get('soundEnabled');
       SoundManager._initialized = true;
     }
     return SoundManager.enabled;
@@ -76,11 +76,8 @@ export const SoundManager = {
    */
   toggle: () => {
     SoundManager.enabled = !SoundManager.enabled;
-    // PHASE-3 SEAM: SettingsManager coupling completed when settings.js is ported (step 6b).
-    // Currently guarded; will become an explicit import of SettingsManager from './settings.js'.
-    if (typeof SettingsManager !== 'undefined') {
-      SettingsManager.set('soundEnabled', SoundManager.enabled);
-    }
+    // Cycle completed: SettingsManager imported from ./settings.js (runtime-only use).
+    SettingsManager.set('soundEnabled', SoundManager.enabled);
     return SoundManager.enabled;
   },
 
