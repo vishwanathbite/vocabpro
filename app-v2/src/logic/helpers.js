@@ -28,18 +28,26 @@ export const shuffleArray = (array) => {
 
 /**
  * Sample N items from array, excluding certain values
+ *
+ * The RNG is injectable so a caller that needs reproducible output can supply
+ * a seeded one. It is a trailing optional parameter defaulting to Math.random,
+ * so every existing call site keeps its behaviour unchanged — this matters,
+ * because most callers WANT fresh randomness. Quiz generation and match games
+ * should not repeat themselves; only the daily challenge needs determinism.
+ *
  * @param {Array} arr - Source array
  * @param {number} n - Number of items to sample
  * @param {Set} excludeSet - Set of values to exclude
+ * @param {Function} [random] - Returns a float in [0, 1); defaults to Math.random
  * @returns {Array} - Sampled items
  */
-export const sample = (arr, n, excludeSet = new Set()) => {
+export const sample = (arr, n, excludeSet = new Set(), random = Math.random) => {
   const pool = arr.filter(v => !excludeSet.has(v));
   const out = [];
   const poolCopy = [...pool];
 
   while (out.length < n && poolCopy.length > 0) {
-    const i = Math.floor(Math.random() * poolCopy.length);
+    const i = Math.floor(random() * poolCopy.length);
     out.push(poolCopy.splice(i, 1)[0]);
   }
 
@@ -62,17 +70,29 @@ export const randomItem = (arr) => {
 /**
  * Generate smart distractors from vocabulary pool
  * Ensures distractors are real definitions from other words
+ *
+ * Accepts an injectable RNG and threads it into the sample call below, which is
+ * the only random consumer on this path. Added in Phase 5 step 7a as plumbing:
+ * the daily challenge promises "same date = same questions for every user", and
+ * its word selection and option shuffling are already seeded
+ * (daily-challenge.js uses seededShuffle/seededSample), but its distractors come
+ * through here and so were drawn from Math.random — making the OPTIONS differ
+ * per user and change on every remount. Step 7b passes the date-seeded rng in.
+ *
+ * Defaulted, so every existing caller is unaffected.
+ *
  * @param {string} correctDef - The correct definition
  * @param {Array} words - Pool of word objects
  * @param {number} count - Number of distractors to generate
+ * @param {Function} [random] - Returns a float in [0, 1); defaults to Math.random
  * @returns {Array} - Array of distractor definitions
  */
-export const generateSmartDistractors = (correctDef, words, count = 3) => {
+export const generateSmartDistractors = (correctDef, words, count = 3, random = Math.random) => {
   const pool = words
     .filter(w => w.definition !== correctDef)
     .map(w => w.definition);
 
-  return sample(pool, count, new Set([correctDef]));
+  return sample(pool, count, new Set([correctDef]), random);
 };
 
 /**
