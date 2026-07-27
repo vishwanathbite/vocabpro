@@ -21,6 +21,26 @@ const DAILY_GOAL_PRESETS = {
 
 const DEFAULT_GOAL = DAILY_GOAL_PRESETS.regular;
 
+/**
+ * Build a fresh, zeroed progress bucket for a day.
+ *
+ * Extracted in Phase 5 step 3: getTodayProgress and updateProgress each held
+ * an identical copy of this literal, and they must not drift — updateProgress
+ * increments the fields getTodayProgress hands to the UI.
+ *
+ * A factory, never a shared constant. Both call sites mutate what they get
+ * back, so handing them the same object would alias two days' worth of
+ * progress onto one bucket.
+ *
+ * @returns {Object} A new zeroed progress bucket, stamped with the current time
+ */
+const createDayProgress = () => ({
+  questionsAnswered: 0,
+  pointsEarned: 0,
+  startTime: new Date().toISOString(),
+  completed: false
+});
+
 // ===========================
 // DAILY GOALS MANAGER
 // ===========================
@@ -93,23 +113,35 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Get today's progress
+   * Get today's progress.
+   *
+   * PURE READ as of Phase 5 step 3. This used to lazily create today's bucket
+   * and call saveData, which made a read persist — and it was the single write
+   * shared by three read-named functions, since getProgressPercentage and
+   * isGoalComplete both route through here. In the live app it is reached from
+   * a bare component-body statement (js/screens.js:18), a useState initializer
+   * (js/screens.js:14), and four times per answered question from the
+   * completers (js/app.js:1422/1424 and 1889/1891).
+   *
+   * The lazy creation stays, so the return shape never varies: an absent bucket
+   * still yields the same zeroed object, startTime included. Two things are
+   * gone. The saveData call, obviously. And the assignment into the loaded
+   * `data.history` — writing there mutates either the memoized state object or,
+   * on a store with no dailyGoals section yet, the shared defaultData.history
+   * that loadData shallow-spreads, and doing so without persisting would leave
+   * an in-memory change for some unrelated later save to flush.
+   *
+   * updateProgress is now the only function that persists a bucket. It builds
+   * its own via the same factory when today's is absent, so nothing is lost by
+   * not writing one here.
+   *
+   * @returns {Object} Today's progress bucket
    */
   getTodayProgress: () => {
     const data = DailyGoalsManager.loadData();
     const todayKey = DailyGoalsManager.getTodayKey();
 
-    if (!data.history[todayKey]) {
-      data.history[todayKey] = {
-        questionsAnswered: 0,
-        pointsEarned: 0,
-        startTime: new Date().toISOString(),
-        completed: false
-      };
-      DailyGoalsManager.saveData(data);
-    }
-
-    return data.history[todayKey];
+    return data.history[todayKey] || createDayProgress();
   },
 
   /**
@@ -120,12 +152,7 @@ const DailyGoalsManager = {
     const todayKey = DailyGoalsManager.getTodayKey();
 
     if (!data.history[todayKey]) {
-      data.history[todayKey] = {
-        questionsAnswered: 0,
-        pointsEarned: 0,
-        startTime: new Date().toISOString(),
-        completed: false
-      };
+      data.history[todayKey] = createDayProgress();
     }
 
     data.history[todayKey].questionsAnswered += questionsAdded;
@@ -146,7 +173,12 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Get progress percentage
+   * Get progress percentage.
+   *
+   * Still routes through getTodayProgress, unchanged. As of Phase 5 step 3 that
+   * no longer persists, so this stopped transitively writing — which matters
+   * because js/screens.js:18 calls it from a bare component-body statement,
+   * i.e. on every render.
    */
   getProgressPercentage: () => {
     const progress = DailyGoalsManager.getTodayProgress();
@@ -160,7 +192,13 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Check if today's goal is complete
+   * Check if today's goal is complete.
+   *
+   * Still routes through getTodayProgress, unchanged. As of Phase 5 step 3 that
+   * no longer persists, so this stopped transitively writing. The completers
+   * call it twice per answered question to bracket updateProgress and detect
+   * the false -> true edge (js/app.js:1422/1424, 1889/1891); that detection is
+   * unaffected, since only updateProgress ever sets `completed`.
    */
   isGoalComplete: () => {
     const progress = DailyGoalsManager.getTodayProgress();
