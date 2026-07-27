@@ -149,8 +149,31 @@ const DailyChallengeManager = {
   /**
    * Generate deterministic daily challenge questions.
    * Same date = same questions for every user.
+   *
+   * That promise is now actually kept. Word selection and option order were
+   * always seeded, but distractors came from generateSmartDistractors, which
+   * drew on Math.random — so every user saw different options, and they were
+   * reshuffled on every remount. Phase 5 step 7a made that RNG injectable;
+   * step 7b passes the date-seeded rng into all three call sites below.
+   *
+   * KNOWN GAP, deliberately not closed here: with idiomsDB absent this returns
+   * 8 questions rather than 10, silently. The live app treats that as
+   * acceptable — js/app.js:1557 preloads idioms with
+   * `catch (e) { /* non-critical — challenge works without idioms *\/ }` — and
+   * idioms are scheduled for removal from this app at Phase 6, at which point
+   * the mix should be rebalanced to ten vocabulary-sourced questions. Guarding
+   * it here would either contradict that live intent or build a guard due for
+   * deletion in one phase.
    */
   generateQuestions() {
+    // Same defensive check as quiz-generation.js:33. Without it the flatten
+    // below throws outright when the data scripts have not landed; the || []
+    // fallbacks only cover a missing difficulty, not a missing database.
+    if (typeof vocabularyDB === 'undefined' || !vocabularyDB) {
+      console.error('vocabularyDB is not defined');
+      return [];
+    }
+
     const today = this.getToday();
     const rng = seededRandom('vocabpro-daily-' + today);
 
@@ -167,22 +190,38 @@ const DailyChallengeManager = {
     const idiomPool = typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB) ? [...idiomsDB] : [];
     const idiomWords = seededSample(idiomPool, 2, rng);
 
-    // Combine all and assign modes
-    const allWords = [...easyWords, ...mediumWords, ...hardWords];
-    const modes = ['vocab', 'synonym', 'vocab', 'synonym', 'vocab', 'antonym', 'vocab', 'vocab'];
-    const difficulties = ['easy', 'easy', 'easy', 'medium', 'medium', 'medium', 'hard', 'hard'];
+    // Pair each word with the mode and difficulty of the slot it was selected
+    // for, at selection time.
+    //
+    // This used to be two flat length-8 arrays index-mapped onto the combined
+    // word list. That mapping was only correct while every pool delivered its
+    // full quota: if easyPool yielded 2 words instead of 3, every later word
+    // slid one slot left, so a word drawn from hardPool could be labelled
+    // 'medium' and score 5 points instead of 10 in calculateDailyPoints. The
+    // grouping below cannot slide — a word carries its own group's difficulty
+    // whatever the other pools return. For full pools it produces exactly the
+    // same eight pairings as before.
+    const plan = [
+      { words: easyWords, difficulty: 'easy', modes: ['vocab', 'synonym', 'vocab'] },
+      { words: mediumWords, difficulty: 'medium', modes: ['synonym', 'vocab', 'antonym'] },
+      { words: hardWords, difficulty: 'hard', modes: ['vocab', 'vocab'] }
+    ].flatMap(group =>
+      group.words.map((word, i) => ({
+        word,
+        mode: group.modes[i],
+        difficulty: group.difficulty
+      }))
+    );
 
     const allVocab = [...(vocabularyDB.easy || []), ...(vocabularyDB.medium || []), ...(vocabularyDB.hard || [])];
 
-    const questions = allWords.map((word, i) => {
+    const questions = plan.map(({ word, mode: questionMode, difficulty: questionDifficulty }) => {
       if (!word || !word.word) return null;
-      const questionMode = modes[i];
-      const questionDifficulty = difficulties[i];
 
       if (questionMode === 'synonym') {
         if (!word.synonyms || word.synonyms.length === 0) {
           // Fall back to vocab mode
-          const distractors = generateSmartDistractors(word.definition, allVocab, 3);
+          const distractors = generateSmartDistractors(word.definition, allVocab, 3, rng);
           const options = seededShuffle([word.definition, ...distractors], rng);
           return {
             question: `What is the meaning of "${word.word}"?`,
@@ -209,7 +248,7 @@ const DailyChallengeManager = {
 
       if (questionMode === 'antonym') {
         if (!word.antonyms || word.antonyms.length === 0) {
-          const distractors = generateSmartDistractors(word.definition, allVocab, 3);
+          const distractors = generateSmartDistractors(word.definition, allVocab, 3, rng);
           const options = seededShuffle([word.definition, ...distractors], rng);
           return {
             question: `What is the meaning of "${word.word}"?`,
@@ -235,7 +274,7 @@ const DailyChallengeManager = {
       }
 
       // Default: vocab mode
-      const distractors = generateSmartDistractors(word.definition, allVocab, 3);
+      const distractors = generateSmartDistractors(word.definition, allVocab, 3, rng);
       const options = seededShuffle([word.definition, ...distractors], rng);
       return {
         question: `What is the meaning of "${word.word}"?`,
