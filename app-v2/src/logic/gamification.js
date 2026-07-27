@@ -425,23 +425,21 @@ const StreakProtection = {
   },
 
   /**
-   * Get available shields count
+   * Get available shields count.
+   *
+   * PURE READ as of Phase 5 step 2. This used to award and persist the weekly
+   * shield as a side effect of being asked how many shields exist; that logic
+   * now lives in awardWeeklyShieldIfDue, exported separately below. Nothing
+   * here mutates or saves.
+   *
+   * The one caveat, unchanged and not this function's doing: loadData calls
+   * StorageManager.loadState, which still writes on its legacy-migration and
+   * corruption-recovery paths. Those are boot-time only and belong to storage.js.
+   *
+   * @returns {number} - Shields currently held
    */
   getShields: () => {
     const data = StreakProtection.loadData();
-
-    // Award a new shield weekly (if they have less than 3)
-    const now = new Date();
-    const lastEarned = data.lastEarned ? new Date(data.lastEarned) : null;
-
-    if (!lastEarned || (now - lastEarned) > 7 * 24 * 60 * 60 * 1000) {
-      if (data.shields < 3) {
-        data.shields += 1;
-        data.lastEarned = now.toISOString();
-        StreakProtection.saveData(data);
-      }
-    }
-
     return data.shields;
   },
 
@@ -476,6 +474,15 @@ const StreakProtection = {
 
   /**
    * Check if streak should be reset or protected
+   *
+   * UNCHANGED in Phase 5 step 2, but its behaviour shifted underneath it: the
+   * getShields call on the "streak is safe" branch below used to transitively
+   * award and persist a weekly shield. Now that getShields is a pure read,
+   * checkStreak no longer grants anything. Nothing observes this today —
+   * checkStreak has zero callers in the live tree and in app-v2, like
+   * useShield. Left as-is deliberately; wiring it up is a component-rebuild
+   * decision.
+   *
    * @param {Object} stats - User stats
    * @param {string} lastPlayedDate - Last played date ISO string
    * @returns {Object} - {protected: boolean, shieldsRemaining: number}
@@ -521,6 +528,59 @@ const StreakProtection = {
   }
 };
 
+/**
+ * Grant the weekly streak shield, if one is due.
+ *
+ * THE ONLY FUNCTION THAT GRANTS A WEEKLY SHIELD. Extracted from getShields in
+ * Phase 5 step 2, behaviour unchanged, so that asking how many shields exist
+ * can no longer award one. Before the split, getShields was called from three
+ * render paths (js/screens.js:574, 578 and 2088), two of them four lines apart
+ * in the same JSX; a double award was avoided only because
+ * StorageManager.loadState returns the memoized state BY REFERENCE, making the
+ * first call's mutation visible to the second. That made correctness rest on a
+ * memoization detail — cold memoryState, a deferred write, or a re-render
+ * landing between the two calls would have awarded twice.
+ *
+ * MUST BE CALLED FROM AN EFFECT, NEVER FROM RENDER. It writes.
+ *
+ * CURRENTLY UNWIRED: nothing calls this. The award is dormant until the
+ * component rebuild adds a mount effect. That is intentional — this commit
+ * moves the logic, it does not schedule it.
+ *
+ * The ceiling of 3 below stays a bare literal, and stays deliberately out of
+ * step with addShields' cap of 5. The weekly drip stops at 3; a granted reward
+ * may reach 5 and is never trimmed back. Reconciling the two is a
+ * component-rebuild decision, not this commit's.
+ *
+ * @param {string} [nowISO] - Current time as an ISO string; defaults to now.
+ *   Injected rather than read from the global clock so the weekly boundary is
+ *   testable, following the updateStats convention above.
+ * @returns {{awarded: boolean, shields: number}} - Whether a shield was granted
+ *   on this call, and the resulting shield count either way. Callers can use
+ *   `awarded` to decide whether to show feedback.
+ */
+const awardWeeklyShieldIfDue = (nowISO = new Date().toISOString()) => {
+  const data = StreakProtection.loadData();
+
+  // Award a new shield weekly (if they have less than 3).
+  // Comparison semantics preserved verbatim from the old getShields: strict
+  // greater-than on the elapsed millisecond gap, so exactly 7 days does not
+  // qualify, and a strict `< 3` test against the PRE-increment count.
+  const now = new Date(nowISO);
+  const lastEarned = data.lastEarned ? new Date(data.lastEarned) : null;
+
+  if (!lastEarned || (now - lastEarned) > 7 * 24 * 60 * 60 * 1000) {
+    if (data.shields < 3) {
+      data.shields += 1;
+      data.lastEarned = now.toISOString();
+      StreakProtection.saveData(data);
+      return { awarded: true, shields: data.shields };
+    }
+  }
+
+  return { awarded: false, shields: data.shields };
+};
+
 // ===========================
 // STATS MANAGER (Guest Persistence)
 // ===========================
@@ -550,7 +610,11 @@ const StatsManager = {
   }
 };
 
-// Public API — same 12 names the former window globals used.
+// Public API — the same 12 names the former window globals used, plus
+// awardWeeklyShieldIfDue, added in Phase 5 step 2. It is exported standalone
+// rather than hung off StreakProtection to keep the one privileged mutation
+// entry point visible at the import site: a caller reaching for it has to name
+// it, and cannot reach it by accident while reading shield counts.
 // updateStreak, getStreakMessage, getPerformanceGrade, POINTS_CONFIG and
 // QUALITY_RATINGS stay internal (unexported), as in the original.
 export {
@@ -565,5 +629,6 @@ export {
   initializeStats,
   updateStats,
   StreakProtection,
+  awardWeeklyShieldIfDue,
   StatsManager
 };
