@@ -41,6 +41,34 @@ const createDayProgress = () => ({
   completed: false
 });
 
+/**
+ * Copy a history map and every day bucket inside it.
+ *
+ * Added in Phase 5 step 4 to close an aliasing bug — see loadData below. Two
+ * levels are required. A fresh outer map alone would still hand every caller
+ * the same bucket objects, and updateProgress mutates buckets in place
+ * (`data.history[todayKey].questionsAnswered += ...`), so a shared bucket would
+ * let one caller's increment surface in another's snapshot.
+ *
+ * Non-object entries are passed through untouched rather than spread: a corrupt
+ * blob can leave a string or a number under a date key, and `{ ...5 }` would
+ * silently turn that into `{}`. Preserving it verbatim keeps this a copy and
+ * nothing more.
+ *
+ * @param {Object} history Map of date key -> day bucket
+ * @returns {Object} A fresh map of fresh buckets
+ */
+const cloneHistory = (history) => {
+  const copy = {};
+
+  for (const key in history) {
+    const entry = history[key];
+    copy[key] = (entry && typeof entry === 'object') ? { ...entry } : entry;
+  }
+
+  return copy;
+};
+
 // ===========================
 // DAILY GOALS MANAGER
 // ===========================
@@ -66,11 +94,33 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Load daily goals data from centralized storage
+   * Load daily goals data from centralized storage.
+   *
+   * The history map is copied, not shared. Phase 5 step 4 closed an aliasing
+   * bug here: the spread below is shallow, so on a store with no dailyGoals
+   * section it copied the REFERENCE to defaultData.history, and
+   * updateProgress's `data.history[todayKey] = ...` then wrote today's bucket
+   * onto the module-level default. That survived for the life of the module and
+   * leaked into every later load that fell back to defaults — a second, empty
+   * store would report the first store's progress. The step-3 harness needed an
+   * explicit `defaultData.history = {}` between tests; needing that reset was
+   * the symptom.
+   *
+   * Copying also means a caller cannot reach into the memoized state through a
+   * returned bucket. Mutating what loadData hands back now changes nothing
+   * until saveData persists the whole object, which is how updateProgress
+   * already worked.
+   *
+   * customGoal is deliberately not copied: its default is null, so there is no
+   * shared default object to alias, and nothing mutates it in place.
+   *
+   * @returns {Object} Daily goals data, safe to mutate
    */
   loadData: () => {
     const state = StorageManager.loadState();
-    return { ...DailyGoalsManager.defaultData, ...state.dailyGoals };
+    const data = { ...DailyGoalsManager.defaultData, ...state.dailyGoals };
+
+    return { ...data, history: cloneHistory(data.history || {}) };
   },
 
   /**
