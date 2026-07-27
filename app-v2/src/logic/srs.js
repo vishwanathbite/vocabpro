@@ -65,13 +65,35 @@ const createSRSEntry = (wordId) => ({
 
 /**
  * Calculate next review date using SM-2 algorithm
- * @param {Object} entry - Current SRS entry
+ *
+ * Does not mutate `entry`. Phase 5 step 6 closed an aliasing bug here: the
+ * spread below is shallow, so `newEntry.history` was the CALLER's array, and
+ * the push further down appended a review record to the input entry in place.
+ *
+ * It was benign while updateEntry was the only caller — it passes either a
+ * fresh createSRSEntry or the live data[wordId] and saves immediately, so the
+ * stray mutation landed where it was going anyway. Step 5 changed that: getEntry
+ * now returns a copy, and routing that copy through here would have silently
+ * modified the caller's snapshot.
+ *
+ * history is the only shared mutable on an entry — every other field is a
+ * scalar or null. Its records are created by the push below and never mutated
+ * afterwards, so copying the array is enough; the records can stay shared.
+ *
+ * A non-array history is passed through untouched rather than replaced with [],
+ * so a malformed entry still throws on the push exactly as it did before. This
+ * function validates nothing today and this commit does not change that.
+ *
+ * @param {Object} entry - Current SRS entry, left untouched
  * @param {number} quality - Quality of response (0-5)
- * @returns {Object} - Updated SRS entry
+ * @returns {Object} - Updated SRS entry, owning its own history array
  */
 const calculateNextReview = (entry, quality) => {
   const now = new Date();
-  const newEntry = { ...entry };
+  const newEntry = {
+    ...entry,
+    history: Array.isArray(entry.history) ? [...entry.history] : entry.history
+  };
 
   // Update review counts
   newEntry.totalReviews += 1;
