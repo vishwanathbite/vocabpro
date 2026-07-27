@@ -880,14 +880,31 @@ const importStateFromJSON = (jsonString) => {
 };
 
 /**
- * Reset all state to defaults (with confirmation)
- * @param {boolean} confirm Must be true to actually reset
+ * Reset all state to defaults. Requires explicit confirmation.
+ *
+ * Phase 5 step 5 made the flag mandatory. It used to default to false, so
+ * `resetState()` logged a warning and returned loadState() — a destructive
+ * function that silently did nothing when misused, and worse, returned a
+ * plausible state object so the caller had no way to tell the reset had not
+ * happened. Throwing turns a silent no-op into an immediate, obvious failure.
+ *
+ * The check is `!== true`, not falsy: `resetState('true')` and `resetState(1)`
+ * are far likelier to be mistakes than intentions, so they throw as well.
+ *
+ * No app-v2 caller exists yet. The three live callers in the frozen js/ tree
+ * (js/app.js:691, js/components.js:228, js/screens.js:1369) all already pass
+ * true explicitly, so this matches established usage rather than changing it.
+ *
+ * @param {boolean} confirm Must be exactly `true` to erase all stored state
+ * @throws {Error} If confirm is anything other than boolean true
  * @returns {Object} New default state
  */
-const resetState = (confirm = false) => {
-  if (!confirm) {
-    console.warn('Storage: resetState called without confirmation');
-    return loadState();
+const resetState = (confirm) => {
+  if (confirm !== true) {
+    throw new Error(
+      'StorageManager.resetState: explicit confirmation required — pass true ' +
+      'to erase all stored state. Refusing to reset.'
+    );
   }
 
   const newState = getDefaultState();
@@ -907,13 +924,21 @@ const resetState = (confirm = false) => {
 
 /**
  * Get storage info for debugging
+ *
+ * Phase 5 step 5: isStorageAvailable is called once and the result reused. It
+ * ran three times per call — twice here plus once inside loadState — and each
+ * run is a real localStorage setItem/removeItem probe cycle. The probe itself
+ * is left alone: it is transient and self-cleaning, and loadState and
+ * resetState depend on it. The returned object is unchanged in shape and value.
+ *
  * @returns {Object} Storage information
  */
 const getStorageInfo = () => {
   const state = loadState();
+  const storageAvailable = isStorageAvailable();
   let storageUsed = 0;
 
-  if (isStorageAvailable()) {
+  if (storageAvailable) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       storageUsed = stored ? new Blob([stored]).size : 0;
@@ -923,7 +948,7 @@ const getStorageInfo = () => {
   return {
     version: STORAGE_VERSION,
     storageKey: STORAGE_KEY,
-    storageAvailable: isStorageAvailable(),
+    storageAvailable,
     storageUsedBytes: storageUsed,
     storageUsedKB: Math.round(storageUsed / 1024 * 100) / 100,
     stateVersion: state.version,

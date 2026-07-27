@@ -158,15 +158,40 @@ const SRSManager = {
   },
 
   /**
-   * Get or create SRS entry for a word
+   * Get the SRS entry for a word, or a fresh default if it has none.
+   *
+   * PURE READ as of Phase 5 step 5. This used to lazily create the entry and
+   * call saveData, so asking about a word persisted a row for it — the same
+   * defect class as DailyGoalsManager.getTodayProgress, closed in step 3. It
+   * had no callers, which is why it was fixed now: it is an obvious thing for
+   * the component rebuild to reach for, and a read that writes is hard to
+   * notice once wired.
+   *
+   * Nothing depended on the old persistence. updateEntry builds its own
+   * fallback via `data[wordId] || createSRSEntry(wordId)`, getDueWords treats a
+   * missing entry as a new word, and resetWord is guarded on the entry already
+   * existing.
+   *
+   * The returned object is always a copy, never a live reference. loadData
+   * hands back `state.srs` itself, so returning `data[wordId]` directly would
+   * let a caller mutate persisted state just by reading — the step-4 lesson.
+   * `history` is copied too, since it is an array the caller could push into.
+   *
+   * @param {string} wordId - Word identifier
+   * @returns {Object} The word's entry, or a fresh unsaved default
    */
   getEntry: (wordId) => {
     const data = SRSManager.loadData();
-    if (!data[wordId]) {
-      data[wordId] = createSRSEntry(wordId);
-      SRSManager.saveData(data);
+    const entry = data[wordId];
+
+    if (!entry) {
+      return createSRSEntry(wordId);
     }
-    return data[wordId];
+
+    return {
+      ...entry,
+      history: Array.isArray(entry.history) ? [...entry.history] : entry.history
+    };
   },
 
   /**
