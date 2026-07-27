@@ -2,35 +2,56 @@
  * Word of the Day
  * Literary Rides VocabPro - Modular Architecture
  *
- * Ported verbatim from js/utils.js:703-754, DEFECTS INTACT. This is a
- * deliberate decision, not an oversight: the four problems below are all
- * Phase 5 fixes, preserved here so the port stays structural and any
- * behaviour change is a separate, reviewable commit.
+ * Ported verbatim from js/utils.js:703-754 in Phase 3 with all four known
+ * defects intact, so that the port stayed structural and every behaviour
+ * change could land as a separate, reviewable commit. Phase 5 step 1 is that
+ * commit: defects 1 and 4 are now fixed here. Defect 3 stays. Defect 2 is not
+ * fixable in this module.
  *
- * PRESERVED DEFECTS — do not "fix" these here:
+ * FIXED IN PHASE 5 (step 1):
  *
- *   1. Persists on a get. Despite the name, every call writes
- *      state.wordOfTheDay and calls StorageManager.saveState — even when the
- *      value is unchanged. This is the fourth read-named-but-persists function
- *      in the codebase, after DailyGoalsManager.getTodayProgress,
- *      DailyGoalsManager.isGoalComplete and StreakProtection.getShields.
+ *   1. Persisted on a get. Every call used to write state.wordOfTheDay and
+ *      call StorageManager.saveState, even when the stored value was already
+ *      current. The write is now guarded by the same staleness test that
+ *      produces the returned `isNew` flag, so a call that finds today's entry
+ *      already stored performs no write at all. The read path is unchanged.
  *
- *   2. Writes far more often than once a day. Its caller (js/screens.js:120)
- *      is a mount effect on <WordOfTheDay />, which HomeScreen renders
- *      conditionally, so it fires on every return to the home screen rather
- *      than once per day.
+ *   4. Unguarded vocabularyDB flatten. The spread of .easy/.medium/.hard now
+ *      carries `|| []` fallbacks, matching the convention in
+ *      DailyChallengeManager.generateQuestions. Two further guards were added
+ *      for cases that previously threw or produced garbage: an absent
+ *      vocabularyDB returns null, and a flatten that yields no words returns
+ *      null rather than reaching `% allWords.length`, which would otherwise be
+ *      a modulo by zero and index the array with NaN.
+ *
+ *   Also fixed, not one of the numbered four: the function loaded state twice,
+ *   once for the read and again eleven lines later for the write, and named the
+ *   second local `saveState` — shadowing the concept of the StorageManager
+ *   .saveState function called three lines below it. There is now a single
+ *   load, held in `state`.
+ *
+ * STILL PRESERVED — do not "fix" this here:
  *
  *   3. Non-standard date key. It builds `${getFullYear()}-${getMonth()}-${getDate()}`
  *      — local time, 0-indexed month, unpadded. 25 July 2026 becomes
  *      "2026-6-25", which is incompatible with DailyChallengeManager.getToday()'s
  *      padded UTC ISO string. Two different "today" formats coexist in the app.
+ *      Left alone deliberately: the date string seeds the word selection, so
+ *      changing the format would change which word every user sees today, and
+ *      it has to be reconciled with the timezone decision that is still open.
  *
- *   4. Unguarded vocabularyDB flatten. It spreads .easy/.medium/.hard with no
- *      `|| []` fallbacks, unlike DailyChallengeManager.generateQuestions, so it
- *      throws if a difficulty has not lazy-loaded yet.
+ * CALLER-SIDE, NOT FIXABLE IN THIS MODULE — must be carried into the component
+ * rebuild:
  *
- * ONE STRUCTURAL CHANGE, consistent with the Phase 3 convention and NOT a
- * behaviour change: the original wrapped both storage accesses in
+ *   2. Called far more often than once a day. Its caller (js/screens.js:120)
+ *      is a mount effect on <WordOfTheDay />, which HomeScreen renders
+ *      conditionally, so it fires on every return to the home screen rather
+ *      than once per day. Fix 1 means those repeat calls no longer each cost a
+ *      write, but they still cost a loadState, a full flatten of vocabularyDB
+ *      and a rehash every time. The remedy belongs in the component.
+ *
+ * ONE STRUCTURAL CHANGE FROM PHASE 3, consistent with the Phase 3 convention
+ * and NOT a behaviour change: the original wrapped both storage accesses in
  * `typeof StorageManager !== 'undefined'` and fell back to
  * loadFromStorage/saveToStorage. Those two helpers were deliberately dropped in
  * the step 6b triage, and under ESM the imported StorageManager is always
@@ -48,10 +69,34 @@ import { StorageManager } from './storage.js';
  * Get Word of the Day based on date
  * Uses a deterministic algorithm so everyone sees the same word
  * Uses centralized StorageManager for persistence
- * @returns {Object} - Word object for today
+ *
+ * Persists only when the stored entry is stale — a call that finds today's
+ * entry already recorded does not write.
+ *
+ * @returns {Object|null} - Word object for today, or null when no vocabulary is
+ *   available (vocabularyDB absent, or every difficulty empty or not yet
+ *   lazy-loaded). Callers must handle null.
  */
 export const getWordOfTheDay = () => {
-  const allWords = [...vocabularyDB.easy, ...vocabularyDB.medium, ...vocabularyDB.hard];
+  // vocabularyDB is a bare global that arrives with the data scripts, so it can
+  // legitimately be undefined here — `typeof` rather than a truthiness test,
+  // which would itself throw on an undeclared identifier.
+  if (typeof vocabularyDB === 'undefined' || !vocabularyDB) {
+    return null;
+  }
+
+  const allWords = [
+    ...(vocabularyDB.easy || []),
+    ...(vocabularyDB.medium || []),
+    ...(vocabularyDB.hard || [])
+  ];
+
+  // No words at all: `% allWords.length` below would be a modulo by zero and
+  // index the array with NaN, yielding an undefined `word` the caller would
+  // then dereference.
+  if (allWords.length === 0) {
+    return null;
+  }
 
   // Create a seed based on today's date
   const today = new Date();
@@ -70,21 +115,23 @@ export const getWordOfTheDay = () => {
   const word = allWords[index];
 
   // Check if user has seen this word today using centralized storage
-  let lastSeen = null;
   const state = StorageManager.loadState();
-  lastSeen = state.wordOfTheDay;
+  const lastSeen = state.wordOfTheDay;
+  const isNew = !lastSeen || lastSeen.date !== dateString;
 
   const wotdData = {
     word,
     date: dateString,
-    isNew: !lastSeen || lastSeen.date !== dateString
+    isNew
   };
 
-  // Mark as seen
-  const newWotd = { date: dateString, wordId: word.word };
-  const saveState = StorageManager.loadState();
-  saveState.wordOfTheDay = newWotd;
-  StorageManager.saveState(saveState);
+  // Mark as seen — only when the stored entry is missing or from another day.
+  // Same condition as isNew: if it is already today's, the write would be a
+  // no-op rewrite of an identical value.
+  if (isNew) {
+    state.wordOfTheDay = { date: dateString, wordId: word.word };
+    StorageManager.saveState(state);
+  }
 
   return wotdData;
 };
