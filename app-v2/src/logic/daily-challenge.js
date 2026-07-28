@@ -20,11 +20,22 @@
  * ---------------------------------------------------------------------------
  * PRESERVED DEFECTS — deliberate, all Phase 5 work. Not oversights:
  *
- *   1. Timezone incoherence. getToday() uses new Date().toISOString() (UTC),
- *      while getStreak/getYesterdayResult/completeChallenge compute "yesterday"
- *      with setDate() in LOCAL time before converting to UTC. At UTC+5:30 the
- *      challenge therefore resets at 05:30 local rather than midnight. No DST
- *      or clock-change handling anywhere.
+ *   1. FIXED in Phase 5 step 8 — timezone incoherence. getToday() used
+ *      new Date().toISOString() (UTC) while getStreak, getYesterdayResult and
+ *      completeChallenge computed "yesterday" with setDate() in LOCAL time
+ *      before converting to UTC, so the challenge reset at 05:30 IST rather
+ *      than midnight and two timebases met in one comparison.
+ *
+ *      Every day key in this file now comes from toISTDateKey, a hard-coded
+ *      UTC+5:30 boundary applied universally rather than the device's zone —
+ *      the challenge is a shared event, so a user in Dubai gets the same
+ *      challenge on the same date as one in Pune. DST is a non-issue: India has
+ *      observed none since 1945, so a day is always exactly 24 hours and the
+ *      one-day and thirty-day steps are flat millisecond subtractions.
+ *
+ *      Still outstanding, tracked separately: DailyGoalsManager.getTodayKey and
+ *      getWordOfTheDay build their own unpadded local-time keys, so the app as a
+ *      whole still holds more than one notion of "today".
  *
  *   2. completeChallenge mutates the loadData cache in place. When
  *      state.dailyChallenge exists, loadData returns a live reference into
@@ -51,14 +62,79 @@ import { StorageManager } from './storage.js';
 import { generateSmartDistractors } from './helpers.js';
 import { seededRandom, seededShuffle, seededSample } from './seeded-random.js';
 
+/**
+ * IST is UTC+5:30, fixed. India has observed no daylight saving since 1945, so
+ * this offset is constant and a day is always exactly 24 hours long — which is
+ * what lets the day arithmetic below step by a flat 86,400,000 ms.
+ */
+const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const epochMsOf = (instant) => {
+  if (instant instanceof Date) return instant.getTime();
+  if (typeof instant === 'number') return instant;
+  return new Date(instant).getTime();
+};
+
+/**
+ * The IST calendar date for an instant, as a padded YYYY-MM-DD key.
+ *
+ * THE SINGLE SOURCE OF TRUTH FOR THE DAY BOUNDARY. Every day key in this module
+ * comes from here. DailyGoalsManager.getTodayKey and getWordOfTheDay still build
+ * their own keys — unpadded, local-time — and are to be converted to this helper
+ * in a later step; until then the app has more than one notion of "today".
+ *
+ * The offset is hard-coded and universal, deliberately. It is NOT the device
+ * timezone: the daily challenge is a shared event for Indian competitive-exam
+ * aspirants, so a user in Dubai must get the same challenge on the same date as
+ * one in Pune. Neither Intl.DateTimeFormat nor toLocaleDateString is used, and
+ * the device zone is never read.
+ *
+ * Shifting the instant by the offset and then reading UTC fields yields IST
+ * calendar fields; toISOString supplies the zero-padding, so the output is
+ * byte-identical in shape to the UTC key this replaced and remains
+ * lexicographically sortable.
+ *
+ * @param {Date|number|string} [instant] - Defaults to now
+ * @returns {string} IST calendar date, e.g. "2026-07-28"
+ */
+export const toISTDateKey = (instant = Date.now()) =>
+  new Date(epochMsOf(instant) + IST_OFFSET_MS).toISOString().split('T')[0];
+
 const DailyChallengeManager = {
-  getToday() {
-    return new Date().toISOString().split('T')[0];
+  /**
+   * Today's day key, on the IST boundary.
+   *
+   * Was `new Date().toISOString()` — a UTC key, which reset the challenge at
+   * 05:30 IST rather than midnight. The instant is injectable so the boundary is
+   * testable without faking global Date, following the nowISO convention from
+   * updateStats and awardWeeklyShieldIfDue.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
+   */
+  getToday(instant = Date.now()) {
+    return toISTDateKey(instant);
   },
 
-  getTodayFormatted() {
-    const d = new Date();
-    return d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  /**
+   * Today's date as a display string, on the same IST boundary as the key.
+   *
+   * Was `new Date()` formatted in the DEVICE's timezone, which after the IST
+   * conversion would have disagreed with the challenge actually being served:
+   * a device in Auckland at 09:00 local on 29 July gets the 2026-07-28 IST
+   * challenge but would have displayed "Wednesday, July 29".
+   *
+   * Derived FROM toISTDateKey rather than from its own arithmetic, so the label
+   * and the key cannot drift apart. timeZone: 'UTC' stops the formatter
+   * re-applying the device offset to a value that already carries the IST one.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
+   */
+  getTodayFormatted(instant = Date.now()) {
+    const d = new Date(`${toISTDateKey(instant)}T00:00:00Z`);
+    return d.toLocaleDateString('en-US', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
+    });
   },
 
   loadData() {
@@ -82,12 +158,33 @@ const DailyChallengeManager = {
     return data.history[this.getToday()] || null;
   },
 
-  getStreak() {
+  /**
+   * Current streak, or 0 if it has lapsed.
+   *
+   * Semantics are unchanged: the stored streak survives while lastCompletedDate
+   * is today or yesterday, and is otherwise considered broken. Only the timebase
+   * moved.
+   *
+   * What it did before: `today` came from getToday() (UTC), while `yesterday`
+   * was built by taking the current instant, decrementing its LOCAL day-of-month
+   * with setDate, then converting to UTC with toISOString. Two timebases in one
+   * comparison. On a device whose local date already differs from the UTC date
+   * at that instant, the two could disagree by a day — yesterdayStr could even
+   * equal today — so a streak could be read as broken while it was intact.
+   *
+   * Both keys now come from toISTDateKey. The one-day step is a flat
+   * subtraction of 86,400,000 ms, which is exact here because IST is a fixed
+   * offset with no daylight saving; it always lands on the previous IST calendar
+   * day. Note this is a single step, not a walk — getStreak only ever inspects
+   * today and yesterday.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
+   */
+  getStreak(instant = Date.now()) {
     const data = this.loadData();
-    const today = this.getToday();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const nowMs = epochMsOf(instant);
+    const today = toISTDateKey(nowMs);
+    const yesterdayStr = toISTDateKey(nowMs - DAY_MS);
 
     if (data.lastCompletedDate === today) {
       return data.streak;
@@ -102,20 +199,46 @@ const DailyChallengeManager = {
     return this.loadData().bestStreak || 0;
   },
 
-  getYesterdayResult() {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+  /**
+   * Yesterday's result record, or null.
+   *
+   * Semantics unchanged — a single lookup of history[yesterday]. Before, the
+   * key was the UTC date of the instant one LOCAL day earlier; now it is the
+   * previous IST calendar day, so it addresses the same keyspace
+   * completeChallenge writes.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
+   */
+  getYesterdayResult(instant = Date.now()) {
+    const yesterdayStr = toISTDateKey(epochMsOf(instant) - DAY_MS);
     const data = this.loadData();
     return data.history[yesterdayStr] || null;
   },
 
-  completeChallenge(score, total, points) {
+  /**
+   * Record today's result and advance the streak.
+   *
+   * Streak and pruning SEMANTICS are untouched; only the timebase moved. The
+   * three-way branch is byte-for-byte the same test it always was — continue on
+   * yesterday, hold on today, otherwise reset to 1 — and the prune still drops
+   * keys strictly older than the cutoff, keeping the same 30-day span.
+   *
+   * What changed, and why it had to: `today` already came from getToday(), which
+   * step 8 moved to IST, but `yesterday` and `cutoff` were still the UTC dates of
+   * instants one and thirty LOCAL days earlier. Storing an IST key and comparing
+   * it against a UTC-derived yesterday put them two days apart anywhere in the
+   * 00:00-05:30 IST window, so completeChallenge fell through to the reset branch
+   * and set an unbroken streak back to 1 — while getStreak, already converted,
+   * reported it intact. The prune had the matching flaw, discarding history a day
+   * early against IST keys. Both now derive from toISTDateKey off one instant.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
+   */
+  completeChallenge(score, total, points, instant = Date.now()) {
     const data = this.loadData();
-    const today = this.getToday();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const nowMs = epochMsOf(instant);
+    const today = this.getToday(nowMs);
+    const yesterdayStr = toISTDateKey(nowMs - DAY_MS);
 
     // Calculate streak
     let newStreak;
@@ -133,9 +256,7 @@ const DailyChallengeManager = {
     data.history[today] = { score, total, points };
 
     // Cleanup: keep only last 30 days
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    const cutoffStr = cutoff.toISOString().split('T')[0];
+    const cutoffStr = toISTDateKey(nowMs - 30 * DAY_MS);
     for (const dateKey of Object.keys(data.history)) {
       if (dateKey < cutoffStr) {
         delete data.history[dateKey];
