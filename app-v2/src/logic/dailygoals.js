@@ -7,7 +7,7 @@
 // ESM port of js/dailygoals.js. StorageManager is now imported rather than
 // sniffed off the global `window`, so it is always defined.
 import { StorageManager } from './storage.js';
-import { toISTDateKey } from './daily-challenge.js';
+import { toISTDateKey, DAY_MS } from './ist-date.js';
 
 // ===========================
 // DAILY GOALS CONFIGURATION
@@ -21,14 +21,6 @@ const DAILY_GOAL_PRESETS = {
 };
 
 const DEFAULT_GOAL = DAILY_GOAL_PRESETS.regular;
-
-/**
- * A day in milliseconds. Stepping by this is exact under the fixed IST offset —
- * India has observed no daylight saving since 1945, so every day is 24 hours.
- * The setDate-on-a-local-Date stepping this replaced would have moved 23 or 25
- * hours across a local DST transition, silently skipping or repeating a key.
- */
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Build a fresh, zeroed progress bucket for a day.

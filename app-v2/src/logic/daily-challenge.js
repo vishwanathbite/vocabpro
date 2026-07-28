@@ -61,45 +61,7 @@
 import { StorageManager } from './storage.js';
 import { generateSmartDistractors } from './helpers.js';
 import { seededRandom, seededShuffle, seededSample } from './seeded-random.js';
-
-/**
- * IST is UTC+5:30, fixed. India has observed no daylight saving since 1945, so
- * this offset is constant and a day is always exactly 24 hours long — which is
- * what lets the day arithmetic below step by a flat 86,400,000 ms.
- */
-const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-const epochMsOf = (instant) => {
-  if (instant instanceof Date) return instant.getTime();
-  if (typeof instant === 'number') return instant;
-  return new Date(instant).getTime();
-};
-
-/**
- * The IST calendar date for an instant, as a padded YYYY-MM-DD key.
- *
- * THE SINGLE SOURCE OF TRUTH FOR THE DAY BOUNDARY. Every day key in this module
- * comes from here. DailyGoalsManager.getTodayKey and getWordOfTheDay still build
- * their own keys — unpadded, local-time — and are to be converted to this helper
- * in a later step; until then the app has more than one notion of "today".
- *
- * The offset is hard-coded and universal, deliberately. It is NOT the device
- * timezone: the daily challenge is a shared event for Indian competitive-exam
- * aspirants, so a user in Dubai must get the same challenge on the same date as
- * one in Pune. Neither Intl.DateTimeFormat nor toLocaleDateString is used, and
- * the device zone is never read.
- *
- * Shifting the instant by the offset and then reading UTC fields yields IST
- * calendar fields; toISOString supplies the zero-padding, so the output is
- * byte-identical in shape to the UTC key this replaced and remains
- * lexicographically sortable.
- *
- * @param {Date|number|string} [instant] - Defaults to now
- * @returns {string} IST calendar date, e.g. "2026-07-28"
- */
-export const toISTDateKey = (instant = Date.now()) =>
-  new Date(epochMsOf(instant) + IST_OFFSET_MS).toISOString().split('T')[0];
+import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
 
 const DailyChallengeManager = {
   /**
