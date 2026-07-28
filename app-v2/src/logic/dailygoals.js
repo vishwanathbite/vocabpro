@@ -7,6 +7,7 @@
 // ESM port of js/dailygoals.js. StorageManager is now imported rather than
 // sniffed off the global `window`, so it is always defined.
 import { StorageManager } from './storage.js';
+import { toISTDateKey } from './daily-challenge.js';
 
 // ===========================
 // DAILY GOALS CONFIGURATION
@@ -20,6 +21,14 @@ const DAILY_GOAL_PRESETS = {
 };
 
 const DEFAULT_GOAL = DAILY_GOAL_PRESETS.regular;
+
+/**
+ * A day in milliseconds. Stepping by this is exact under the fixed IST offset —
+ * India has observed no daylight saving since 1945, so every day is 24 hours.
+ * The setDate-on-a-local-Date stepping this replaced would have moved 23 or 25
+ * hours across a local DST transition, silently skipping or repeating a key.
+ */
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Build a fresh, zeroed progress bucket for a day.
@@ -86,11 +95,35 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Get today's date string
+   * Today's history key, on the IST day boundary.
+   *
+   * THE ONLY PLACE THIS FORMAT IS BUILT. getStreak and getWeekHistory used to
+   * inline the same template literal, so the format lived in three places;
+   * they now both route through here. That matters ahead of Phase 6, when the
+   * migration to padded keys has to find every construction site.
+   *
+   * TIMEBASE changed to IST in Phase 5 step 9; FORMAT deliberately did not. The
+   * key stays unpadded `YYYY-M-D` because both trees share STORAGE_KEY, so a
+   * cached js/ shell reading padded keys would find no history at all — it
+   * builds unpadded keys of its own. Existing history therefore stays findable
+   * and js/ stays compatible. Padding is deferred to the Phase 6 cutover, when
+   * js/ is retired.
+   *
+   * For a device in India this changes nothing: local time already IS IST, so
+   * the key is identical to what the old local-time builder produced. Only
+   * users outside India shift, by at most one day, which is the same
+   * unavoidable seam step 8 accepted for the challenge — a stored key records a
+   * calendar day with no time-of-day, so no migration could ever re-derive
+   * which IST day past activity fell in.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
+   * @returns {string} Unpadded IST day key, e.g. "2026-7-5"
    */
-  getTodayKey: () => {
-    const today = new Date();
-    return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  getTodayKey: (instant = Date.now()) => {
+    // Derived from the single boundary source of truth rather than from new
+    // offset arithmetic: take the padded IST key and strip the leading zeros.
+    const [year, month, day] = toISTDateKey(instant).split('-').map(Number);
+    return `${year}-${month}-${day}`;
   },
 
   /**
@@ -257,17 +290,22 @@ const DailyGoalsManager = {
 
   /**
    * Get streak (consecutive days with completed goals)
+   *
+   * Semantics untouched: the same 366 iterations, the same "don't break on
+   * today" rule, the same completed test. Only the key builder and the day step
+   * changed — it walks back through getTodayKey by a flat DAY_MS instead of
+   * inlining the format and calling setDate on a local Date.
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
    */
-  getStreak: () => {
+  getStreak: (instant = Date.now()) => {
     const data = DailyGoalsManager.loadData();
-    const today = new Date();
+    const nowMs = new Date(instant).getTime();
     let streak = 0;
 
     // Check consecutive days backwards
     for (let i = 0; i <= 365; i++) {
-      const checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - i);
-      const dateKey = `${checkDate.getFullYear()}-${checkDate.getMonth() + 1}-${checkDate.getDate()}`;
+      const dateKey = DailyGoalsManager.getTodayKey(nowMs - i * DAY_MS);
 
       if (data.history[dateKey] && data.history[dateKey].completed) {
         streak++;
@@ -282,20 +320,36 @@ const DailyGoalsManager = {
 
   /**
    * Get last 7 days history
+   *
+   * Same seven entries, oldest first, today last — the loop bounds and the
+   * missing-day fallback are unchanged. The key now comes from getTodayKey
+   * rather than an inlined copy of the format, and the day step is a flat
+   * DAY_MS.
+   *
+   * `dayName` is derived from the IST key rather than from the device's
+   * weekday, so the label always names the day the key refers to. For a device
+   * in India the two are the same; elsewhere the old code could label a bar with
+   * the device's weekday while the bar's data came from a different IST day.
+   * Same reasoning as getTodayFormatted in step 8. `date` keeps its previous
+   * value — the instant i days ago — and is not read by the UI, which renders
+   * only dayName and the spread progress fields (js/screens.js:87-101).
+   *
+   * @param {Date|number|string} [instant] - Defaults to now
    */
-  getWeekHistory: () => {
+  getWeekHistory: (instant = Date.now()) => {
     const data = DailyGoalsManager.loadData();
     const history = [];
-    const today = new Date();
+    const nowMs = new Date(instant).getTime();
 
     for (let i = 6; i >= 0; i--) {
-      const checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - i);
-      const dateKey = `${checkDate.getFullYear()}-${checkDate.getMonth() + 1}-${checkDate.getDate()}`;
+      const dayMs = nowMs - i * DAY_MS;
+      const dateKey = DailyGoalsManager.getTodayKey(dayMs);
+      // Padded form parses as valid ISO; the unpadded key would not.
+      const istMidnight = new Date(`${toISTDateKey(dayMs)}T00:00:00Z`);
 
       history.push({
-        date: checkDate,
-        dayName: checkDate.toLocaleDateString('en-US', { weekday: 'short' }),
+        date: new Date(dayMs),
+        dayName: istMidnight.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }),
         ...data.history[dateKey] || { questionsAnswered: 0, pointsEarned: 0, completed: false }
       });
     }
