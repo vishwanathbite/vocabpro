@@ -4,8 +4,8 @@
  *
  * Ported verbatim from js/utils.js:703-754 in Phase 3 with all four known
  * defects intact, so that the port stayed structural and every behaviour
- * change could land as a separate, reviewable commit. Phase 5 step 1 is that
- * commit: defects 1 and 4 are now fixed here. Defect 3 stays. Defect 2 is not
+ * change could land as a separate, reviewable commit. Steps 1 and 10b are
+ * those commits: defects 1, 3 and 4 are all now fixed. Defect 2 is not
  * fixable in this module.
  *
  * FIXED IN PHASE 5 (step 1):
@@ -30,15 +30,29 @@
  *   .saveState function called three lines below it. There is now a single
  *   load, held in `state`.
  *
- * STILL PRESERVED — do not "fix" this here:
+ * FIXED IN PHASE 5 (step 10b):
  *
- *   3. Non-standard date key. It builds `${getFullYear()}-${getMonth()}-${getDate()}`
- *      — local time, 0-indexed month, unpadded. 25 July 2026 becomes
- *      "2026-6-25", which is incompatible with DailyChallengeManager.getToday()'s
- *      padded UTC ISO string. Two different "today" formats coexist in the app.
- *      Left alone deliberately: the date string seeds the word selection, so
- *      changing the format would change which word every user sees today, and
- *      it has to be reconciled with the timezone decision that is still open.
+ *   3. Non-standard date key. It built `${getFullYear()}-${getMonth()}-${getDate()}`
+ *      — device-local, 0-indexed month, unpadded. 25 July 2026 became
+ *      "2026-6-25", which reads as 25 June. That was inert only because the same
+ *      wrong formula built both sides of the one comparison it fed; the stored
+ *      value was nonetheless a wrong calendar date. The key now comes from
+ *      toISTDateKey, so it is a correct padded IST date for the first time, and
+ *      the app has one day boundary rather than three.
+ *
+ *      The padded form is used as-is. DailyGoalsManager had to keep an unpadded
+ *      rendering because its keys index stored history that a cached js/ shell
+ *      must still find; this value indexes nothing. Nothing anywhere reads the
+ *      stored .date, .wordId or .isNew — verified across both trees — so there
+ *      was no compatibility obligation, and an existing store holding an
+ *      old-format key simply takes one extra write on its next load, exactly as
+ *      if corruption salvage had dropped the field.
+ *
+ *      THIS RE-ROLLS WHICH WORD IS SERVED, for every user including Indian ones,
+ *      and that is unavoidable rather than incidental: dateString is also the
+ *      hash seed three lines below, so any change to its text changes the index.
+ *      Steps 8 and 9 could hold Indian users harmless; this one cannot. Accepted
+ *      deliberately — the word is decorative and changes daily anyway.
  *
  * CALLER-SIDE, NOT FIXABLE IN THIS MODULE — must be carried into the component
  * rebuild:
@@ -64,20 +78,27 @@
  */
 
 import { StorageManager } from './storage.js';
+import { toISTDateKey } from './ist-date.js';
 
 /**
  * Get Word of the Day based on date
  * Uses a deterministic algorithm so everyone sees the same word
  * Uses centralized StorageManager for persistence
  *
+ * "Everyone" is now literally true. The day key comes from toISTDateKey, a
+ * hard-coded UTC+5:30 boundary, so two users in different timezones asking at
+ * the same moment get the same word. It used to be seeded from the device's
+ * local date, so they did not.
+ *
  * Persists only when the stored entry is stale — a call that finds today's
  * entry already recorded does not write.
  *
+ * @param {Date|number|string} [instant] - Defaults to now
  * @returns {Object|null} - Word object for today, or null when no vocabulary is
  *   available (vocabularyDB absent, or every difficulty empty or not yet
  *   lazy-loaded). Callers must handle null.
  */
-export const getWordOfTheDay = () => {
+export const getWordOfTheDay = (instant = Date.now()) => {
   // vocabularyDB is a bare global that arrives with the data scripts, so it can
   // legitimately be undefined here — `typeof` rather than a truthiness test,
   // which would itself throw on an undeclared identifier.
@@ -98,9 +119,9 @@ export const getWordOfTheDay = () => {
     return null;
   }
 
-  // Create a seed based on today's date
-  const today = new Date();
-  const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  // Create a seed based on today's date. This string is both the storage key
+  // and the hash seed, which is why moving it to IST changes the selection.
+  const dateString = toISTDateKey(instant);
 
   // Simple hash function
   let hash = 0;
