@@ -91,8 +91,16 @@ const getDefaultState = () => ({
   },
 
   // Streak Protection
+  //
+  // shields starts at ZERO, and the welcome shield is granted by
+  // awardWeeklyShieldIfDue on first mount instead. Seeding 1 here as well
+  // produced two: this section is what loadData actually reads (loadState fills
+  // it from these defaults before StreakProtection.loadData spreads its own
+  // defaultData under it), and the award then fired on top because lastEarned
+  // is null. Granting it there rather than here also stamps lastEarned, so the
+  // seven-day interval starts from first open rather than from never.
   streakProtection: {
-    shields: 1,
+    shields: 0,
     lastUsed: null,
     lastEarned: null,
     totalUsed: 0

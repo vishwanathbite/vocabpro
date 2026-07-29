@@ -398,10 +398,23 @@ const StreakProtection = {
   storageKey: 'vocabProStreakProtection', // Legacy key for reference
 
   /**
-   * Default streak protection data
+   * Default streak protection data.
+   *
+   * UNREACHABLE for the shields value on every real load path, and kept in step
+   * with storage.js only so the two cannot be read as disagreeing. loadData
+   * below spreads this object FIRST and state.streakProtection second, and
+   * StorageManager.loadState always populates that section — from
+   * getDefaultState on a fresh store or a storage failure, and through
+   * validateState's deepMerge against the same defaults for any stored blob,
+   * which fills a missing or partial section. So the second spread always wins
+   * and storage.js:100 is the effective default.
+   *
+   * shields is 0 here for the same reason it is 0 there: the welcome shield is
+   * granted by awardWeeklyShieldIfDue, which also stamps lastEarned. Seeding 1
+   * in the defaults as well was what produced two shields on a fresh store.
    */
   defaultData: {
-    shields: 1,  // Start with 1 free shield
+    shields: 0,
     lastUsed: null,
     lastEarned: null,
     totalUsed: 0
@@ -543,9 +556,20 @@ const StreakProtection = {
  *
  * MUST BE CALLED FROM AN EFFECT, NEVER FROM RENDER. It writes.
  *
- * CURRENTLY UNWIRED: nothing calls this. The award is dormant until the
- * component rebuild adds a mount effect. That is intentional — this commit
- * moves the logic, it does not schedule it.
+ * WIRED as of Phase 5b step 4c: LearnScreen calls it from a mount effect with
+ * an empty dependency array, and lifts the returned count into its shields
+ * state only when `awarded` is true.
+ *
+ * THE ONLY PLACE A SHIELD IS GRANTED as of step 4c-ii, and therefore the source
+ * of the welcome shield too. The defaults on both sides now start at 0, so a
+ * fresh user holds nothing until the first mount runs this, which grants one
+ * (lastEarned is null, so the interval test below passes) and stamps
+ * lastEarned. Before that split the defaults seeded 1 and this awarded a second
+ * on top, so a brand-new user opened the app holding two while the UI copy said
+ * they start with one. Do not reintroduce a non-zero default: the grant has to
+ * happen here, because only here does lastEarned get stamped, and an unstamped
+ * lastEarned means the next weekly award is due immediately rather than in
+ * seven days.
  *
  * The ceiling of 3 below stays a bare literal, and stays deliberately out of
  * step with addShields' cap of 5. The weekly drip stops at 3; a granted reward
