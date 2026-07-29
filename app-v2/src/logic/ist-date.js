@@ -41,10 +41,13 @@ export const epochMsOf = (instant) => {
 /**
  * The IST calendar date for an instant, as a padded YYYY-MM-DD key.
  *
- * THE SINGLE SOURCE OF TRUTH FOR THE DAY BOUNDARY. Every day key in this module
- * comes from here. DailyGoalsManager.getTodayKey and getWordOfTheDay still build
- * their own keys — unpadded, local-time — and are to be converted to this helper
- * in a later step; until then the app has more than one notion of "today".
+ * THE SINGLE SOURCE OF TRUTH FOR THE DAY BOUNDARY. Every day key in the app now
+ * derives from here: DailyChallengeManager.getToday returns this value directly,
+ * getWordOfTheDay seeds from it (step 10b), and DailyGoalsManager.getTodayKey
+ * takes it and strips the zero-padding (step 9) — that unpadded FORMAT is kept
+ * on purpose so a cached js/ shell sharing STORAGE_KEY can still find its
+ * history, and is due to go at the Phase 6 cutover. There is one notion of
+ * "today"; only its spelling differs between the goals keyspace and the rest.
  *
  * The offset is hard-coded and universal, deliberately. It is NOT the device
  * timezone: the daily challenge is a shared event for Indian competitive-exam

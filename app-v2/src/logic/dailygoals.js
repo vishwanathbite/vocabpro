@@ -7,7 +7,7 @@
 // ESM port of js/dailygoals.js. StorageManager is now imported rather than
 // sniffed off the global `window`, so it is always defined.
 import { StorageManager } from './storage.js';
-import { toISTDateKey, DAY_MS } from './ist-date.js';
+import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
 
 // ===========================
 // DAILY GOALS CONFIGURATION
@@ -350,17 +350,42 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Clear old history (keep last 30 days)
+   * Clear old history (keep last 30 days).
+   *
+   * TIMEBASE FIXED in Phase 5b step 4b. This was the last local-time date
+   * arithmetic left in the module. It built its cutoff from `new Date()` and
+   * `setDate(-30)`, then re-parsed each IST-derived history key with
+   * `new Date(year, month - 1, day)` — a LOCAL midnight. Two timebases in one
+   * comparison, against keys that have been IST since step 9.
+   *
+   * What that cost: for a device behind IST, local midnight of a key sits later
+   * in absolute time than the IST day it names, and for a device ahead it sits
+   * earlier — so the 30-day boundary landed a day early or a day late depending
+   * on the device's offset. A user in Los Angeles (UTC-7, 12.5h behind IST)
+   * could keep a 31st day; one in Auckland (UTC+12, 6.5h ahead) could lose the
+   * 30th. In India, where local time IS IST, nothing changed either way.
+   *
+   * Now both sides are IST day keys compared lexicographically, which is exact
+   * because toISTDateKey emits zero-padded YYYY-MM-DD. That is the same
+   * comparison DailyChallengeManager.completeChallenge already uses for its own
+   * 30-day prune (daily-challenge.js:221-226), so the two features finally
+   * agree on when a day falls out of range.
+   *
+   * The keys stored here are UNPADDED (getTodayKey), so each is normalised to
+   * the padded form before comparing — string ordering on unpadded keys is
+   * meaningless ("2026-7-5" > "2026-12-31").
    */
-  cleanupHistory: () => {
+  cleanupHistory: (instant = Date.now()) => {
     const data = DailyGoalsManager.loadData();
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 30);
+    const cutoffKey = toISTDateKey(epochMsOf(instant) - 30 * DAY_MS);
 
     Object.keys(data.history).forEach(key => {
       const [year, month, day] = key.split('-').map(Number);
-      const date = new Date(year, month - 1, day);
-      if (date < cutoffDate) {
+      if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+        return; // Unparseable key from a corrupt blob: leave it alone.
+      }
+      const paddedKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      if (paddedKey < cutoffKey) {
         delete data.history[key];
       }
     });
