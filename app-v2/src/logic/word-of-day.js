@@ -42,17 +42,50 @@
  *
  *      The padded form is used as-is. DailyGoalsManager had to keep an unpadded
  *      rendering because its keys index stored history that a cached js/ shell
- *      must still find; this value indexes nothing. Nothing anywhere reads the
- *      stored .date, .wordId or .isNew — verified across both trees — so there
- *      was no compatibility obligation, and an existing store holding an
- *      old-format key simply takes one extra write on its next load, exactly as
- *      if corruption salvage had dropped the field.
+ *      must still find; this value indexes nothing. At the time of that change
+ *      nothing outside this function read the stored .date, .wordId or .isNew —
+ *      verified across both trees — so there was no compatibility obligation,
+ *      and an existing store holding an old-format key simply takes one extra
+ *      write on its next load, exactly as if corruption salvage had dropped the
+ *      field. Step 4c-i below makes .wordId a read field; it is still read only
+ *      from here, so that conclusion is unaffected.
  *
  *      THIS RE-ROLLS WHICH WORD IS SERVED, for every user including Indian ones,
  *      and that is unavoidable rather than incidental: dateString is also the
  *      hash seed three lines below, so any change to its text changes the index.
  *      Steps 8 and 9 could hold Indian users harmless; this one cannot. Accepted
  *      deliberately — the word is decorative and changes daily anyway.
+ *
+ * FIXED IN PHASE 5b (step 4c-i):
+ *
+ *   5. The word changed partway through the day. Not one of the original four;
+ *      it only became reachable once app-v2 started loading vocabulary lazily.
+ *      The index is `Math.abs(hash) % allWords.length`, and while `hash` is
+ *      fixed for the IST day, `allWords` is not: AppShell paints on `easy`
+ *      alone (~957 words) and pulls medium and hard in the background
+ *      (AppShell.jsx:51-65), taking the flatten to 4,009. Same day, same hash,
+ *      different divisor — so a call before the background load and a call
+ *      after it selected different words, and the second one also re-rendered
+ *      the card under the user.
+ *
+ *      THE STORED wordId IS NOW READ BACK, which is what makes the word stable.
+ *      When state.wordOfTheDay records today's date key, the word it names is
+ *      looked up in the current flatten by `w.word === lastSeen.wordId` and
+ *      returned as-is; the hash is not recomputed and nothing is written. The
+ *      selection therefore happens exactly once per IST day, on the first call,
+ *      and every later call that day replays it. Before this, wordId was
+ *      write-only — the staleness test read .date and never .wordId, so a wrong
+ *      value could never be detected, let alone corrected.
+ *
+ *      A stored wordId absent from the current flatten falls through to the
+ *      recompute deliberately. It is what a shrinking or reordered database
+ *      produces, and serving a word that is no longer in the pool is worse than
+ *      re-rolling: the recompute re-stamps the store, so the day self-heals to
+ *      one stable word rather than re-rolling on every subsequent call.
+ *
+ *      This makes the flatten load-bearing for the read path, so the lookup must
+ *      run against the SAME allWords the recompute would use — hence the flatten
+ *      and both its null guards now sit above the stored-entry check.
  *
  * CALLER-SIDE, NOT FIXABLE IN THIS MODULE — must be carried into the component
  * rebuild:
@@ -61,8 +94,9 @@
  *      is a mount effect on <WordOfTheDay />, which HomeScreen renders
  *      conditionally, so it fires on every return to the home screen rather
  *      than once per day. Fix 1 means those repeat calls no longer each cost a
- *      write, but they still cost a loadState, a full flatten of vocabularyDB
- *      and a rehash every time. The remedy belongs in the component.
+ *      write, and fix 5 means they no longer cost a rehash, but they still cost
+ *      a loadState, a full flatten of vocabularyDB and a linear scan of it every
+ *      time. The remedy belongs in the component.
  *
  * ONE STRUCTURAL CHANGE FROM PHASE 3, consistent with the Phase 3 convention
  * and NOT a behaviour change: the original wrapped both storage accesses in
@@ -90,13 +124,21 @@ import { toISTDateKey } from './ist-date.js';
  * the same moment get the same word. It used to be seeded from the device's
  * local date, so they did not.
  *
+ * Stable for the whole IST day: the first call of the day selects and records a
+ * word, and every later call that day returns that same word by looking its id
+ * up in the current flatten, however much vocabularyDB has grown in between.
+ *
  * Persists only when the stored entry is stale — a call that finds today's
- * entry already recorded does not write.
+ * entry already recorded, and can still resolve the word it names, does not
+ * write.
  *
  * @param {Date|number|string} [instant] - Defaults to now
- * @returns {Object|null} - Word object for today, or null when no vocabulary is
- *   available (vocabularyDB absent, or every difficulty empty or not yet
- *   lazy-loaded). Callers must handle null.
+ * @returns {{word: Object, date: string, isNew: boolean}|null} - Today's word,
+ *   the padded IST day key it was chosen for, and whether this call is what
+ *   chose it. `isNew` is true only on the call that writes: the first of the
+ *   day, or one that had to re-select because the stored id is no longer in the
+ *   flatten. Null when no vocabulary is available (vocabularyDB absent, or every
+ *   difficulty empty or not yet lazy-loaded). Callers must handle null.
  */
 export const getWordOfTheDay = (instant = Date.now()) => {
   // vocabularyDB is a bare global that arrives with the data scripts, so it can
@@ -123,6 +165,34 @@ export const getWordOfTheDay = (instant = Date.now()) => {
   // and the hash seed, which is why moving it to IST changes the selection.
   const dateString = toISTDateKey(instant);
 
+  // Check if user has seen this word today using centralized storage
+  const state = StorageManager.loadState();
+  const lastSeen = state.wordOfTheDay;
+
+  // Replay today's already-chosen word rather than re-deriving it. The index
+  // below divides by allWords.length, which grows as the background load lands,
+  // so re-deriving mid-day would hand back a different word — see fix 5 in the
+  // header. Resolved against the flatten built above, so this and the recompute
+  // can never disagree about which pool they are addressing.
+  if (lastSeen && lastSeen.date === dateString && lastSeen.wordId) {
+    const storedWord = allWords.find(w => w.word === lastSeen.wordId);
+
+    // A plain .find, first match wins. A word string that appears in two
+    // difficulties resolves to the earlier one, which is deterministic for a
+    // given flatten and is the same record the recompute would have stored.
+    if (storedWord) {
+      return {
+        word: storedWord,
+        date: dateString,
+        isNew: false
+      };
+    }
+
+    // Stored id not in the current flatten: fall through and re-select. The
+    // recompute re-stamps the store, so the day settles on one word instead of
+    // re-rolling on every call.
+  }
+
   // Simple hash function
   let hash = 0;
   for (let i = 0; i < dateString.length; i++) {
@@ -135,24 +205,16 @@ export const getWordOfTheDay = (instant = Date.now()) => {
   const index = Math.abs(hash) % allWords.length;
   const word = allWords[index];
 
-  // Check if user has seen this word today using centralized storage
-  const state = StorageManager.loadState();
-  const lastSeen = state.wordOfTheDay;
-  const isNew = !lastSeen || lastSeen.date !== dateString;
+  // Mark as seen. Reaching here means the stored entry was missing, from
+  // another day, or named a word this flatten cannot resolve — in all three
+  // cases the value on disk is not today's answer, so the write is never a
+  // no-op rewrite of an identical value.
+  state.wordOfTheDay = { date: dateString, wordId: word.word };
+  StorageManager.saveState(state);
 
-  const wotdData = {
+  return {
     word,
     date: dateString,
-    isNew
+    isNew: true
   };
-
-  // Mark as seen — only when the stored entry is missing or from another day.
-  // Same condition as isNew: if it is already today's, the write would be a
-  // no-op rewrite of an identical value.
-  if (isNew) {
-    state.wordOfTheDay = { date: dateString, wordId: word.word };
-    StorageManager.saveState(state);
-  }
-
-  return wotdData;
 };
