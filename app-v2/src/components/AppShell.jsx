@@ -4,7 +4,7 @@ import LearnScreen from '../screens/LearnScreen.jsx'
 import PracticeScreen from '../screens/PracticeScreen.jsx'
 import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
-import { loadInitialData } from '../data/loader.js'
+import { loadInitialData, loadVocabularyLevel } from '../data/loader.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 
 /**
@@ -37,6 +37,33 @@ const SCREENS = {
 // ref: it is per-session work, not per-component-instance.
 let historyCleaned = false
 
+/**
+ * Pull medium and hard vocabulary in the background.
+ *
+ * Fire-and-forget by design — nothing awaits this and no UI state depends on
+ * it. Each rejection is logged rather than swallowed, and the loader has
+ * already dropped the failed entry from its promise cache, so a later awaited
+ * call re-imports rather than replaying a stale failure.
+ *
+ * Promise.allSettled, not Promise.all: one level failing must not cancel
+ * reporting for the other.
+ */
+const warmRemainingVocabulary = () => {
+  Promise.allSettled([loadVocabularyLevel('medium'), loadVocabularyLevel('hard')]).then(
+    (results) => {
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          console.warn(
+            `Background load of ${['medium', 'hard'][i]} vocabulary failed; ` +
+              'the app continues on easy. It will be retried when a screen needs it.',
+            r.reason,
+          )
+        }
+      })
+    },
+  )
+}
+
 export default function AppShell() {
   const [activeTab, setActiveTab] = useState('learn')
   const [dataState, setDataState] = useState('loading') // 'loading' | 'ready' | 'error'
@@ -63,7 +90,25 @@ export default function AppShell() {
 
     loadInitialData()
       .then(() => {
-        if (!cancelled) setDataState('ready')
+        if (cancelled) return
+        setDataState('ready')
+
+        // Warm the remaining vocabulary AFTER first paint, never before: the
+        // challenge needs all three levels to reach 10 questions, and waiting
+        // until the user taps Start would put a ~7s stall on a slow connection
+        // at the exact moment they have committed to the action.
+        //
+        // Chained off the easy load rather than fired alongside it so first
+        // paint still requests exactly one data chunk, and so these two never
+        // compete with easy for bandwidth on a slow link.
+        //
+        // Failure here is deliberately NOT escalated to the error state. Easy
+        // alone runs the app — Word of the Day, easy quizzes and the whole
+        // shell all work — so a full-screen error would be a lie. The loader
+        // evicts a rejected entry from its cache, so the promise is not
+        // poisoned: 4c's Start handler awaits the same function and will
+        // genuinely re-fetch, surfacing the failure where it actually matters.
+        warmRemainingVocabulary()
       })
       .catch((err) => {
         if (cancelled) return

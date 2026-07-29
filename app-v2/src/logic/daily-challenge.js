@@ -264,10 +264,16 @@ const DailyChallengeManager = {
     const mediumPool = [...(vocabularyDB.medium || [])];
     const hardPool = [...(vocabularyDB.hard || [])];
 
-    // Pick 3 easy, 3 medium, 2 hard words + 2 idioms
-    const easyWords = seededSample(easyPool, 3, rng);
+    // Pick 4 easy, 3 medium, 3 hard words = 10 vocabulary questions.
+    //
+    // REBALANCED from 3/3/2 in Phase 5b step 4b-follow-up. The old split gave
+    // 8 vocabulary questions and reached the intended 10 only by appending 2
+    // idiom questions. Idioms are removed at Phase 6, so the vocabulary mix now
+    // carries the full 10 on its own and the challenge no longer depends on a
+    // database that is going away.
+    const easyWords = seededSample(easyPool, 4, rng);
     const mediumWords = seededSample(mediumPool, 3, rng);
-    const hardWords = seededSample(hardPool, 2, rng);
+    const hardWords = seededSample(hardPool, 3, rng);
 
     // Pick 2 idiom questions
     const idiomPool = typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB) ? [...idiomsDB] : [];
@@ -284,10 +290,14 @@ const DailyChallengeManager = {
     // grouping below cannot slide — a word carries its own group's difficulty
     // whatever the other pools return. For full pools it produces exactly the
     // same eight pairings as before.
+    // Modes are index-mapped WITHIN each group, so every modes array must stay
+    // the same length as its group's word count. The two added slots are an
+    // antonym on easy and a synonym on hard, which takes the mix from
+    // 5 vocab / 2 synonym / 1 antonym to 5 vocab / 3 synonym / 2 antonym.
     const plan = [
-      { words: easyWords, difficulty: 'easy', modes: ['vocab', 'synonym', 'vocab'] },
+      { words: easyWords, difficulty: 'easy', modes: ['vocab', 'synonym', 'vocab', 'antonym'] },
       { words: mediumWords, difficulty: 'medium', modes: ['synonym', 'vocab', 'antonym'] },
-      { words: hardWords, difficulty: 'hard', modes: ['vocab', 'vocab'] }
+      { words: hardWords, difficulty: 'hard', modes: ['vocab', 'vocab', 'synonym'] }
     ].flatMap(group =>
       group.words.map((word, i) => ({
         word,
