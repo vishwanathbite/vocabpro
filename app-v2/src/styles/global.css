@@ -1,0 +1,228 @@
+/**
+ * Global base styles — salvaged from the legacy index.html <style> blocks.
+ *
+ * Only two categories were carried across:
+ *   (a) all 9 @keyframes, transcribed verbatim
+ *   (b) the element / pseudo-element / attribute-selector rules, which are the
+ *       only legacy rules that actually applied in production. Every
+ *       class-based rule in the old stylesheet was dead: the Twind CDN
+ *       rewrote every class attribute to a hash (`class="#faekao"`), so no
+ *       `.foo` selector ever matched. Tailwind emits literal class names, so
+ *       those rules are re-expressed as theme tokens and @utility rules
+ *       instead of being copied over.
+ *
+ * Source line numbers refer to index.html at the repo root.
+ */
+
+/* ===========================================================================
+   KEYFRAMES — all 9, transcribed exactly from index.html
+   =========================================================================== */
+
+/* index.html:173 — loading splash */
+@keyframes loading-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+/* index.html:178 — loading splash */
+@keyframes loading-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+/* index.html:194 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* index.html:205 */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* index.html:216 */
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* index.html:227 */
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* index.html:232 */
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* index.html:239 */
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+}
+
+/* index.html:244 */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+}
+
+/* ===========================================================================
+   BASE RULES — the element / pseudo / attribute selectors that worked
+   Kept in @layer base so every Tailwind utility outranks them.
+   =========================================================================== */
+
+@layer base {
+  /* index.html:125 — margin/padding are already zeroed by Tailwind preflight;
+     kept explicit for parity. The legacy font-family declaration is
+     deliberately NOT reproduced here: the font stack now comes from the
+     --font-sans theme token, and repeating it at element level would
+     permanently outrank it. */
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* index.html:408 */
+  body {
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* index.html:361 */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* index.html:134 — custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* index.html:139 */
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  /* index.html:144 */
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+  }
+
+  /* index.html:149 */
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* index.html:154 — smooth transitions, visual properties only */
+  button, a, [role="button"] {
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out,
+                border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+                opacity 0.2s ease-in-out;
+  }
+
+  /* index.html:167 — prevent text selection on interactive elements */
+  button, [role="button"] {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* index.html:349 — anchors included so they keep the transparent tap
+     highlight that legacy index.html:161 gave them (that rule was otherwise
+     excluded for its !important pointer-events declaration). */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* index.html:419 — iOS zoom-on-focus fix. Must stay >= 16px. */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* index.html:424 — focus visibility */
+  button:focus-visible, [role="button"]:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+  }
+
+  /* index.html:380 — safe area padding for notched devices */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    footer {
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* index.html:330 — touch-device affordances */
+  @media (hover: none) {
+    button, [role="button"], a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    button:hover, [role="button"]:hover {
+      transform: none;
+    }
+
+    button:active, [role="button"]:active {
+      transform: scale(0.95);
+    }
+  }
+
+  /* index.html:439 — larger touch targets on tablets */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    button, [role="button"] {
+      min-height: 48px;
+      padding: 0.75rem 1.25rem;
+    }
+  }
+
+  /* index.html:391 — reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* index.html:401 — high contrast mode support */
+  @media (prefers-contrast: high) {
+    button, [role="button"] {
+      border: 2px solid currentColor;
+    }
+  }
+}

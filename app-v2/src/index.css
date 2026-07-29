@@ -1,111 +1,116 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+/**
+ * Tailwind entry + VocabPro design system.
+ *
+ * Tailwind v4 (CSS-first). There is no tailwind.config.js and no
+ * postcss.config.js — the @tailwindcss/vite plugin in vite.config.js does the
+ * work, and all configuration lives in the @theme block below.
+ */
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+@import "tailwindcss";
+@import "./styles/global.css";
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  /* -------------------------------------------------------------------------
+     BRAND COLOURS
+     Additive: declaring --color-* here extends the palette, it does not
+     replace it. Tailwind's full default palette (green-500, amber-400, …)
+     remains available for correct-answer greens and celebratory accents.
+     ------------------------------------------------------------------------- */
+  --color-primary: #7C3AED;
+  --color-indigo: #4F46E5;
+  --color-navy: #0F172A;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+  /* -------------------------------------------------------------------------
+     FONTS
+     Font FILES are not present yet — self-hosting is a separate decision and
+     no CDN request is made anywhere. These register the families so the
+     utilities exist; each stack falls back to a system font until the files
+     land.
+     ------------------------------------------------------------------------- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  --font-playfair: "Playfair Display", ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
+
+  /* -------------------------------------------------------------------------
+     BREAKPOINT
+     Tailwind's defaults start at sm:640px. xs:475px is added for the narrow
+     phone tier (legacy js/screens.js:452 relies on xs:flex).
+     ------------------------------------------------------------------------- */
+  --breakpoint-xs: 475px;
+
+  /* -------------------------------------------------------------------------
+     MAX CONTENT WIDTH
+     Design brief: ~1200px centred on desktop. Use as `max-w-content`.
+     The legacy 960px cap is deliberately not carried over.
+     ------------------------------------------------------------------------- */
+  --container-content: 1200px;
+
+  /* -------------------------------------------------------------------------
+     ANIMATIONS
+     Wire the four salvaged keyframes to real utilities. The @keyframes
+     themselves live in styles/global.css, transcribed verbatim.
+     ------------------------------------------------------------------------- */
+  --animate-slide-in: slide-in 0.3s ease-out forwards;
+  --animate-fade-in: fade-in 0.3s ease-out forwards;
+  --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+
+  /* -------------------------------------------------------------------------
+     SPACING — intentionally not overridden.
+     Tailwind v4 generates spacing from --spacing (0.25rem / 4px), so every
+     8-point step already exists: 2=8px, 4=16px, 6=24px, 8=32px, 12=48px,
+     16=64px. A custom 8pt scale would be redundant.
+     ------------------------------------------------------------------------- */
+}
+
+/* ===========================================================================
+   CUSTOM UTILITIES
+
+   Of the six utilities specified, only four need defining. Verified against
+   the emitted CSS of a production build (see report):
+
+     perspective-1000   custom  — core only ships NAMED perspective values
+                                  (perspective-dramatic/near/normal/…), so a
+                                  numeric 1000px variant does not exist.
+     hide-scrollbar     custom
+     safe-area-bottom   custom
+     min-touch          custom
+
+     backface-hidden    CORE in v4 — no custom definition.
+     rotate-y-180       CORE in v4 — no custom definition. Core's version is
+                                  composable: it sets --tw-rotate-y and merges
+                                  with the rotate-x and skew utilities through
+                                  a shared transform chain. An override that hard-set
+                                  `transform: rotateY(180deg)` would silently
+                                  break that composition, so it was removed.
+
+   line-clamp-1 is likewise core and is not defined here.
+   =========================================================================== */
+
+/* Flashcard 3D flip — the only part of the flip that core does not cover */
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Horizontal scrollers */
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+/* Bottom tab bar clearance on notched devices */
+@utility safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* Minimum accessible tap target */
+@utility min-touch {
+  min-height: 48px;
+  min-width: 48px;
 }
