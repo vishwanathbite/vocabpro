@@ -68,6 +68,33 @@ const getLevelProgress = (totalPoints) => {
 /**
  * Badge definitions
  * Earned based on various achievements
+ *
+ * 24 BADGES. Five were retired in Phase 5b step 7a, down from 29. Each was
+ * VERIFIED UNEARNABLE against this tree rather than assumed to be, and none is
+ * coming back — do not "restore" them from js/:
+ *
+ *   idiom_first "Phrase Hunter", idiom_master "Idiom Master",
+ *   idiom_wordsmith "Wordsmith" — idioms are cut from this app entirely and
+ *     idioms.js was deliberately never ported (see data/loader.js). The counters
+ *     they read, idiomsQuizzesCompleted / idiomsPerfectScore /
+ *     idiomsDifficultiesCompleted, have no writer that can ever run.
+ *
+ *   referral "Social Butterfly" — referrals are cut. Nothing in app-v2 writes
+ *     stats.referrals, and referrals cannot work without a server: the referrer
+ *     is credited nothing and self-referral is trivial.
+ *
+ *   daily_challenge_7 "Consistent Challenger" — it read stats.dailyChallengeStreak,
+ *     which is not declared in the stats schema at all (storage.js:128-152), so
+ *     the condition evaluated `undefined >= 7` and was permanently false.
+ *     Retired rather than fixed: a visible badge nobody can earn is worse than
+ *     no badge.
+ *
+ * The inert stats fields those conditions read are deliberately STILL IN THE
+ * SCHEMA. Old saves contain them, so removing them is a migration rather than a
+ * cleanup, and that waits for Phase 6.
+ *
+ * js/ still ships all 29. That is intentional for the Play Store window — a beta
+ * tester losing a badge they already earned is the wrong surprise.
  */
 const BADGES = [
   // Mastery Badges
@@ -104,16 +131,10 @@ const BADGES = [
   { id: 'accuracy_90', name: 'Perfection', description: 'Maintain 90% accuracy (min 100 questions)', icon: '⭐', condition: (stats) => stats.totalAnswered >= 100 && (stats.correctAnswers / stats.totalAnswered) >= 0.9 },
 
   // Special Badges
-  { id: 'referral', name: 'Social Butterfly', description: 'Refer a friend', icon: '🦋', condition: (stats) => stats.referrals >= 1 },
-  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 6 },
-
-  // Daily Challenge Badges
-  { id: 'daily_challenge_7', name: 'Consistent Challenger', description: 'Complete 7 daily challenges in a row', icon: '🏆', condition: (stats) => stats.dailyChallengeStreak >= 7 },
-
-  // Idiom Badges
-  { id: 'idiom_first', name: 'Phrase Hunter', description: 'Complete your first idioms quiz', icon: '💬', condition: (stats) => stats.idiomsQuizzesCompleted >= 1 },
-  { id: 'idiom_master', name: 'Idiom Master', description: 'Score 100% in an idioms quiz', icon: '🏅', condition: (stats) => stats.idiomsPerfectScore >= 1 },
-  { id: 'idiom_wordsmith', name: 'Wordsmith', description: 'Complete idioms quiz in all 3 difficulties', icon: '✍️', condition: (stats) => stats.idiomsDifficultiesCompleted >= 3 }
+  // The threshold of 6 is UNCHANGED and not stale. It was set when the app had
+  // idiom, idiom-reverse and match modes; Practice now offers 7, so it is still
+  // reachable — just on a different margin than originally intended.
+  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 6 }
 ];
 
 /**
