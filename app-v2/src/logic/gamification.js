@@ -131,23 +131,86 @@ const BADGES = [
   { id: 'accuracy_90', name: 'Perfection', description: 'Maintain 90% accuracy (min 100 questions)', icon: '⭐', condition: (stats) => stats.totalAnswered >= 100 && (stats.correctAnswers / stats.totalAnswered) >= 0.9 },
 
   // Special Badges
-  // The threshold of 6 is UNCHANGED and not stale. It was set when the app had
-  // idiom, idiom-reverse and match modes; Practice now offers 7, so it is still
-  // reachable — just on a different margin than originally intended.
-  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 6 }
+  // SEVEN matches the Practice tab exactly: vocab, synonym, antonym, oneword,
+  // acronym, flashcard, review. It was 6 when idiom, idiom-reverse and match
+  // existed, which made "all quiz modes" describe a number no longer on screen.
+  //
+  // ACCEPTED, NOT FIXED: modesPlayed is modesPlayedList.length, and an older
+  // save's list can still contain retired mode strings — 'match', 'idiom',
+  // 'idiom-reverse' — which inflate the count. So an existing user can satisfy
+  // this without having tried seven current modes. Filtering the stored list
+  // against the live mode set would be a storage migration, which this step does
+  // not do.
+  //
+  // And in the other direction: a user who earned this at six modes does NOT
+  // lose it. Their stored earnedBadges retains the id, and step 7c's sticky
+  // union in getEarnedBadges re-admits any recorded id whose condition no longer
+  // holds. Verified by demonstration, not assumed.
+  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all seven quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 7 }
 ];
 
 /**
- * Check which badges a user has earned
- * @param {Object} stats - User statistics
- * @returns {Array} - Array of earned badge objects
+ * Check which badges a user has earned.
+ *
+ * ONCE EARNED, ALWAYS EARNED as of Phase 5b step 7c. The returned set is the
+ * UNION of badges whose condition holds against `stats` right now and badge ids
+ * already recorded in `stats.earnedBadges`.
+ *
+ * WHY: this used to be a live filter, which made the earned set a report of
+ * current status rather than a record of achievement. The three accuracy
+ * conditions divide LIFETIME correctAnswers by LIFETIME totalAnswered, so a
+ * student who reached 90% and then had a bad week silently LOST Perfection — and
+ * because updateStats rewrites stats.earnedBadges from this function on every
+ * answered question, the loss persisted to storage. A badge commemorates
+ * something you did; it cannot be taken back by later practice.
+ *
+ * THE UNION IS BUILT BY FILTERING *BADGES*, never by iterating the stored array.
+ * That is what discards ids no longer in the table, and it is not optional: step
+ * 7a retired five ids, older saves still contain them, and a consumer that maps
+ * a stored id through BADGES.find() gets undefined and throws on the first
+ * property access — which unmounts the React tree rather than dropping one
+ * badge. Iterating BADGES makes an unknown id structurally unrepresentable in
+ * the result, rather than filtered out by a rule someone could later remove.
+ * It also fixes the return order to BADGES order, which is the display order.
+ *
+ * THE STICKINESS LIVES HERE, NOT IN updateStats, deliberately. Four call sites
+ * recompute the earned set — updateStats, match-scoring.js:104,
+ * daily-challenge-scoring.js:93 and ProgressScreen's render — and putting it in
+ * updateStats would have fixed one of the four while the render path kept
+ * revoking on every mount.
+ *
+ * STILL PURE. It reads stats.earnedBadges as input, returns a fresh array, and
+ * writes nothing — which it must, because ProgressScreen calls it from render.
+ * Persistence remains updateStats' job.
+ *
+ * @param {Object} stats - User statistics; stats.earnedBadges is read as the
+ *   record of what has already been earned, and may be absent or malformed
+ * @returns {Array} - Array of earned badge objects, in BADGES order. Elements
+ *   are LIVE REFERENCES into BADGES — do not mutate them.
  */
 const getEarnedBadges = (stats) => {
-  return BADGES.filter(badge => badge.condition(stats));
+  const recorded = stats && Array.isArray(stats.earnedBadges) ? stats.earnedBadges : [];
+  return BADGES.filter(badge => badge.condition(stats) || recorded.includes(badge.id));
 };
 
 /**
  * Get newly earned badges (not in previous badges list)
+ *
+ * STILL FIRES EXACTLY ONCE PER BADGE under step 7c's sticky union. previousBadges
+ * is the PRE-update id list and getEarnedBadges(stats) is now
+ * union(conditions-true-now, stats.earnedBadges) — for the newStats objects the
+ * scorers pass, that second half was already written by updateStats. So the
+ * difference is still precisely the set of conditions that became true on this
+ * answer: anything already recorded is in previousBadges and is filtered out
+ * here, and stickiness cannot resurrect an announcement for a badge earned in an
+ * earlier session.
+ *
+ * previousBadges is an array of ID STRINGS at every call site
+ * (quiz-scoring.js:60 and match-scoring.js:107, both fed from
+ * `previousBadgesNext: newStats.earnedBadges`), which is what the `.includes`
+ * below compares against. Passing badge OBJECTS would silently match nothing and
+ * re-announce everything.
+ *
  * @param {Object} stats - Current user statistics
  * @param {Array} previousBadges - Previously earned badge IDs
  * @returns {Array} - Array of newly earned badge objects
