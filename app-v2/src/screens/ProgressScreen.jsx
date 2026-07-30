@@ -160,7 +160,13 @@ export default function ProgressScreen() {
             <p className="mt-3 flex items-baseline justify-between text-sm">
               <span className="text-slate-300 tabular-nums">{formatNumber(totalPoints)} XP</span>
               <span className="text-slate-400 tabular-nums">
-                {progress.isMaxLevel ? 'Highest level' : `${progress.pointsToNext} to next level`}
+                {/* Both numbers in this row go through formatNumber, so they
+                    group identically. Before step 7f this one was raw: harmless
+                    when the widest band was 100 points, wrong once step 7e made
+                    the Champion-to-Legend gap 40,000. */}
+                {progress.isMaxLevel
+                  ? 'Highest level'
+                  : `${formatNumber(progress.pointsToNext)} to next level`}
               </span>
             </p>
 
@@ -189,8 +195,11 @@ export default function ProgressScreen() {
               {/* No Flame here. Flame is Learn's day-streak mark, and this is not
                   a streak of days — the same icon would rebuild exactly the
                   confusion the label fixes. */}
+              {/* Formatted for symmetry with every other displayed figure, not
+                  because a four-digit run is likely — "not reachable in practice"
+                  is how a raw number survives unnoticed for years. */}
               <p className="mt-1 text-xl font-semibold text-white tabular-nums">
-                {stats.maxStreak}
+                {formatNumber(stats.maxStreak)}
               </p>
             </div>
 
@@ -293,7 +302,12 @@ export default function ProgressScreen() {
               <p
                 key={entry.level}
                 aria-current={isCurrent ? 'true' : undefined}
-                aria-label={`Level ${entry.level}, ${entry.name}, from ${entry.minPoints} XP${
+                /* Formatted to match the visible figure beside it — a screen
+                   reader user should hear the same number a sighted user reads.
+                   Not verified against actual speech output: if en-IN grouping
+                   turns out to read poorly, this is the line to revert, not the
+                   visible one. */
+                aria-label={`Level ${entry.level}, ${entry.name}, from ${formatNumber(entry.minPoints)} XP${
                   isCurrent ? '. Current level.' : reached ? '. Reached.' : '. Not yet reached.'
                 }`}
                 className="flex items-baseline justify-between px-4 py-2.5 text-sm"
