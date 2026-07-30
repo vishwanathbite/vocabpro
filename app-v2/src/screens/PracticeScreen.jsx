@@ -1,3 +1,4 @@
+import { ROW } from '../components/chrome.js'
 import { ChevronRight } from '../components/icons.jsx'
 
 /**
@@ -14,16 +15,11 @@ import { ChevronRight } from '../components/icons.jsx'
  * are cut decisions, not omissions.
  */
 
-/* Neutral card treatment, mirroring LearnScreen's CARD — the same chrome its
-   "Continue practising" row uses in the non-purple state. Duplicated rather than
-   shared: extracting it would mean editing LearnScreen too, and this step is
-   scoped to one file. Worth extracting the moment a third screen needs it. */
-const CARD = 'rounded-xl border border-white/10 bg-white/[0.03]'
-
 /* NO TILE IS PURPLE. The rule is one purple primary-action zone per screen
    state; Practice has no single primary action, so it has none at all. Seven
-   equally-weighted choices with one highlighted would be a lie about priority. */
-const TILE = `${CARD} min-touch flex w-full items-center justify-between px-4 text-left transition-colors hover:bg-white/[0.06]`
+   equally-weighted choices with one highlighted would be a lie about priority.
+   ROW is the shared neutral row — the same chrome Learn's "Continue practising"
+   uses. It moved to components/chrome.js in step 7b. */
 
 /**
  * Names and descriptions are the LIVE APP'S, taken from the QuizModeCard block
@@ -103,7 +99,7 @@ export default function PracticeScreen() {
               /* Trailing stop stripped before it is re-added, so a description
                  that already ends in one does not read out as two. */
               aria-label={`${mode.name}. ${mode.description.replace(/\.$/, '')}.`}
-              className={TILE}
+              className={ROW}
             >
               <span className="font-medium text-white">{mode.name}</span>
               <ChevronRight width="18" height="18" className="text-slate-400" />

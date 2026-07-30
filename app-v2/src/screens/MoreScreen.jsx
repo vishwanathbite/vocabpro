@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
+import { ROW } from '../components/chrome.js'
 import { ChevronRight } from '../components/icons.jsx'
 
 /**
@@ -20,13 +21,8 @@ import { ChevronRight } from '../components/icons.jsx'
  * pattern Learn uses.
  */
 
-/* Neutral card treatment, mirroring LearnScreen's and PracticeScreen's CARD.
-   Duplicated for the same reason: sharing it would mean editing those files too.
-   This is now the third copy — extract it when the fourth screen appears. */
-const CARD = 'rounded-xl border border-white/10 bg-white/[0.03]'
-
-/* Nothing on More is purple. There is no primary action here to earn it. */
-const ROW = `${CARD} min-touch flex w-full items-center justify-between px-4 text-left transition-colors hover:bg-white/[0.06]`
+/* Nothing on More is purple. There is no primary action here to earn it. ROW is
+   the shared neutral row, moved to components/chrome.js in step 7b. */
 
 /* The three that lead to screens not yet built. About is rendered separately
    below because it is the one row with a working handler. */

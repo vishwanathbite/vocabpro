@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
+import { CARD, ROW } from '../components/chrome.js'
 import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 import { StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
@@ -33,9 +34,6 @@ const GOAL_PRESETS = [
    4 questions rather than 10. That belongs to the Start handler, which this
    step does not wire. */
 const CHALLENGE_QUESTIONS = 10
-
-/* Shared chrome: hairline border on navy, no coloured fill. */
-const CARD = 'rounded-xl border border-white/10 bg-white/[0.03]'
 
 /* Dumb pluralisation: append an 's' unless the count is exactly 1. No irregular
    nouns, no library — this is not a general-purpose utility, only enough for the
@@ -192,7 +190,7 @@ export default function LearnScreen() {
 
           <button
             type="button"
-            className={`${CARD} min-touch flex w-full items-center justify-between px-4 text-left transition-colors hover:bg-white/[0.06]`}
+            className={ROW}
           >
             <span className="font-medium text-white">Continue practising</span>
             <ChevronRight width="18" height="18" className="text-slate-400" />
@@ -260,7 +258,7 @@ export default function LearnScreen() {
       {reviewDue > 0 && (
         <button
           type="button"
-          className={`${CARD} min-touch flex w-full items-center justify-between px-4 text-left transition-colors hover:bg-white/[0.06]`}
+          className={ROW}
         >
           <span className="text-sm text-slate-300">
             <span className="font-semibold text-white tabular-nums">{reviewDue}</span>{' '}
