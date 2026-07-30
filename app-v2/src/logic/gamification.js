@@ -15,18 +15,49 @@ import { StorageManager } from './storage.js';
 /**
  * Level configuration
  * Defines XP requirements and rewards for each level
+ *
+ * RESCALED TO 100,000 XP in Phase 5b step 7e. It was ten equal 100-point bands
+ * topping out at 900, which a student cleared in one evening: calculatePoints
+ * awards 10-20 per question plus up to 10 of streak bonus, so a ten-question
+ * quiz earns 150-250 and Legend arrived after four or five quizzes. The badge
+ * ladder already ran to 5,000 points, so the level table sat five times below
+ * the scale the rest of the app assumed.
+ *
+ * The curve roughly doubles each step, so later levels cost more than earlier
+ * ones and the early ones still arrive fast enough to feel responsive:
+ * 0 → 150 → 500 → 1k → 2.5k → 5k → 15k → 30k → 60k → 100k.
+ *
+ * Expert at 5,000 DELIBERATELY COINCIDES with the points_5000 Grand Master
+ * badge, so the two systems land their milestones together instead of at
+ * unrelated moments.
+ *
+ * BANDS MUST BE CONTIGUOUS. getLevelInfo tests
+ * `totalPoints >= l.minPoints && totalPoints <= l.maxPoints`, so a one-point gap
+ * between any two bands makes .find() return undefined and fall through to
+ * `|| LEVEL_CONFIG[0]` — silently reporting a 30,000-point student as Beginner.
+ * Every maxPoints below is exactly its successor's minPoints minus one, verified
+ * by a boundary sweep rather than by eye. Level 10 keeps Infinity.
+ *
+ * LEVELS ARE NOT STICKY, unlike badges as of step 7c, and that is a deliberate
+ * non-fix. Rescaling recomputes an existing user's level downward — someone at
+ * 900 points was Legend and is now Learner. Accepted: nobody in the live app has
+ * meaningful points, and app-v2 is unreleased. A level is a current standing
+ * derived from a running total, not an award; making it sticky would mean storing
+ * a high-water mark, which is a schema change for no one's benefit today.
+ *
+ * Names, ids, colours and badge emoji are unchanged.
  */
 const LEVEL_CONFIG = [
-  { level: 1, name: 'Beginner', minPoints: 0, maxPoints: 99, color: 'bg-gray-500', badge: '🌱' },
-  { level: 2, name: 'Novice', minPoints: 100, maxPoints: 199, color: 'bg-blue-500', badge: '📚' },
-  { level: 3, name: 'Learner', minPoints: 200, maxPoints: 299, color: 'bg-green-500', badge: '🎓' },
-  { level: 4, name: 'Explorer', minPoints: 300, maxPoints: 399, color: 'bg-yellow-500', badge: '🔍' },
-  { level: 5, name: 'Achiever', minPoints: 400, maxPoints: 499, color: 'bg-orange-500', badge: '🏆' },
-  { level: 6, name: 'Expert', minPoints: 500, maxPoints: 599, color: 'bg-red-500', badge: '⭐' },
-  { level: 7, name: 'Master', minPoints: 600, maxPoints: 699, color: 'bg-purple-500', badge: '👑' },
-  { level: 8, name: 'Virtuoso', minPoints: 700, maxPoints: 799, color: 'bg-pink-500', badge: '💎' },
-  { level: 9, name: 'Champion', minPoints: 800, maxPoints: 899, color: 'bg-indigo-500', badge: '🏅' },
-  { level: 10, name: 'Legend', minPoints: 900, maxPoints: Infinity, color: 'bg-gradient-to-r from-yellow-400 to-orange-500', badge: '🔥' }
+  { level: 1, name: 'Beginner', minPoints: 0, maxPoints: 149, color: 'bg-gray-500', badge: '🌱' },
+  { level: 2, name: 'Novice', minPoints: 150, maxPoints: 499, color: 'bg-blue-500', badge: '📚' },
+  { level: 3, name: 'Learner', minPoints: 500, maxPoints: 999, color: 'bg-green-500', badge: '🎓' },
+  { level: 4, name: 'Explorer', minPoints: 1000, maxPoints: 2499, color: 'bg-yellow-500', badge: '🔍' },
+  { level: 5, name: 'Achiever', minPoints: 2500, maxPoints: 4999, color: 'bg-orange-500', badge: '🏆' },
+  { level: 6, name: 'Expert', minPoints: 5000, maxPoints: 14999, color: 'bg-red-500', badge: '⭐' },
+  { level: 7, name: 'Master', minPoints: 15000, maxPoints: 29999, color: 'bg-purple-500', badge: '👑' },
+  { level: 8, name: 'Virtuoso', minPoints: 30000, maxPoints: 59999, color: 'bg-pink-500', badge: '💎' },
+  { level: 9, name: 'Champion', minPoints: 60000, maxPoints: 99999, color: 'bg-indigo-500', badge: '🏅' },
+  { level: 10, name: 'Legend', minPoints: 100000, maxPoints: Infinity, color: 'bg-gradient-to-r from-yellow-400 to-orange-500', badge: '🔥' }
 ];
 
 /**
