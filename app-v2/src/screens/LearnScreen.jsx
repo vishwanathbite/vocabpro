@@ -37,6 +37,14 @@ const CHALLENGE_QUESTIONS = 10
 /* Shared chrome: hairline border on navy, no coloured fill. */
 const CARD = 'rounded-xl border border-white/10 bg-white/[0.03]'
 
+/* Dumb pluralisation: append an 's' unless the count is exactly 1. No irregular
+   nouns, no library — this is not a general-purpose utility, only enough for the
+   handful of counted nouns on this screen. `pluralise` exists separately for the
+   one site that renders the number in its own bold span, where the noun cannot
+   travel with it. */
+const pluralise = (n, noun) => (n === 1 ? noun : `${noun}s`)
+const plural = (n, noun) => `${n} ${pluralise(n, noun)}`
+
 /* DEVICE-LOCAL, not IST. The IST boundary is a correctness rule for the daily
    challenge and the streak — everyone must get the same challenge on the same
    day. A greeting is the opposite: it describes the reader's own time of day,
@@ -128,7 +136,7 @@ export default function LearnScreen() {
         <button
           type="button"
           onClick={() => setSheet('streak')}
-          aria-label={`${streak} day streak, ${shields} shields. View details.`}
+          aria-label={`${streak} day streak, ${plural(shields, 'shield')}. View details.`}
           className="min-touch -mr-2 flex items-center gap-3 rounded-lg px-2 text-slate-400 transition-colors hover:text-slate-200"
         >
           {/* Icons are 17px so they read as objects rather than punctuation;
@@ -169,6 +177,8 @@ export default function LearnScreen() {
             <p className="text-xs font-semibold tracking-wider text-white/70 uppercase">
               Today&rsquo;s challenge
             </p>
+            {/* Not pluralised: CHALLENGE_QUESTIONS is the constant 10 and cannot
+                reach 1, so the plural is always right. Not an oversight. */}
             <p className="mt-1 text-lg font-semibold text-white">
               {CHALLENGE_QUESTIONS} questions
             </p>
@@ -214,11 +224,15 @@ export default function LearnScreen() {
         </>
       )}
 
-      {/* --- 4. DAILY GOAL --------------------------------------------- */}
+      {/* --- 4. DAILY GOAL ---------------------------------------------
+          goalTarget, not goalDone, governs the inflection in both this row's
+          label and the sheet's line below: the noun agrees with the second
+          number in "X of Y questions". pluralise rather than plural, since the
+          string already prints both numbers itself. */}
       <button
         type="button"
         onClick={() => setSheet('goal')}
-        aria-label={`Daily goal, ${goalDone} of ${goalTarget} questions. View goal settings.`}
+        aria-label={`Daily goal, ${goalDone} of ${goalTarget} ${pluralise(goalTarget, 'question')}. View goal settings.`}
         className="min-touch flex w-full flex-col justify-center gap-2 rounded-lg px-1 text-left transition-colors hover:bg-white/[0.03]"
       >
         <span className="flex items-baseline justify-between">
@@ -249,7 +263,8 @@ export default function LearnScreen() {
           className={`${CARD} min-touch flex w-full items-center justify-between px-4 text-left transition-colors hover:bg-white/[0.06]`}
         >
           <span className="text-sm text-slate-300">
-            <span className="font-semibold text-white tabular-nums">{reviewDue}</span> words due
+            <span className="font-semibold text-white tabular-nums">{reviewDue}</span>{' '}
+            {pluralise(reviewDue, 'word')} due
           </span>
           <ChevronRight width="18" height="18" className="text-slate-400" />
         </button>
@@ -276,21 +291,32 @@ export default function LearnScreen() {
       )}
 
       {/* --- SHEETS ----------------------------------------------------- */}
+
+      {/* Shield awarding is CALENDAR-weekly, not streak-tied:
+          awardWeeklyShieldIfDue reads only lastEarned and never the streak, so a
+          shield arrives every seven days whether or not the app was opened.
+          Tying awards to maintained streak days was considered and declined — it
+          would need a new stored field to remember the streak length at the last
+          award, and shields are harmless when unearned since a dormant user's
+          streak is zero and there is nothing to protect. This copy deliberately
+          matches the code. If the mechanic is ever changed, change this copy with
+          it. */}
       <BottomSheet isOpen={sheet === 'streak'} onClose={() => setSheet(null)} title="Your streak">
         <div className="space-y-4 text-sm text-slate-300">
           <p>
-            <span className="font-semibold text-white tabular-nums">{streak} days</span> in a row.
+            <span className="font-semibold text-white tabular-nums">{plural(streak, 'day')}</span>{' '}
+            in a row.
             Your streak counts the days you hit your daily goal. Miss a day and it goes back to
             zero — unless you have a shield.
           </p>
           <div className="border-t border-white/10 pt-4">
             <p className="mb-1 flex items-center gap-2 font-semibold text-white">
               <Shield width="16" height="16" className="text-slate-400" />
-              {shields} shields
+              {plural(shields, 'shield')}
             </p>
             <p>
-              Shields are spent automatically to cover a missed day. You start with one, and earn
-              another for every seven days you keep your streak going, up to three.
+              Shields are spent automatically to cover a missed day. You start with one and earn
+              another every week, up to three.
             </p>
             <p className="mt-2">
               A shield is only used if it can save your streak completely. Miss three days holding
@@ -303,7 +329,7 @@ export default function LearnScreen() {
       <BottomSheet isOpen={sheet === 'goal'} onClose={() => setSheet(null)} title="Daily goal">
         <div className="space-y-2">
           <p className="text-sm text-slate-400">
-            {goalDone} of {goalTarget} questions today.
+            {goalDone} of {goalTarget} {pluralise(goalTarget, 'question')} today.
           </p>
           <p className="mb-3 text-sm text-slate-400">
             Meeting this goal each day is what keeps your streak alive.
@@ -321,6 +347,8 @@ export default function LearnScreen() {
               >
                 <span>
                   <span className="block font-medium text-white">{p.name}</span>
+                  {/* Not pluralised: GOAL_PRESETS starts at 10 questions / 100
+                      points, so neither count can reach 1. Not an oversight. */}
                   <span className="block text-xs text-slate-400 tabular-nums">
                     {p.questions} questions &middot; {p.points} points
                   </span>
