@@ -176,10 +176,17 @@ export default function ProgressScreen() {
             <span
               className="mt-2 block h-1.5 w-full overflow-hidden rounded-full bg-white/10"
               role="progressbar"
-              aria-valuenow={Math.round(progress.progress)}
+              /* FLOOR, not round. Math.round announced "100 percent" beside
+                 "1 to next level" — a screen reader heard a finished bar on an
+                 unfinished level. Any score within 600 points of Legend rounded
+                 up, and step 10 widened the Champion-to-Legend band to 120,000,
+                 so the window where that happens is now far larger. Flooring
+                 reports 99 until the level is genuinely reached; at max level
+                 getLevelProgress returns exactly 100, which floors to 100. */
+              aria-valuenow={Math.floor(progress.progress)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`Progress to next level, ${Math.round(progress.progress)} percent`}
+              aria-label={`Progress to next level, ${Math.floor(progress.progress)} percent`}
             >
               <span
                 className="block h-full rounded-full bg-primary"

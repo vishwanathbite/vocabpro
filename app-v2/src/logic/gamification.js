@@ -6,7 +6,12 @@
 
 // ESM port of js/gamification.js. StorageManager is now imported rather than
 // sniffed off the global `window`, so it is always defined.
+//
+// formatNumber is imported so badge descriptions can state their thresholds in
+// the same en-IN grouping the level ladder and every other rendered number use.
+// format.js imports nothing, so this adds no cycle.
 import { StorageManager } from './storage.js';
+import { formatNumber } from './format.js';
 
 // ===========================
 // LEVEL SYSTEM
@@ -47,17 +52,37 @@ import { StorageManager } from './storage.js';
  *
  * Names, ids, colours and badge emoji are unchanged.
  */
+/*
+ * RESCALED AGAIN in step 10, from a 100,000 top to 300,000.
+ *
+ * The 100,000 curve was set in step 7e against a ten-question quiz earning
+ * 150-250. Two later changes moved the earn rate underneath it: step 9 made the
+ * daily goal complete on questions only, so a Regular day runs the full 25
+ * questions instead of stopping at 14-22 on points, and Smart Review now pays
+ * 1.5x on the word's own difficulty. A Regular day at 80% earns roughly 415.
+ * Measured against the changed code, that put every student at Level 6 within
+ * the first month and at Legend inside a year — the entire top half of the
+ * ladder consumed by one year of ordinary use, and nothing above Level 6
+ * distinguishing a 70% student from a 90% one.
+ *
+ * EACH maxPoints IS EXACTLY THE NEXT minPoints MINUS ONE. getLevelInfo does a
+ * bounded find and falls back to LEVEL_CONFIG[0] on a miss, so a gap of a single
+ * point would report that score as Level 1 — a Legend shown as a Beginner. Every
+ * boundary in this table is verified by demonstration, not by inspection.
+ *
+ * Names, ids, colours and badge emoji are unchanged.
+ */
 const LEVEL_CONFIG = [
-  { level: 1, name: 'Beginner', minPoints: 0, maxPoints: 149, color: 'bg-gray-500', badge: '🌱' },
-  { level: 2, name: 'Novice', minPoints: 150, maxPoints: 499, color: 'bg-blue-500', badge: '📚' },
-  { level: 3, name: 'Learner', minPoints: 500, maxPoints: 999, color: 'bg-green-500', badge: '🎓' },
-  { level: 4, name: 'Explorer', minPoints: 1000, maxPoints: 2499, color: 'bg-yellow-500', badge: '🔍' },
-  { level: 5, name: 'Achiever', minPoints: 2500, maxPoints: 4999, color: 'bg-orange-500', badge: '🏆' },
-  { level: 6, name: 'Expert', minPoints: 5000, maxPoints: 14999, color: 'bg-red-500', badge: '⭐' },
-  { level: 7, name: 'Master', minPoints: 15000, maxPoints: 29999, color: 'bg-purple-500', badge: '👑' },
-  { level: 8, name: 'Virtuoso', minPoints: 30000, maxPoints: 59999, color: 'bg-pink-500', badge: '💎' },
-  { level: 9, name: 'Champion', minPoints: 60000, maxPoints: 99999, color: 'bg-indigo-500', badge: '🏅' },
-  { level: 10, name: 'Legend', minPoints: 100000, maxPoints: Infinity, color: 'bg-gradient-to-r from-yellow-400 to-orange-500', badge: '🔥' }
+  { level: 1, name: 'Beginner', minPoints: 0, maxPoints: 499, color: 'bg-gray-500', badge: '🌱' },
+  { level: 2, name: 'Novice', minPoints: 500, maxPoints: 1499, color: 'bg-blue-500', badge: '📚' },
+  { level: 3, name: 'Learner', minPoints: 1500, maxPoints: 3999, color: 'bg-green-500', badge: '🎓' },
+  { level: 4, name: 'Explorer', minPoints: 4000, maxPoints: 9999, color: 'bg-yellow-500', badge: '🔍' },
+  { level: 5, name: 'Achiever', minPoints: 10000, maxPoints: 24999, color: 'bg-orange-500', badge: '🏆' },
+  { level: 6, name: 'Expert', minPoints: 25000, maxPoints: 49999, color: 'bg-red-500', badge: '⭐' },
+  { level: 7, name: 'Master', minPoints: 50000, maxPoints: 99999, color: 'bg-purple-500', badge: '👑' },
+  { level: 8, name: 'Virtuoso', minPoints: 100000, maxPoints: 179999, color: 'bg-pink-500', badge: '💎' },
+  { level: 9, name: 'Champion', minPoints: 180000, maxPoints: 299999, color: 'bg-indigo-500', badge: '🏅' },
+  { level: 10, name: 'Legend', minPoints: 300000, maxPoints: Infinity, color: 'bg-gradient-to-r from-yellow-400 to-orange-500', badge: '🔥' }
 ];
 
 /**
@@ -127,39 +152,99 @@ const getLevelProgress = (totalPoints) => {
  * js/ still ships all 29. That is intentional for the Play Store window — a beta
  * tester losing a badge they already earned is the wrong surprise.
  */
+/**
+ * THE THRESHOLDS. Every badge number lives here and nowhere else.
+ *
+ * Each condition below reads from these arrays, and so does every description
+ * that states a number — the descriptions are built with template literals
+ * through formatNumber, so a threshold and the sentence describing it cannot
+ * drift apart, and both match the level ladder's en-IN grouping (300000 renders
+ * as "3,00,000" in both places, never as "300,000").
+ *
+ * STREAK_MILESTONES is exported. quiz-scoring.js carried its own [5, 10, 20, 50]
+ * for the mid-quiz streak toast, which had already fallen out of step with the
+ * badges — it fired at 5 and 20, which no longer award anything, and stayed
+ * silent at 25 and 75, which do. It now imports this array.
+ *
+ * Ids are deliberately NOT renumbered. 'word_master_10' now means 25 mastered
+ * and 'streak_5' means a streak of 10. An id is a storage key: an earned badge
+ * is recorded by id in stats.earnedBadges, so renaming one would silently
+ * un-earn it for every existing save. The names and descriptions carry the
+ * meaning; the ids carry only identity.
+ */
+const MASTERY_THRESHOLDS = [25, 150, 600, 1850, 5000];
+const STREAK_MILESTONES = [10, 25, 50, 75];
+const POINTS_THRESHOLDS = [100, 500, 1000, 25000, 300000];
+const ACTIVITY_THRESHOLDS = [100, 500, 2000, 6000, 7500];
+const ACCURACY_THRESHOLDS = [
+  { ratio: 0.60, minAnswered: 50 },
+  { ratio: 0.75, minAnswered: 250 },
+  { ratio: 0.90, minAnswered: 1000 }
+];
+
 const BADGES = [
   // Mastery Badges
+  //
+  // Bounded by the corpus: 4,809 items can be mastered today — 4,009 vocabulary
+  // plus 300 acronyms and 500 one-word substitutes, which became masterable when
+  // quiz-scoring started passing wordId in step 8. The top five thresholds sit
+  // under that ceiling except the last, deliberately.
   { id: 'first_word', name: 'First Steps', description: 'Answer your first question correctly', icon: '🎯', condition: (stats) => stats.correctAnswers >= 1 },
-  { id: 'word_master_10', name: 'Word Collector', description: 'Master 10 words', icon: '📖', condition: (stats) => stats.masteredWords >= 10 },
-  { id: 'word_master_50', name: 'Vocabulary Builder', description: 'Master 50 words', icon: '📚', condition: (stats) => stats.masteredWords >= 50 },
-  { id: 'word_master_100', name: 'Word Wizard', description: 'Master 100 words', icon: '🧙', condition: (stats) => stats.masteredWords >= 100 },
-  { id: 'word_master_250', name: 'Lexicon Legend', description: 'Master 250 words', icon: '👑', condition: (stats) => stats.masteredWords >= 250 },
-  { id: 'word_master_500', name: 'Vocabulary Virtuoso', description: 'Master 500 words', icon: '💎', condition: (stats) => stats.masteredWords >= 500 },
+  { id: 'word_master_10', name: 'Word Collector', description: `Master ${formatNumber(MASTERY_THRESHOLDS[0])} words`, icon: '📖', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[0] },
+  { id: 'word_master_50', name: 'Vocabulary Builder', description: `Master ${formatNumber(MASTERY_THRESHOLDS[1])} words`, icon: '📚', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[1] },
+  { id: 'word_master_100', name: 'Word Wizard', description: `Master ${formatNumber(MASTERY_THRESHOLDS[2])} words`, icon: '🧙', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[2] },
+  { id: 'word_master_250', name: 'Lexicon Legend', description: `Master ${formatNumber(MASTERY_THRESHOLDS[3])} words`, icon: '👑', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[3] },
 
-  // Streak Badges
-  { id: 'streak_5', name: 'On Fire', description: 'Get 5 correct answers in a row', icon: '🔥', condition: (stats) => stats.maxStreak >= 5 },
-  { id: 'streak_10', name: 'Hot Streak', description: 'Get 10 correct answers in a row', icon: '🌟', condition: (stats) => stats.maxStreak >= 10 },
-  { id: 'streak_20', name: 'Unstoppable', description: 'Get 20 correct answers in a row', icon: '⚡', condition: (stats) => stats.maxStreak >= 20 },
-  { id: 'streak_50', name: 'Phenomenal', description: 'Get 50 correct answers in a row', icon: '💫', condition: (stats) => stats.maxStreak >= 50 },
+  // UNEARNABLE TODAY, AND THAT IS THE POINT. DO NOT RETIRE IT.
+  //
+  // 5,000 is above the current mastery ceiling of 4,809, so no student can earn
+  // this until the corpus grows. It was set knowing that, as a post-expansion
+  // trophy: the corpus targets 10,000 items within the year, and a top mastery
+  // badge that the most committed student reaches in month nine is not a trophy.
+  //
+  // This is recorded here because five badges were retired on 31 July for being
+  // unearnable, each correctly — they read counters with no writer, and no
+  // amount of content would ever have made them earnable. This one is different
+  // in kind: its counter works, its condition is sound, and only the corpus size
+  // stands between it and a real award. Check the corpus before touching it.
+  { id: 'word_master_500', name: 'Vocabulary Virtuoso', description: `Master ${formatNumber(MASTERY_THRESHOLDS[4])} words`, icon: '💎', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[4] },
 
-  // Points Badges
-  { id: 'points_100', name: 'Century', description: 'Earn 100 points', icon: '💯', condition: (stats) => stats.totalPoints >= 100 },
-  { id: 'points_500', name: 'Half Thousand', description: 'Earn 500 points', icon: '🎊', condition: (stats) => stats.totalPoints >= 500 },
-  { id: 'points_1000', name: 'Millennium', description: 'Earn 1000 points', icon: '🏆', condition: (stats) => stats.totalPoints >= 1000 },
-  { id: 'points_2500', name: 'Elite Scorer', description: 'Earn 2500 points', icon: '🥇', condition: (stats) => stats.totalPoints >= 2500 },
-  { id: 'points_5000', name: 'Grand Master', description: 'Earn 5000 points', icon: '👑', condition: (stats) => stats.totalPoints >= 5000 },
+  // Streak Badges — maxStreak is consecutive correct answers, unbounded.
+  { id: 'streak_5', name: 'On Fire', description: `Get ${formatNumber(STREAK_MILESTONES[0])} correct answers in a row`, icon: '🔥', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[0] },
+  { id: 'streak_10', name: 'Hot Streak', description: `Get ${formatNumber(STREAK_MILESTONES[1])} correct answers in a row`, icon: '🌟', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[1] },
+  { id: 'streak_20', name: 'Unstoppable', description: `Get ${formatNumber(STREAK_MILESTONES[2])} correct answers in a row`, icon: '⚡', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[2] },
+  { id: 'streak_50', name: 'Phenomenal', description: `Get ${formatNumber(STREAK_MILESTONES[3])} correct answers in a row`, icon: '💫', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[3] },
 
-  // Activity Badges
-  { id: 'questions_50', name: 'Curious Mind', description: 'Answer 50 questions', icon: '🤔', condition: (stats) => stats.totalAnswered >= 50 },
-  { id: 'questions_100', name: 'Dedicated Learner', description: 'Answer 100 questions', icon: '📝', condition: (stats) => stats.totalAnswered >= 100 },
-  { id: 'questions_250', name: 'Quiz Master', description: 'Answer 250 questions', icon: '🎓', condition: (stats) => stats.totalAnswered >= 250 },
-  { id: 'questions_500', name: 'Knowledge Seeker', description: 'Answer 500 questions', icon: '🔍', condition: (stats) => stats.totalAnswered >= 500 },
-  { id: 'questions_1000', name: 'Eternal Student', description: 'Answer 1000 questions', icon: '📚', condition: (stats) => stats.totalAnswered >= 1000 },
+  // Points Badges — totalPoints is unbounded.
+  //
+  // TWO OF THESE ARE TIED TO THE LEVEL LADDER ON PURPOSE, and must move with it:
+  //   Elite Scorer  25,000  == LEVEL_CONFIG level 6, Expert
+  //   Grand Master 300,000  == LEVEL_CONFIG level 10, Legend
+  // Earning either should coincide exactly with the level-up it names. Changing
+  // one without the other silently breaks that pairing, and nothing else would
+  // catch it — the two tables have no other connection.
+  { id: 'points_100', name: 'Century', description: `Earn ${formatNumber(POINTS_THRESHOLDS[0])} points`, icon: '💯', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[0] },
+  { id: 'points_500', name: 'Half Thousand', description: `Earn ${formatNumber(POINTS_THRESHOLDS[1])} points`, icon: '🎊', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[1] },
+  { id: 'points_1000', name: 'Millennium', description: `Earn ${formatNumber(POINTS_THRESHOLDS[2])} points`, icon: '🏆', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[2] },
+  { id: 'points_2500', name: 'Elite Scorer', description: `Earn ${formatNumber(POINTS_THRESHOLDS[3])} points`, icon: '🥇', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[3] },
+  { id: 'points_5000', name: 'Grand Master', description: `Earn ${formatNumber(POINTS_THRESHOLDS[4])} points`, icon: '👑', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[4] },
+
+  // Activity Badges — totalAnswered counts QUESTIONS, incremented once per
+  // answered question in updateStats. Not quizzes. Unbounded.
+  { id: 'questions_50', name: 'Curious Mind', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[0])} questions`, icon: '🤔', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[0] },
+  { id: 'questions_100', name: 'Dedicated Learner', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[1])} questions`, icon: '📝', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[1] },
+  { id: 'questions_250', name: 'Quiz Master', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[2])} questions`, icon: '🎓', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[2] },
+  { id: 'questions_500', name: 'Knowledge Seeker', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[3])} questions`, icon: '🔍', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[3] },
+  { id: 'questions_1000', name: 'Eternal Student', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[4])} questions`, icon: '📚', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[4] },
 
   // Accuracy Badges
-  { id: 'accuracy_50', name: 'Good Start', description: 'Maintain 50% accuracy (min 20 questions)', icon: '✅', condition: (stats) => stats.totalAnswered >= 20 && (stats.correctAnswers / stats.totalAnswered) >= 0.5 },
-  { id: 'accuracy_75', name: 'Sharp Mind', description: 'Maintain 75% accuracy (min 50 questions)', icon: '🎯', condition: (stats) => stats.totalAnswered >= 50 && (stats.correctAnswers / stats.totalAnswered) >= 0.75 },
-  { id: 'accuracy_90', name: 'Perfection', description: 'Maintain 90% accuracy (min 100 questions)', icon: '⭐', condition: (stats) => stats.totalAnswered >= 100 && (stats.correctAnswers / stats.totalAnswered) >= 0.9 },
+  //
+  // "Reach", not "Maintain". Badges are permanent once earned (getEarnedBadges
+  // unions in the stored ids), so a student whose accuracy later falls keeps
+  // these — "Maintain" described a rule the app does not enforce.
+  { id: 'accuracy_50', name: 'Good Start', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[0].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[0].minAnswered)} questions)`, icon: '✅', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[0].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[0].ratio },
+  { id: 'accuracy_75', name: 'Sharp Mind', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[1].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[1].minAnswered)} questions)`, icon: '🎯', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[1].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[1].ratio },
+  { id: 'accuracy_90', name: 'Perfection', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[2].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[2].minAnswered)} questions)`, icon: '⭐', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[2].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[2].ratio },
 
   // Special Badges
   // SEVEN matches the Practice tab exactly: vocab, synonym, antonym, oneword,
@@ -940,6 +1025,7 @@ export {
   updateStats,
   recordModePlayed,
   STATS_ARRAY_FIELDS,
+  STREAK_MILESTONES,
   StreakProtection,
   awardWeeklyShieldIfDue,
   StatsManager

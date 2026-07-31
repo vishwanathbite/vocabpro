@@ -23,7 +23,13 @@
  * fully deterministic and testable.
  */
 
-import { updateStats, getNewBadges, getLevelInfo, calculatePoints } from './gamification.js';
+import {
+  updateStats,
+  getNewBadges,
+  getLevelInfo,
+  calculatePoints,
+  STREAK_MILESTONES
+} from './gamification.js';
 
 /**
  * Score a single quiz answer.
@@ -90,8 +96,18 @@ export function scoreAnswer({
   // Check for level up
   const levelUp = newStats.level > previousLevel ? getLevelInfo(newStats.totalPoints) : null;
 
-  // Check for streak milestones
-  const streakMilestone = correct && [5, 10, 20, 50].includes(newStats.currentStreak)
+  // Check for streak milestones.
+  //
+  // READ, NOT COPIED. This was a literal [5, 10, 20, 50] — its own copy of the
+  // streak badge thresholds, and the first duplicate in this codebase found
+  // already disagreeing with its original rather than merely at risk of it: the
+  // badges moved to 10/25/50/75, so this fired a milestone toast at 5 and 20
+  // where nothing is awarded, and stayed silent at 25 and 75 where a badge
+  // lands. The toast and the badge are the same moment to a student.
+  //
+  // No cycle: this module already imports from gamification.js, and nothing in
+  // gamification.js imports back.
+  const streakMilestone = correct && STREAK_MILESTONES.includes(newStats.currentStreak)
     ? newStats.currentStreak
     : null;
 
