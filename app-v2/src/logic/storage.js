@@ -137,6 +137,13 @@ const getDefaultState = () => ({
     masteredWordsList: [],
     learningWordsList: [],
     strugglingWordsList: [],
+
+    // Smart Review queue. SECOND COPY of gamification.js:initializeStats — this
+    // whole section duplicates it field for field, and the two must be edited
+    // together. gamification.js imports this module, so the duplication cannot
+    // be closed by importing initializeStats here without a cycle.
+    reviewPool: [],
+
     referrals: 0,
     modesPlayed: 0,
     modesPlayedList: [],

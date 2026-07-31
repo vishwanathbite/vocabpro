@@ -10,10 +10,14 @@
  *   - all setState calls (setStats, setScore, setShowAchievement, ...)
  *   - the four setTimeout blocks and their toast sequencing
  *   - SoundManager.play* calls
- *   - SRSManager.updateEntry        (persists)
  *   - DailyGoalsManager.updateProgress (persists)
  *   - DailyGoalsManager.isGoalComplete (persists too — it lazily creates and
  *     saves today's history entry via getTodayProgress, despite the read-y name)
+ *
+ * The Smart Review pool is NOT in that list and is not the caller's job. It
+ * lives on stats.reviewPool and is maintained inside updateStats, so it rides
+ * along with the newStats the caller already persists. SRSManager.updateEntry
+ * used to be listed above as a separate caller-side write; it no longer exists.
  *
  * Time is injected (`now`, `nowISO`) rather than read, so the function is
  * fully deterministic and testable.
@@ -50,11 +54,17 @@ export function scoreAnswer({
   const correct = answer === currentQuestion.correct;
   const responseTime = now - (currentQuestion.startTime || now);
 
-  // Word identity for SRS; the caller performs the actual (persisting) update.
+  // Canonical word identity, resolved the same way everywhere in the app.
   const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase || currentQuestion.wordData?.idiom;
 
   const difficultyOrMode = difficulty || mode;
-  const newStats = updateStats(stats, correct, difficultyOrMode, currentQuestion.word, mode, nowISO);
+
+  // wordId, NOT currentQuestion.word. generateQuestions sets `word` for the
+  // vocabulary-shaped modes but not for acronym or oneword, so those two used to
+  // arrive here as undefined and skip the entire mastery block in updateStats —
+  // an acronym could never be mastered, and under the new model could never
+  // enter the review pool either. They now count like every other question.
+  const newStats = updateStats(stats, correct, difficultyOrMode, wordId, mode, nowISO);
 
   // Check for new achievements
   const newBadges = getNewBadges(newStats, previousBadges);

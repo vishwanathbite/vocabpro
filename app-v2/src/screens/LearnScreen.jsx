@@ -3,9 +3,8 @@ import BottomSheet from '../components/BottomSheet.jsx'
 import { CARD, ROW } from '../components/chrome.js'
 import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
-import { StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
+import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
 import { DailyChallengeManager } from '../logic/daily-challenge.js'
-import { SRSManager } from '../logic/srs.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
 
 /* Short names, deliberately not the stored ones. DAILY_GOAL_PRESETS in
@@ -97,11 +96,15 @@ export default function LearnScreen() {
   const [goalPct] = useState(() => DailyGoalsManager.getProgressPercentage())
   const [goalPresetId] = useState(readGoalPresetId)
 
-  /* Stored SRS entries only — never vocabulary — so this is correct however
-     little of the database has loaded. A user who has answered nothing has no
-     entries and gets 0, which correctly hides the row rather than claiming
-     4,009 words are due. */
-  const [reviewDue] = useState(() => SRSManager.getStats().dueToday)
+  /* Stored review pool only — never vocabulary — so this is correct however
+     little of the database has loaded. A user who has answered nothing has an
+     empty pool and gets 0, which correctly hides the row rather than claiming
+     4,009 words are due.
+
+     The reasoning above is unchanged from when this read SRS entries; only the
+     store moved. loadStats is what guarantees the field exists on a save
+     written before the pool did. */
+  const [reviewDue] = useState(() => StatsManager.loadStats().reviewPool.length)
 
   /* Null when no vocabulary has loaded yet, or when every difficulty is empty.
      useMemo so a sheet opening does not re-run it. */
@@ -262,7 +265,7 @@ export default function LearnScreen() {
         >
           <span className="text-sm text-slate-300">
             <span className="font-semibold text-white tabular-nums">{reviewDue}</span>{' '}
-            {pluralise(reviewDue, 'word')} due
+            {pluralise(reviewDue, 'word')} to review
           </span>
           <ChevronRight width="18" height="18" className="text-slate-400" />
         </button>

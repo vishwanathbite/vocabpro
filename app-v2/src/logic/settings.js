@@ -11,6 +11,7 @@
 // runtime-only (inside methods), never dereferenced at module top level.
 import { StorageManager } from './storage.js';
 import { SoundManager } from './sound.js';
+import { DailyGoalsManager } from './dailygoals.js';
 
 // ===========================
 // SETTINGS MANAGER
@@ -30,7 +31,20 @@ const SettingsManager = {
     soundEnabled: true,
     speechEnabled: true,
     darkMode: true, // App is always dark mode by design
+
+    // DERIVED, NOT STORED. This is a display shadow of dailyGoals.goalPreset,
+    // which is the value actually enforced — DailyGoalsManager.getGoal reads
+    // only that one (dailygoals.js:168), so a settings copy that drifted would
+    // show the user a goal the app was not applying. getSettings below always
+    // overwrites this key from the real source, and set() below redirects
+    // writes to it. The default here is kept only so the key still resolves if
+    // the goals section is somehow unreadable.
+    //
+    // js/ still writes BOTH copies (js/screens.js:1357-1359) and reads the
+    // settings one back (js/screens.js:1529). It is untouched and stays
+    // self-consistent; this end just stops trusting its own copy.
     dailyGoalPreset: 'regular',
+
     showWordOfDay: true,
     showDailyGoals: true,
     autoPlayPronunciation: false,
@@ -44,6 +58,29 @@ const SettingsManager = {
    * Get all settings from centralized storage
    */
   getSettings: () => {
+    const settings = SettingsManager.readStored();
+
+    // The stored settings.dailyGoalPreset is never trusted — see defaults above.
+    // A custom goal is not one of the four presets, so it resolves to no preset
+    // rather than to a stale one; readGoalPresetId in LearnScreen makes the same
+    // call for the same reason.
+    const goals = DailyGoalsManager.loadData();
+    settings.dailyGoalPreset = goals.customGoal ? null : goals.goalPreset;
+
+    return settings;
+  },
+
+  /**
+   * Settings exactly as stored, with NO derivation.
+   *
+   * The write path uses this rather than getSettings, so a save can never stamp
+   * the derived dailyGoalPreset into the stored blob. That blob is shared with
+   * js/, which reads settings.dailyGoalPreset to decide which preset row to
+   * highlight (js/screens.js:1529) — persisting a derived null there for a user
+   * on a custom goal would change what the shipping app draws. This end reads
+   * around its copy; it does not rewrite it.
+   */
+  readStored: () => {
     const state = StorageManager.loadState();
     return { ...SettingsManager.defaults, ...state.settings };
   },
@@ -60,7 +97,15 @@ const SettingsManager = {
    * Update a setting
    */
   set: (key, value) => {
-    const settings = SettingsManager.getSettings();
+    // Redirected to the real store rather than written here, so this end can
+    // never create the divergence the shadow made possible. Returning
+    // getSettings() re-derives the key, so the caller still sees the new value.
+    if (key === 'dailyGoalPreset') {
+      DailyGoalsManager.setGoalPreset(value);
+      return SettingsManager.getSettings();
+    }
+
+    const settings = SettingsManager.readStored();
     settings[key] = value;
 
     const state = StorageManager.loadState();
@@ -80,14 +125,21 @@ const SettingsManager = {
    * Update multiple settings at once
    */
   setMultiple: (updates) => {
-    const settings = SettingsManager.getSettings();
-    Object.assign(settings, updates);
+    const { dailyGoalPreset, ...rest } = updates;
+
+    // Same redirect as set(), so a batch cannot smuggle a write past it.
+    if (dailyGoalPreset !== undefined) {
+      DailyGoalsManager.setGoalPreset(dailyGoalPreset);
+    }
+
+    const settings = SettingsManager.readStored();
+    Object.assign(settings, rest);
 
     const state = StorageManager.loadState();
     state.settings = settings;
     StorageManager.saveState(state);
 
-    return settings;
+    return SettingsManager.getSettings();
   },
 
   /**
@@ -412,7 +464,7 @@ const OnboardingManager = {
     {
       id: 'srs',
       title: 'Smart Learning',
-      description: 'Our spaced repetition system tracks your progress and shows you words you need to practice.',
+      description: "Get a word wrong, and it goes into Smart Review until you've got it right twice.",
       icon: '🧠',
       highlight: 'smart-review'
     },

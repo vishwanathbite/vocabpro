@@ -342,6 +342,17 @@ const initializeStats = () => {
     masteredWordsList: [],
     learningWordsList: [],
     strugglingWordsList: [],
+
+    // Smart Review queue: every word answered wrong, until it is answered
+    // correctly twice with no wrong in between. Replaces the SM-2 scheduler.
+    //
+    // SECOND COPY, unavoidable today: storage.js:128-152 holds a field-for-field
+    // duplicate of this whole object as its `stats` default section, and cannot
+    // import it — gamification.js already imports storage.js, so the dependency
+    // only runs one way. The two must be edited together; storage.js:139 carries
+    // the matching note.
+    reviewPool: [],
+
     referrals: 0,
     modesPlayed: 0,
     modesPlayedList: [],
@@ -384,7 +395,8 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
   // `= []` inits below must still see an absent list as absent, and a non-array
   // value from corrupt data is left exactly as it was.
   for (const key of ['masteredWordsList', 'learningWordsList', 'strugglingWordsList',
-                     'modesPlayedList', 'earnedBadges', 'idiomsDifficultiesList']) {
+                     'reviewPool', 'modesPlayedList', 'earnedBadges',
+                     'idiomsDifficultiesList']) {
     if (Array.isArray(newStats[key])) {
       newStats[key] = [...newStats[key]];
     }
@@ -419,6 +431,14 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
       newStats.strugglingWordsList = [];
     }
 
+    // Read the review pool through a local that falls back to empty, and always
+    // write a fresh array back. A save written before the pool existed has no
+    // reviewPool field at all, and this block must not be the thing that throws
+    // on it — the same shape as the modesPlayedList crash. loadStats is the one
+    // place that supplies the default (see StatsManager.loadStats below); this
+    // is a tolerant read, not a second default.
+    const pool = Array.isArray(newStats.reviewPool) ? newStats.reviewPool : [];
+
     if (isCorrect) {
       // Remove from struggling words if present
       newStats.strugglingWordsList = newStats.strugglingWordsList.filter(w => w !== word);
@@ -430,29 +450,36 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
           // Promote from learning to mastered
           newStats.learningWordsList = newStats.learningWordsList.filter(w => w !== word);
           newStats.masteredWordsList.push(word);
+
+          // THE POOL EXIT, and the only one. Promotion to mastered is now
+          // exactly "two corrects since the last wrong answer" for every word,
+          // whatever its history — which is what makes this a single equality
+          // test rather than a check on how the word got here.
+          newStats.reviewPool = pool.filter(w => w !== word);
         } else {
           // First time correct - add to learning
           newStats.learningWordsList.push(word);
+          newStats.reviewPool = pool;
         }
+      } else {
+        newStats.reviewPool = pool;
       }
     } else {
-      // Incorrect answer
-      // Remove from mastered if it was there (demote)
-      if (newStats.masteredWordsList.includes(word)) {
-        newStats.masteredWordsList = newStats.masteredWordsList.filter(w => w !== word);
-        newStats.learningWordsList.push(word);
-      }
-      // If in learning, move to struggling
-      else if (newStats.learningWordsList.includes(word)) {
-        newStats.learningWordsList = newStats.learningWordsList.filter(w => w !== word);
-        if (!newStats.strugglingWordsList.includes(word)) {
-          newStats.strugglingWordsList.push(word);
-        }
-      }
-      // If completely new and wrong, add to struggling
-      else if (!newStats.strugglingWordsList.includes(word)) {
+      // Incorrect answer.
+      //
+      // DEMOTION CHANGED: a mastered word used to fall back only as far as
+      // learning, so one correct answer re-mastered it while every other word
+      // needed two. Now every wrong answer lands in struggling regardless of
+      // where the word was, so the two-corrects rule holds uniformly and
+      // "mastered" carries the same meaning for a lapsed word as a new one.
+      newStats.masteredWordsList = newStats.masteredWordsList.filter(w => w !== word);
+      newStats.learningWordsList = newStats.learningWordsList.filter(w => w !== word);
+      if (!newStats.strugglingWordsList.includes(word)) {
         newStats.strugglingWordsList.push(word);
       }
+
+      // THE POOL ENTRY, and the only one.
+      newStats.reviewPool = pool.includes(word) ? pool : [...pool, word];
     }
 
     // Update counts
@@ -461,11 +488,24 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
     newStats.strugglingWords = newStats.strugglingWordsList.length;
   }
 
-  // Track mode usage
-  if (mode && !newStats.modesPlayedList.includes(mode)) {
-    newStats.modesPlayedList.push(mode);
-    newStats.modesPlayed = newStats.modesPlayedList.length;
+  // Track mode usage.
+  //
+  // The tolerant read here is NOT incidental tidying — this line is the recorded
+  // crash. A save written before modesPlayedList existed reaches this function
+  // with the field absent, the de-alias loop above deliberately leaves a missing
+  // field missing, and the backward-compat inits below the mastery block only
+  // cover the three word lists. So `.includes` was called on undefined and threw
+  // on the first answer after upgrading.
+  //
+  // Found again while demonstrating the reviewPool migration: a fixture built to
+  // look like a genuinely old blob omits BOTH fields, and this is what threw,
+  // not the new one. Fixed in the same shape as reviewPool above.
+  const modes = Array.isArray(newStats.modesPlayedList) ? newStats.modesPlayedList : [];
+  if (mode && !modes.includes(mode)) {
+    modes.push(mode);
   }
+  newStats.modesPlayedList = modes;
+  newStats.modesPlayed = modes.length;
 
   // Update level
   const levelInfo = getLevelInfo(newStats.totalPoints);
@@ -732,11 +772,33 @@ const StatsManager = {
   storageKey: 'vocabProStats', // Legacy key for reference
 
   /**
-   * Load stats from centralized storage
+   * Load stats from centralized storage.
+   *
+   * THE ONE PLACE reviewPool is defaulted. Every other reader may assume the
+   * field is present on what this returns; nothing else in the app should
+   * re-supply it.
+   *
+   * A stored blob is NOT deep-merged against the defaults — validateState only
+   * replaces `stats` wholesale when it is not an object at all (storage.js:219),
+   * so a save written before a field existed arrives here missing that field and
+   * reaches consumers intact. That is the modesPlayedList crash, which no guard
+   * upstream would have caught. Fields are filled here rather than repaired at
+   * every read site.
+   *
+   * Only reviewPool is normalised, deliberately. The rest of the shape is left
+   * exactly as stored: retro-filling the other lists would paper over a genuinely
+   * corrupt blob, and updateStats already has backward-compat inits for the three
+   * word lists. This is the field with no such init and no history in the wild.
    */
   loadStats: () => {
     const state = StorageManager.loadState();
-    return state.stats || initializeStats();
+    const stats = state.stats || initializeStats();
+
+    if (Array.isArray(stats.reviewPool)) {
+      return stats;
+    }
+
+    return { ...stats, reviewPool: [] };
   },
 
   /**
@@ -754,8 +816,9 @@ const StatsManager = {
 // rather than hung off StreakProtection to keep the one privileged mutation
 // entry point visible at the import site: a caller reaching for it has to name
 // it, and cannot reach it by accident while reading shield counts.
-// updateStreak, getStreakMessage, getPerformanceGrade, POINTS_CONFIG and
-// QUALITY_RATINGS stay internal (unexported), as in the original.
+// updateStreak, getStreakMessage, getPerformanceGrade and POINTS_CONFIG stay
+// internal (unexported), as in the original. (QUALITY_RATINGS was listed here
+// too, but it never lived in this module — it was srs.js's, and went with it.)
 export {
   LEVEL_CONFIG,
   getLevelInfo,
