@@ -310,15 +310,45 @@ const POINTS_CONFIG = {
 };
 
 /**
+ * Smart Review pays 1.5x. THE SINGLE SOURCE for the multiplier.
+ *
+ * Measured, not chosen: a Smart Review question was worth 0.786 of a normal one
+ * for a mixed-difficulty student, because pool words are by definition the ones
+ * the student gets wrong — lower accuracy there, so the streak bonus accumulates
+ * less and fewer questions score at all. 1.15 / 0.786 = 1.46, rounded to 1.5,
+ * which lands review modestly ahead rather than merely level.
+ *
+ * It multiplies the WORD'S OWN difficulty, not a flat 10. Review used to resolve
+ * to the mode string and fall through calculatePoints' `|| 10`, so every
+ * reviewed word scored as easy; that was fixed first precisely so this
+ * multiplier would not be applied to the wrong base and cancel half of it.
+ */
+const REVIEW_POINTS_MULTIPLIER = 1.5;
+
+/**
  * Calculate points for correct answer
+ *
+ * `mode` is separate from `difficulty` because Smart Review needs both at once:
+ * the word's difficulty sets the base, and the mode decides whether the review
+ * multiplier applies. Folding review into POINTS_CONFIG as its own key cannot
+ * express that — a key there replaces the difficulty rather than scaling it,
+ * which is exactly how the flat-10 bug happened.
+ *
+ * Applied here rather than at the call sites so the two point paths cannot
+ * diverge: updateStats accumulates totalPoints and scoreAnswer returns the
+ * figure shown to the user, and they must agree.
+ *
  * @param {string} difficulty - Difficulty level or quiz mode
  * @param {number} streak - Current streak (bonus points)
+ * @param {string} [mode] - Quiz mode; only 'review' changes the result
  * @returns {number} - Total points awarded
  */
-const calculatePoints = (difficulty, streak = 0) => {
+const calculatePoints = (difficulty, streak = 0, mode = null) => {
   const basePoints = POINTS_CONFIG[difficulty] || 10;
   const streakBonus = Math.min(streak, 10); // Max 10 bonus points from streak
-  return basePoints + streakBonus;
+  const total = basePoints + streakBonus;
+
+  return mode === 'review' ? Math.round(total * REVIEW_POINTS_MULTIPLIER) : total;
 };
 
 // ===========================
@@ -369,6 +399,23 @@ const initializeStats = () => {
 };
 
 /**
+ * Every array field on the stats shape. THE SINGLE SOURCE.
+ *
+ * Four modules de-alias stats before touching it — this one, match-scoring.js,
+ * quiz-summary.js and daily-challenge-scoring.js — and each carried its own copy
+ * of this list. When reviewPool was added in step 8 it went into one of the four,
+ * so the other three silently stopped covering a field and would have aliased
+ * the caller's pool. Nothing caught it because none of the three has a caller
+ * yet. They now import this.
+ *
+ * Adding a field to the stats shape means adding it here, and nowhere else.
+ */
+const STATS_ARRAY_FIELDS = [
+  'masteredWordsList', 'learningWordsList', 'strugglingWordsList',
+  'reviewPool', 'modesPlayedList', 'earnedBadges', 'idiomsDifficultiesList'
+];
+
+/**
  * Update statistics after answering a question
  * @param {Object} stats - Current statistics
  * @param {boolean} isCorrect - Whether answer was correct
@@ -382,10 +429,10 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
   const newStats = { ...stats };
 
   // The spread is shallow, so every array field still points at the caller's
-  // arrays and the .push calls below would mutate the input. De-alias all six
-  // array fields up front rather than just the four mutated today: the invariant
+  // arrays and the .push calls below would mutate the input. De-alias every
+  // array field up front rather than just the ones mutated today: the invariant
   // we want is "updateStats never aliases its input", and that has to survive
-  // someone adding a seventh .push later. Scoping the clone to the current
+  // someone adding another .push later. Scoping the clone to the current
   // mutation sites would break silently the next time this function changes.
   // earnedBadges is already replaced by its .map() below and idiomsDifficultiesList
   // is not touched here, so cloning those two is behaviourally a no-op — it just
@@ -394,9 +441,7 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
   // Guarded on Array.isArray so a missing field stays missing: the backward-compat
   // `= []` inits below must still see an absent list as absent, and a non-array
   // value from corrupt data is left exactly as it was.
-  for (const key of ['masteredWordsList', 'learningWordsList', 'strugglingWordsList',
-                     'reviewPool', 'modesPlayedList', 'earnedBadges',
-                     'idiomsDifficultiesList']) {
+  for (const key of STATS_ARRAY_FIELDS) {
     if (Array.isArray(newStats[key])) {
       newStats[key] = [...newStats[key]];
     }
@@ -412,9 +457,11 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
   newStats.currentStreak = updateStreak(isCorrect, stats.currentStreak);
   newStats.maxStreak = Math.max(newStats.maxStreak, newStats.currentStreak);
 
-  // Update points (only for correct answers)
+  // Update points (only for correct answers). `mode` is forwarded so the review
+  // multiplier lands in totalPoints too — scoreAnswer computes the same figure
+  // for display, and the two must not diverge.
   if (isCorrect) {
-    const points = calculatePoints(difficulty, stats.currentStreak);
+    const points = calculatePoints(difficulty, stats.currentStreak, mode);
     newStats.totalPoints += points;
   }
 
@@ -522,6 +569,67 @@ const updateStats = (stats, isCorrect, difficulty, word, mode, nowISO = new Date
   // Check for new badges
   const earnedBadges = getEarnedBadges(newStats);
   newStats.earnedBadges = earnedBadges.map(b => b.id);
+
+  return newStats;
+};
+
+/**
+ * Record that a mode was played, and change nothing else.
+ *
+ * WHY THIS EXISTS. modesPlayedList is written in exactly one place — inside
+ * updateStats — and updateStats is the per-answer scoring path: it awards
+ * points, moves a word through learning/mastered/struggling, and maintains the
+ * review pool. Flashcards must do none of those. They are SELF-REPORTED: the
+ * student presses Know or Don't know, with nothing checked against them. Routing
+ * a flashcard through updateStats would let a student master the corpus by
+ * pressing one button, and would let Don't know inject an untested word into the
+ * review pool. So flashcards get the mode write on its own, and nothing else.
+ *
+ * That leaves 'flashcard' as the only mode string with no scoring behind it,
+ * which is exactly the product decision: flashcards are for learning, not
+ * scoring. Jack of All Trades needs all seven modes and was unearnable without
+ * this — the flashcard path never called updateStats in either tree, so
+ * 'flashcard' had never entered the list.
+ *
+ * WHERE THE SCREEN CALLS IT. Once per session from the flashcard screen, on
+ * session start or completion — either is fine, since this is idempotent and
+ * the badge only cares that the mode appears once. The screen then persists with
+ * StatsManager.saveStats, exactly as the quiz screens will with scoreAnswer's
+ * newStats. NO CALLER IS ADDED HERE; the flashcard screen does not exist yet.
+ *
+ * WHAT IT TOUCHES. modesPlayedList, modesPlayed, and earnedBadges. The badge
+ * refresh is deliberate and is the one derived field beyond the mode itself:
+ * without it a student whose seventh mode is flashcards would not see the badge
+ * until their next scored answer, which is the failure this is meant to fix.
+ * It cannot award anything else — getEarnedBadges reads stats it does not
+ * change, and every other badge condition depends on counters this leaves alone.
+ * points, mastery and reviewPool are provably untouched; the demonstration
+ * compares them field for field.
+ *
+ * @param {Object} stats - Current statistics, left untouched
+ * @param {string} mode  - Mode identifier, e.g. 'flashcard'
+ * @returns {Object} Updated statistics, owning its own arrays
+ */
+const recordModePlayed = (stats, mode) => {
+  const newStats = { ...stats };
+
+  // Same de-alias guarantee as updateStats, via the same list.
+  for (const key of STATS_ARRAY_FIELDS) {
+    if (Array.isArray(newStats[key])) {
+      newStats[key] = [...newStats[key]];
+    }
+  }
+
+  // Tolerates a save written before modesPlayedList existed, for the same reason
+  // updateStats does — that absence is this project's recorded crash.
+  const modes = Array.isArray(newStats.modesPlayedList) ? newStats.modesPlayedList : [];
+  if (mode && !modes.includes(mode)) {
+    modes.push(mode);
+  }
+  newStats.modesPlayedList = modes;
+  newStats.modesPlayed = modes.length;
+
+  newStats.earnedBadges = getEarnedBadges(newStats).map(b => b.id);
 
   return newStats;
 };
@@ -830,6 +938,8 @@ export {
   calculatePoints,
   initializeStats,
   updateStats,
+  recordModePlayed,
+  STATS_ARRAY_FIELDS,
   StreakProtection,
   awardWeeklyShieldIfDue,
   StatsManager

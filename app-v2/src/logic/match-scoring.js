@@ -26,15 +26,13 @@
  * parameter it never uses (app.js:1827, called with newMatched.length at 1801).
  */
 
-import { updateStats, getLevelInfo, getEarnedBadges, getNewBadges } from './gamification.js';
-
-// The six array fields on the stats shape. Mirrors the de-alias list in
-// gamification.js so the "never alias the caller's input" guarantee holds here
-// too — including when matchPairs is empty and the fold below never runs.
-const STATS_ARRAY_FIELDS = [
-  'masteredWordsList', 'learningWordsList', 'strugglingWordsList',
-  'modesPlayedList', 'earnedBadges', 'idiomsDifficultiesList'
-];
+import {
+  updateStats,
+  getLevelInfo,
+  getEarnedBadges,
+  getNewBadges,
+  STATS_ARRAY_FIELDS
+} from './gamification.js';
 
 /**
  * Compute the result of a completed match game.
@@ -89,7 +87,14 @@ export function completeMatchGame({
   const diffKey = difficulty || 'easy';
   const pointsBefore = newStats.totalPoints;
   matchPairs.forEach(pair => {
-    newStats = updateStats(newStats, true, diffKey, pair.word, 'match', nowISO);
+    // MODE DELIBERATELY OMITTED. This passed 'match', which was the only thing
+    // still writing that string into modesPlayedList. Match is cut and Jack of
+    // All Trades now names seven live modes, so a 'match' entry could only
+    // inflate the count toward a badge without the student having played seven
+    // current modes — the inflation route already noted at gamification.js:169.
+    // updateStats skips the mode block entirely on a falsy mode, so passing null
+    // removes the write and changes nothing else about the mastery fold.
+    newStats = updateStats(newStats, true, diffKey, pair.word, null, nowISO);
   });
 
   // Restore per-word points added by updateStats — match game uses its own

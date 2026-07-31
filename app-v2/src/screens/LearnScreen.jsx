@@ -10,13 +10,17 @@ import { getWordOfTheDay } from '../logic/word-of-day.js'
 /* Short names, deliberately not the stored ones. DAILY_GOAL_PRESETS in
    dailygoals.js calls these "Casual Learner", "Regular Practice", "Serious
    Study" and "Intense Training"; the screen shows the short forms. Matching is
-   therefore on id only — never on name. questions/points are identical in both
-   tables. */
+   therefore on id only — never on name. The question counts are identical in
+   both tables.
+
+   The points field is gone from both, together. It used to be here as well, and
+   the goal no longer completes on points, so carrying the number would mean
+   this table stating a target dailygoals.js does not hold. */
 const GOAL_PRESETS = [
-  { id: 'casual', name: 'Casual', questions: 10, points: 100 },
-  { id: 'regular', name: 'Regular', questions: 25, points: 250 },
-  { id: 'serious', name: 'Serious', questions: 50, points: 500 },
-  { id: 'intense', name: 'Intense', questions: 100, points: 1000 },
+  { id: 'casual', name: 'Casual', questions: 10 },
+  { id: 'regular', name: 'Regular', questions: 25 },
+  { id: 'serious', name: 'Serious', questions: 50 },
+  { id: 'intense', name: 'Intense', questions: 100 },
 ]
 
 /* SECOND SOURCE OF TRUTH — reconcile when the challenge screen is built.
@@ -89,10 +93,9 @@ export default function LearnScreen() {
 
   const [goalDone] = useState(() => DailyGoalsManager.getTodayProgress().questionsAnswered)
   const [goalTarget] = useState(() => DailyGoalsManager.getGoal().questions)
-  /* The higher of the questions and points ratios, which is what actually
-     completes the goal (dailygoals.js:238-239 uses OR). Not recomputed here:
-     a local questionsAnswered/target would show 60% on a day already finished
-     on points. Fractional and already clamped to 100 by the manager. */
+  /* Questions only, which is now the whole completion test. Still taken from the
+     manager rather than recomputed locally so the bar and the predicate cannot
+     drift apart. Fractional and already clamped to 100 there. */
   const [goalPct] = useState(() => DailyGoalsManager.getProgressPercentage())
   const [goalPresetId] = useState(readGoalPresetId)
 
@@ -348,10 +351,15 @@ export default function LearnScreen() {
               >
                 <span>
                   <span className="block font-medium text-white">{p.name}</span>
-                  {/* Not pluralised: GOAL_PRESETS starts at 10 questions / 100
-                      points, so neither count can reach 1. Not an oversight. */}
+                  {/* Not pluralised: GOAL_PRESETS starts at 10 questions, so the
+                      count cannot reach 1. Not an oversight.
+
+                      The points half of this line is GONE. It read
+                      "25 questions · 250 points", and points no longer complete
+                      the goal — showing the number here would advertise a target
+                      the app does not enforce. */}
                   <span className="block text-xs text-slate-400 tabular-nums">
-                    {p.questions} questions &middot; {p.points} points
+                    {p.questions} questions
                   </span>
                 </span>
                 {isCurrent && <Check width="18" height="18" className="text-primary" />}

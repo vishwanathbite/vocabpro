@@ -13,11 +13,33 @@ import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
 // DAILY GOALS CONFIGURATION
 // ===========================
 
+/**
+ * QUESTIONS ONLY. The points figure each preset used to carry is gone.
+ *
+ * Completion was `questions >= goal.questions || points >= goal.points`, and the
+ * points arm always fired first — a preset labelled "25 questions" delivered
+ * 14-22 of them depending on accuracy and difficulty. It landed hardest on the
+ * students doing the easiest work: easy words pay 10 a question against a 250
+ * target, hard words pay 20, so the strongest student on the hardest words
+ * finished in 14 questions and the weakest on easy words in 22. A goal that
+ * shortens as you improve is backwards.
+ *
+ * Points are still TRACKED per day — the bucket below keeps pointsEarned, and it
+ * remains score, level and badge fuel. It is only no longer a finish line, and
+ * the number is therefore not stated as one anywhere: it enforced nothing, and a
+ * displayed target the app ignores is worse than no target.
+ *
+ * customGoal keeps its {questions, points} shape, set by setCustomGoal. That is
+ * deliberate and is NOT a second goal: js/ shares STORAGE_KEY and its own
+ * completion predicate still reads customGoal.points, so dropping the field here
+ * would silently change how a custom goal completes in the shipping app.
+ * getGoal's preset path returns no points and app-v2 reads none.
+ */
 const DAILY_GOAL_PRESETS = {
-  casual: { questions: 10, points: 100, name: 'Casual Learner' },
-  regular: { questions: 25, points: 250, name: 'Regular Practice' },
-  serious: { questions: 50, points: 500, name: 'Serious Study' },
-  intense: { questions: 100, points: 1000, name: 'Intense Training' }
+  casual: { questions: 10, name: 'Casual Learner' },
+  regular: { questions: 25, name: 'Regular Practice' },
+  serious: { questions: 50, name: 'Serious Study' },
+  intense: { questions: 100, name: 'Intense Training' }
 };
 
 const DEFAULT_GOAL = DAILY_GOAL_PRESETS.regular;
@@ -233,10 +255,17 @@ const DailyGoalsManager = {
     data.history[todayKey].questionsAnswered += questionsAdded;
     data.history[todayKey].pointsEarned += pointsAdded;
 
-    // Check if goal completed
+    // Check if goal completed. QUESTIONS ONLY — the points arm was removed here;
+    // see DAILY_GOAL_PRESETS. pointsAdded is still accumulated above, it just no
+    // longer decides anything.
+    //
+    // This is the ONLY place `completed` is written, and four things read it:
+    // isGoalComplete, getStreak (the Learn streak, the one shields protect),
+    // getWeekHistory (which spreads the bucket into the week bars), and this
+    // function's own idempotence guard. All four get stricter together, which is
+    // the intended effect — a day now takes the full question count.
     const goal = DailyGoalsManager.getGoal();
-    if (data.history[todayKey].questionsAnswered >= goal.questions ||
-        data.history[todayKey].pointsEarned >= goal.points) {
+    if (data.history[todayKey].questionsAnswered >= goal.questions) {
       if (!data.history[todayKey].completed) {
         data.history[todayKey].completed = true;
         data.history[todayKey].completedAt = new Date().toISOString();
@@ -259,11 +288,11 @@ const DailyGoalsManager = {
     const progress = DailyGoalsManager.getTodayProgress();
     const goal = DailyGoalsManager.getGoal();
 
-    const questionProgress = (progress.questionsAnswered / goal.questions) * 100;
-    const pointsProgress = (progress.pointsEarned / goal.points) * 100;
-
-    // Return the higher of the two (goal can be met either way)
-    return Math.min(100, Math.max(questionProgress, pointsProgress));
+    // Questions only, matching the completion test above. This used to return
+    // the higher of the questions and points ratios, which has to move with the
+    // predicate: leaving the points arm in would let the bar read 100% on a day
+    // that is not complete, which is a worse lie than the old short session.
+    return Math.min(100, (progress.questionsAnswered / goal.questions) * 100);
   },
 
   /**

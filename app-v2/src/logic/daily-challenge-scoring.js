@@ -44,15 +44,7 @@
  * ---------------------------------------------------------------------------
  */
 
-import { getLevelInfo, getEarnedBadges } from './gamification.js';
-
-// The six array fields on the stats shape. Mirrors the de-alias list in
-// gamification.js, match-scoring.js and quiz-summary.js so the "never alias the
-// caller's input" guarantee holds here too.
-const STATS_ARRAY_FIELDS = [
-  'masteredWordsList', 'learningWordsList', 'strugglingWordsList',
-  'modesPlayedList', 'earnedBadges', 'idiomsDifficultiesList'
-];
+import { getLevelInfo, getEarnedBadges, STATS_ARRAY_FIELDS } from './gamification.js';
 
 /**
  * Compute the result of a completed daily challenge.

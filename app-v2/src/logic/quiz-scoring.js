@@ -57,7 +57,25 @@ export function scoreAnswer({
   // Canonical word identity, resolved the same way everywhere in the app.
   const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase || currentQuestion.wordData?.idiom;
 
-  const difficultyOrMode = difficulty || mode;
+  // POINTS KEY. The word's OWN difficulty comes first, then the quiz's selected
+  // difficulty, then the mode.
+  //
+  // Smart Review is why. It is cross-difficulty by design, so it passes no
+  // difficulty and this used to resolve to the mode string 'review' — which is
+  // not a key in POINTS_CONFIG, so calculatePoints fell through to its `|| 10`
+  // and every reviewed word scored as easy. A hard word reviewed earned 10
+  // instead of 20, and the words in the pool are the ones the student found
+  // hardest. Any future multiplier on Smart Review would have been multiplying
+  // that flat 10 and partly cancelling this fix, which is why it lands first.
+  //
+  // No field is invented: all 4,009 vocabulary words already carry
+  // `difficulty: 'easy' | 'medium' | 'hard'` in the data files. Acronyms and
+  // one-word substitutes carry none, so they fall through to the mode and keep
+  // scoring 12 exactly as before — for them the mode IS the points key.
+  //
+  // For an ordinary difficulty-selected quiz the first two agree, so this is a
+  // no-op there; it only changes what Smart Review pays.
+  const difficultyOrMode = currentQuestion.wordData?.difficulty || difficulty || mode;
 
   // wordId, NOT currentQuestion.word. generateQuestions sets `word` for the
   // vocabulary-shaped modes but not for acronym or oneword, so those two used to
@@ -80,7 +98,11 @@ export function scoreAnswer({
   // NOTE: points use stats.currentStreak — the PRE-update streak from the
   // original closure (app.js:1418) — NOT newStats.currentStreak. Switching to
   // the post-update value would silently change every score. Do not "fix" this.
-  const points = correct ? calculatePoints(difficultyOrMode, stats.currentStreak) : 0;
+  //
+  // `mode` is the third argument, and it is the same one updateStats forwarded
+  // above, so the Smart Review multiplier lands identically on the figure shown
+  // to the user and the figure accumulated into totalPoints.
+  const points = correct ? calculatePoints(difficultyOrMode, stats.currentStreak, mode) : 0;
 
   return {
     correct,

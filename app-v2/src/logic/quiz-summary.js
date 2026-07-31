@@ -30,15 +30,7 @@
  * original produced; the only difference is that the input is left untouched.
  */
 
-import { getLevelInfo } from './gamification.js';
-
-// The six array fields on the stats shape. Mirrors the de-alias list in
-// gamification.js and match-scoring.js so the "never alias the caller's input"
-// guarantee holds here too.
-const STATS_ARRAY_FIELDS = [
-  'masteredWordsList', 'learningWordsList', 'strugglingWordsList',
-  'modesPlayedList', 'earnedBadges', 'idiomsDifficultiesList'
-];
+import { getLevelInfo, STATS_ARRAY_FIELDS } from './gamification.js';
 
 /**
  * Summarize a completed quiz.
