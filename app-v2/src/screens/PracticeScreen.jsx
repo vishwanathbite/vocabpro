@@ -1,15 +1,24 @@
 import { ROW } from '../components/chrome.js'
 import { ChevronRight } from '../components/icons.jsx'
+import { MODE_GROUPS } from '../quiz/quiz-modes.js'
+import LaunchNotice from '../quiz/LaunchNotice.jsx'
 
 /**
  * Practice tab — the seven quiz modes, grouped.
  *
- * TILES ARE INERT. The quiz screens do not exist yet, so no tile carries an
- * onClick, exactly as Learn leaves its Start and Continue buttons. Wiring them
- * is a later step; a stubbed handler would look wired and read as a bug.
+ * SIX TILES ARE LIVE as of step 11: vocab, synonym, antonym, oneword, acronym
+ * and review all start a session. Flashcards remain inert — they are not a
+ * scored mode, they never reach updateStats, and their screen does not exist.
  *
- * Reads and writes nothing: no imports from src/logic/. Nothing on this screen
- * is derived from state, so there is no state to get wrong.
+ * NAMES AND DESCRIPTIONS NOW COME FROM quiz/quiz-modes.js. They used to be a
+ * local GROUPS table here, which was correct while nothing else needed them;
+ * the quiz header needs the same strings, so keeping them here would have made
+ * this the second copy. The wording is unchanged, Smart Review's approved
+ * replacement line included.
+ *
+ * Reads nothing from storage and holds no state. Starting a quiz is entirely
+ * the shell's business — this screen reports the tap and renders whatever the
+ * shell hands back.
  *
  * CUT, deliberately absent: idioms, idioms-reverse and the Match game. All three
  * are cut decisions, not omissions.
@@ -21,62 +30,25 @@ import { ChevronRight } from '../components/icons.jsx'
    ROW is the shared neutral row — the same chrome Learn's "Continue practising"
    uses. It moved to components/chrome.js in step 7b. */
 
-/**
- * Names and descriptions are the LIVE APP'S, taken from the QuizModeCard block
- * at js/screens.js:654-718, not newly written — with one exception, Smart
- * Review, noted at the site. A tile and the quiz screen it eventually opens have
- * to agree, and the quiz screens will be ported from the same source.
- *
- * The descriptions are NOT rendered as visible subtitles — the tiles are name
- * plus chevron and nothing else. They serve as the accessible names instead, so
- * a student on a screen reader hears what the mode does rather than just what it
- * is called. That is the one place the wording earns its keep without adding
- * chrome.
- */
-const GROUPS = [
-  {
-    heading: 'Words',
-    modes: [
-      { id: 'vocab', name: 'Vocabulary', description: 'Match words with their definitions' },
-      { id: 'synonym', name: 'Synonyms', description: 'Find words with similar meanings' },
-      { id: 'antonym', name: 'Antonyms', description: 'Find words with opposite meanings' },
-    ],
-  },
-  {
-    heading: 'Expressions',
-    modes: [
-      {
-        id: 'oneword',
-        name: 'One-Word Substitutes',
-        description: 'Replace phrases with single words',
-      },
-      { id: 'acronym', name: 'Acronyms', description: 'Expand common acronyms' },
-    ],
-  },
-  {
-    heading: 'Study',
-    modes: [
-      {
-        id: 'flashcard',
-        name: 'Flashcards',
-        description: 'Flip cards to learn without pressure',
-      },
-      {
-        id: 'review',
-        name: 'Smart Review',
-        /* NOT the live app's wording, and deliberately so. js/screens.js:718 read
-           "AI-powered review of words you need to practice", which overstated it:
-           the mode is SM-2 spaced repetition — interval arithmetic, no model,
-           nothing that is AI. This is Dr. Bite's approved replacement. Carry this
-           string into the Smart Review screen when it is ported, rather than
-           taking the old one from js/. */
-        description: 'Revise the words you keep getting wrong.',
-      },
-    ],
-  },
-]
+/* Flashcards are not in QUIZ_MODES, because that table is what a session can be
+   started from and flashcards cannot be scored. The tile still belongs on this
+   screen, so it is appended to its group here — inert, exactly as every tile on
+   this screen was before step 11. Its wording is the live app's, as the others
+   were before they moved into the mode table. */
+const FLASHCARD_TILE = {
+  id: 'flashcard',
+  name: 'Flashcards',
+  description: 'Flip cards to learn without pressure',
+  inert: true,
+}
 
-export default function PracticeScreen() {
+const GROUPS = MODE_GROUPS.map((group) =>
+  group.heading === 'Study'
+    ? { ...group, modes: [FLASHCARD_TILE, ...group.modes] }
+    : group,
+)
+
+export default function PracticeScreen({ onStartQuiz, launch }) {
   return (
     <div className="flex flex-col gap-4">
       {/* The tab bar already says which screen this is, and Learn sets the
@@ -93,17 +65,21 @@ export default function PracticeScreen() {
           </h2>
 
           {group.modes.map((mode) => (
-            <button
-              key={mode.id}
-              type="button"
-              /* Trailing stop stripped before it is re-added, so a description
-                 that already ends in one does not read out as two. */
-              aria-label={`${mode.name}. ${mode.description.replace(/\.$/, '')}.`}
-              className={ROW}
-            >
-              <span className="font-medium text-white">{mode.name}</span>
-              <ChevronRight width="18" height="18" className="text-slate-400" />
-            </button>
+            <div key={mode.id} className="flex flex-col gap-2">
+              <button
+                type="button"
+                /* Trailing stop stripped before it is re-added, so a description
+                   that already ends in one does not read out as two. */
+                aria-label={`${mode.name}. ${mode.description.replace(/\.$/, '')}.`}
+                onClick={mode.inert ? undefined : () => onStartQuiz({ mode: mode.id })}
+                className={ROW}
+              >
+                <span className="font-medium text-white">{mode.name}</span>
+                <ChevronRight width="18" height="18" className="text-slate-400" />
+              </button>
+
+              <LaunchNotice launch={launch} mode={mode.id} />
+            </div>
           ))}
         </section>
       ))}

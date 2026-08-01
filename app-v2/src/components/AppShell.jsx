@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import TabBar from './TabBar.jsx'
 import LearnScreen from '../screens/LearnScreen.jsx'
 import PracticeScreen from '../screens/PracticeScreen.jsx'
 import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
+import QuizSession from '../quiz/QuizSession.jsx'
+import { startQuiz } from '../quiz/startQuiz.js'
 import { loadInitialData, loadVocabularyLevel } from '../data/loader.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 
@@ -70,6 +72,43 @@ export default function AppShell() {
   const [dataError, setDataError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
 
+  /**
+   * The quiz, in all four of its states — one value, not four flags.
+   *
+   *   null                                     no quiz
+   *   { status:'starting', mode }              loaders in flight
+   *   { status:'failed', mode, reason }        one of the three typed failures
+   *   { status:'running', mode, difficulty, questions, startedAt }
+   *
+   * Only 'running' branches the render. The other two are handed straight back
+   * down to the launch screens so the message appears under the tile that was
+   * tapped, rather than as a banner somewhere else on the page.
+   */
+  const [quiz, setQuiz] = useState(null)
+
+  /* A second tap while the first launch is in flight would run the loaders and
+     the generator twice and leave the loser's questions built for nothing. A
+     ref rather than a read of `quiz`, because the guard has to hold within the
+     same tick as the tap, before any state has re-rendered. */
+  const launchingRef = useRef(false)
+
+  const handleStartQuiz = useCallback(async ({ mode, difficulty } = {}) => {
+    if (launchingRef.current) return
+    launchingRef.current = true
+    setQuiz({ status: 'starting', mode })
+
+    try {
+      const result = await startQuiz({ mode, difficulty })
+      setQuiz(
+        result.ok
+          ? { status: 'running', ...result, startedAt: Date.now() }
+          : { status: 'failed', mode: result.mode, reason: result.reason },
+      )
+    } finally {
+      launchingRef.current = false
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
 
@@ -124,6 +163,36 @@ export default function AppShell() {
 
   const ActiveScreen = SCREENS[activeTab]
 
+  /**
+   * A running quiz REPLACES the shell — it is not drawn over it.
+   *
+   * The tab panel unmounts, which is the point. AppShell mounts exactly one
+   * panel at a time and every screen reads its numbers in a lazy useState
+   * initialiser, so unmounting and remounting is what makes Learn re-read
+   * storage on the way back and show the XP, streak, daily-goal bar and Smart
+   * Review count that the session just changed. An overlay would leave the
+   * pre-quiz figures sitting behind it, correct-looking and stale.
+   *
+   * It also removes the tab bar for the duration, so a stray tap on Progress
+   * cannot silently discard a session in progress — leaving is the Exit
+   * button, which asks first.
+   *
+   * `key` forces a fresh mount per session: every value in useQuizSession is
+   * initialised once per mount, so a second quiz reusing the instance would
+   * inherit the first one's index and score.
+   */
+  if (quiz?.status === 'running') {
+    return (
+      <QuizSession
+        key={quiz.startedAt}
+        session={quiz}
+        /* Commit B puts the results screen here instead of returning straight
+           to the shell; useQuizSession already hands this the summary. */
+        onExit={() => setQuiz(null)}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-navy">
       <main id="main-content" className="mx-auto w-full max-w-content px-4 pt-6 pb-24">
@@ -149,7 +218,10 @@ export default function AppShell() {
           </div>
         )}
 
-        {dataState === 'ready' && <ActiveScreen />}
+        {/* Only the two launch screens read these; Progress and More ignore
+            the extra props. Passing them unconditionally keeps SCREENS a plain
+            lookup rather than a table of per-screen prop shapes. */}
+        {dataState === 'ready' && <ActiveScreen onStartQuiz={handleStartQuiz} launch={quiz} />}
       </main>
 
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />

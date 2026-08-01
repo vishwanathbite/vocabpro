@@ -6,6 +6,7 @@ import { DailyGoalsManager } from '../logic/dailygoals.js'
 import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
 import { DailyChallengeManager } from '../logic/daily-challenge.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
+import LaunchNotice from '../quiz/LaunchNotice.jsx'
 
 /* Short names, deliberately not the stored ones. DAILY_GOAL_PRESETS in
    dailygoals.js calls these "Casual Learner", "Regular Practice", "Serious
@@ -72,7 +73,16 @@ const readGoalPresetId = () => {
   return GOAL_PRESETS.some((p) => p.id === data.goalPreset) ? data.goalPreset : null
 }
 
-export default function LearnScreen() {
+/**
+ * @param {Function} onStartQuiz Shell's launcher; only the Smart Review row
+ *   uses it in this step. The daily challenge card and both "Continue
+ *   practising" buttons stay inert — the challenge builds its own questions in
+ *   daily-challenge.js and does not go through startQuiz, and "Continue" has no
+ *   agreed destination yet. A tile that looks wired and does nothing reads as a
+ *   bug, so neither gets a handler until it has somewhere to go.
+ * @param {Object|null} launch Shell's quiz state, for the notice under the row.
+ */
+export default function LearnScreen({ onStartQuiz, launch }) {
   const [sheet, setSheet] = useState(null) // 'streak' | 'goal' | 'word' | null
 
   /* Every read below is pure as of Phase 5a/5b — none of them writes. Lazy
@@ -260,18 +270,29 @@ export default function LearnScreen() {
         </span>
       </button>
 
-      {/* --- 5. SMART REVIEW — conditional ----------------------------- */}
+      {/* --- 5. SMART REVIEW — conditional -----------------------------
+          Live as of step 11. The row is still gated on reviewDue > 0, so the
+          empty-pool copy is not normally reachable from here — Practice's
+          Smart Review tile is the launch point that is always present, and
+          that is where a student with nothing to review is told so. The notice
+          is rendered anyway for the case where the count was read at mount and
+          the pool emptied under it. */}
       {reviewDue > 0 && (
-        <button
-          type="button"
-          className={ROW}
-        >
-          <span className="text-sm text-slate-300">
-            <span className="font-semibold text-white tabular-nums">{reviewDue}</span>{' '}
-            {pluralise(reviewDue, 'word')} to review
-          </span>
-          <ChevronRight width="18" height="18" className="text-slate-400" />
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => onStartQuiz({ mode: 'review' })}
+            className={ROW}
+          >
+            <span className="text-sm text-slate-300">
+              <span className="font-semibold text-white tabular-nums">{reviewDue}</span>{' '}
+              {pluralise(reviewDue, 'word')} to review
+            </span>
+            <ChevronRight width="18" height="18" className="text-slate-400" />
+          </button>
+
+          <LaunchNotice launch={launch} mode="review" />
+        </div>
       )}
 
       {/* --- 6. WORD OF THE DAY — the editorial moment -----------------
