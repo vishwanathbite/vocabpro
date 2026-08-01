@@ -179,6 +179,71 @@ const SettingsManager = {
 };
 
 // ===========================
+// QUIZ PREFERENCES MANAGER
+// ===========================
+
+/**
+ * The last difficulty chosen, per mode.
+ *
+ * IN THIS FILE BUT NOT IN THE SETTINGS BLOB. It sits here because this is where
+ * the storage-backed managers live, and it writes to state.quizPreferences —
+ * its own top-level section. It must never move into state.settings: the js/
+ * tree shares STORAGE_KEY and reads that blob back, and a key it does not
+ * understand does not belong there. See storage.js for the full reasoning.
+ *
+ * RETURNS null, NOT A DEFAULT. Resolving "no choice yet" into a concrete
+ * difficulty is the quiz layer's job — DEFAULT_DIFFICULTY lives in
+ * quiz/quiz-modes.js, and logic/ importing from quiz/ would invert the
+ * dependency direction every other module here observes. It also keeps the two
+ * genuinely distinct: an absent preference is not a preference for the default,
+ * so changing the default later does not have to rewrite anyone's storage.
+ *
+ * READS TOLERANTLY on top of the validator. validateState guards the section's
+ * shape, but not the shape of difficultyByMode inside it, and a blob carrying
+ * `{ difficultyByMode: 5 }` would survive deepMerge intact.
+ */
+const QuizPreferences = {
+  /**
+   * @param {string} mode Mode id
+   * @returns {string|null} The remembered difficulty, or null if none is stored
+   */
+  getDifficulty: (mode) => {
+    const state = StorageManager.loadState();
+    const byMode = state.quizPreferences && state.quizPreferences.difficultyByMode;
+
+    if (!byMode || typeof byMode !== 'object' || Array.isArray(byMode)) return null;
+
+    const stored = byMode[mode];
+    return typeof stored === 'string' ? stored : null;
+  },
+
+  /**
+   * Remember a difficulty for one mode, leaving every other mode untouched.
+   *
+   * Rebuilds the section rather than mutating what loadState returned: that
+   * object is the memoized state, so an in-place write would be visible to
+   * every other reader before saveState's debounce had persisted anything.
+   *
+   * @param {string} mode       Mode id
+   * @param {string} difficulty A level id, or the mixed marker
+   */
+  setDifficulty: (mode, difficulty) => {
+    const state = StorageManager.loadState();
+    const existing = state.quizPreferences && state.quizPreferences.difficultyByMode;
+    const byMode = (existing && typeof existing === 'object' && !Array.isArray(existing))
+      ? existing
+      : {};
+
+    state.quizPreferences = {
+      ...state.quizPreferences,
+      difficultyByMode: { ...byMode, [mode]: difficulty }
+    };
+
+    StorageManager.saveState(state);
+  }
+};
+
+// ===========================
 // QUIZ HISTORY MANAGER
 // ===========================
 
@@ -533,4 +598,4 @@ const KeyboardShortcuts = {
 };
 
 // Public API — same 4 names the former window globals used.
-export { SettingsManager, QuizHistoryManager, OnboardingManager, KeyboardShortcuts };
+export { SettingsManager, QuizHistoryManager, QuizPreferences, OnboardingManager, KeyboardShortcuts };

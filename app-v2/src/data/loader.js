@@ -44,7 +44,38 @@ const ensureVocabularyDB = () => {
    later call can genuinely retry rather than replaying the failure forever. */
 const pending = new Map();
 
-const VOCAB_LEVELS = ['easy', 'medium', 'hard'];
+/**
+ * The three vocabulary levels. THE SINGLE SOURCE for the set.
+ *
+ * EXPORTED in step 12a. quiz-modes.js had grown its own DIFFICULTIES copy of
+ * this array in step 11 — the fifth open-coded instance of the three-level
+ * shape — and the two must agree: this one decides which levels can be loaded,
+ * that one decides which the picker offers, so a level in either and not the
+ * other is a row that loads nothing or data nobody can reach.
+ *
+ * It lives here rather than in the quiz layer because loading is what makes a
+ * level real: a value in this array is exactly a key of `importers` below, and
+ * loadVocabularyLevel validates against it. 'mixed' is deliberately NOT a member
+ * — nothing loads "mixed", it is a selection across these three, and it is
+ * defined where it changes behaviour (MIXED in logic/quiz-generation.js).
+ */
+export const VOCAB_LEVELS = ['easy', 'medium', 'hard'];
+
+/**
+ * The cross-level selection. THE SINGLE SOURCE for the string.
+ *
+ * NOT A LOADABLE LEVEL — loadVocabularyLevel rejects it, deliberately, because
+ * nothing imports a "mixed" chunk. It lives here anyway because it is defined
+ * entirely in terms of the array above: "mixed" means all of VOCAB_LEVELS, and
+ * a marker kept apart from the set it refers to is how the two come to
+ * disagree.
+ *
+ * Keeping it here also keeps quiz-modes.js a pure table. The alternative was
+ * defining it beside poolFor in logic/quiz-generation.js, which would have made
+ * the mode table import a generator — and with it gamification and storage —
+ * to read one string.
+ */
+export const MIXED = 'mixed';
 
 const importers = {
   easy: () => import('./vocab-easy.js'),

@@ -95,7 +95,9 @@ export default function AppShell() {
   const handleStartQuiz = useCallback(async ({ mode, difficulty } = {}) => {
     if (launchingRef.current) return
     launchingRef.current = true
-    setQuiz({ status: 'starting', mode })
+    // difficulty is carried through the starting state so the notice can say
+    // what the wait is for — Mixed has its own line.
+    setQuiz({ status: 'starting', mode, difficulty })
 
     try {
       const result = await startQuiz({ mode, difficulty })

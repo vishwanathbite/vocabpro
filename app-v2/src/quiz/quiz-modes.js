@@ -17,14 +17,20 @@
  * PracticeScreen — including Smart Review's replacement wording, which is
  * deliberately NOT the live app's "AI-powered" line.
  *
- * IMPORTS NOTHING. It is a table; a launcher maps `datasets` onto loader
- * functions rather than this module reaching for them.
+ * IMPORTS ONLY CONSTANTS. It is a table; a launcher maps `datasets` onto loader
+ * functions rather than this module reaching for them. The two imports below
+ * are the difficulty set and the mixed marker, taken from the modules that own
+ * them rather than restated here — see DIFFICULTIES.
  *
  * DELIBERATELY ABSENT: flashcard, daily, bookmarks, idiom, idiom-reverse,
  * match. Flashcards are self-reported and never reach the scoring path; the
  * daily challenge builds its own questions in daily-challenge.js; the other
  * three are cut or unbuilt. A mode absent from this table cannot be started.
  */
+
+import { VOCAB_LEVELS, MIXED } from '../data/loader.js'
+
+export { MIXED }
 
 /**
  * Dataset keys, mapped to loaders by startQuiz.js. 'vocab' means "the level
@@ -38,24 +44,72 @@ export const DATASET = {
 }
 
 /**
- * The three levels a difficulty-taking mode can run at. Same three keys
- * vocabularyDB carries and loadVocabularyLevel accepts.
+ * The three levels a difficulty-taking mode can run at.
+ *
+ * RE-EXPORTED, NOT RESTATED. This was its own `['easy', 'medium', 'hard']`
+ * literal in step 11 — a second copy of loader.js's VOCAB_LEVELS, shipped while
+ * explicitly looking for duplicates. The loader owns the set because loading is
+ * what makes a level real: a member of that array is a key of the loader's
+ * `importers` map, and loadVocabularyLevel validates against it. A level the
+ * picker offered but the loader could not load would be a row that starts
+ * nothing.
  */
-export const DIFFICULTIES = ['easy', 'medium', 'hard']
+export { VOCAB_LEVELS as DIFFICULTIES }
 
 /**
- * DEFAULT DIFFICULTY, and the reason there is one.
+ * DEFAULT DIFFICULTY — Mixed, as of step 12a.
  *
- * The live app puts a difficulty modal between the tile and the quiz
- * (js/app.js:1241-1247). This commit does not build that modal — the tiles
- * start a session directly — so the three difficulty-taking modes need a level
- * to run at. 'easy' is chosen because it is the one chunk guaranteed loaded at
- * boot (loadInitialData), so those three modes start without waiting.
+ * It was 'easy' in step 11, chosen because it is the one chunk guaranteed
+ * loaded at boot so the three difficulty-taking modes could start without
+ * waiting. The cost was that 3,052 of 4,009 words were unreachable: no screen
+ * could ask for medium or hard, so no student ever saw them.
  *
- * The parameter is plumbed all the way through startQuiz regardless, so adding
- * the picker later means adding a screen and passing a value, not rewiring.
+ * Mixed now, which CHANGES BEHAVIOUR FOR EXISTING SAVES as well as new ones —
+ * deliberately. Nobody has a remembered choice, because nothing wrote one until
+ * this commit, so no student's stated preference is being overridden; what
+ * changes is the fallback everyone was silently getting.
+ *
+ * The trade it accepts: Mixed must await medium and hard, so the first Mixed
+ * quiz of a session can wait on ~376 kB gzip where an easy quiz could not. That
+ * wait is shown rather than hidden — see startQuiz's 'starting' handling.
  */
-export const DEFAULT_DIFFICULTY = 'easy'
+export const DEFAULT_DIFFICULTY = MIXED
+
+/**
+ * Display labels for the levels. A LABEL TABLE, NOT A SECOND SOURCE OF THE SET:
+ * membership and order both come from DIFFICULTIES below, and a level with no
+ * label here falls back to its own id rather than rendering blank.
+ */
+const LEVEL_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }
+
+/**
+ * The rows the difficulty picker offers, in display order.
+ *
+ * MIXED IS FIRST because it is the default and the broadest — a student who
+ * opens the sheet and taps the top row gets the whole corpus, which is the
+ * behaviour worth making easiest to reach.
+ *
+ * Only Mixed carries a description. The three levels are self-describing, and a
+ * subtitle under each would mean either restating word counts — which live in
+ * the data files and would be a fourth place to keep them correct — or writing
+ * three lines that say nothing the label does not.
+ */
+export const DIFFICULTY_OPTIONS = [
+  {
+    id: MIXED,
+    name: 'Mixed',
+    description: 'Draws from all three levels'
+  },
+  ...VOCAB_LEVELS.map((level) => ({
+    id: level,
+    name: LEVEL_LABELS[level] ?? level,
+    description: null
+  }))
+]
+
+/** Whether a value is something a session can actually run at. */
+export const isValidDifficulty = (value) =>
+  value === MIXED || VOCAB_LEVELS.includes(value)
 
 /**
  * Every startable mode.

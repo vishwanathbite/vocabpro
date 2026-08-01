@@ -1,4 +1,5 @@
 import { LAUNCH_MESSAGE } from './startQuiz.js'
+import { MIXED } from './quiz-modes.js'
 
 /**
  * The line under a tile that was tapped but has not produced a quiz.
@@ -24,9 +25,16 @@ export default function LaunchNotice({ launch, mode }) {
   if (!launch || launch.mode !== mode) return null
 
   if (launch.status === 'starting') {
+    /* Mixed says more, because it is the one launch that can genuinely make a
+       student wait — it needs medium and hard where every other mode has its
+       data already or needs far less. The generic line would leave a multi-
+       second pause looking like a hang. */
+    const message =
+      launch.difficulty === MIXED ? LAUNCH_MESSAGE.startingMixed : LAUNCH_MESSAGE.starting
+
     return (
       <p role="status" aria-live="polite" className="px-1 text-sm text-slate-400">
-        {LAUNCH_MESSAGE.starting}
+        {message}
       </p>
     )
   }

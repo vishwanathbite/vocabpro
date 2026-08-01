@@ -116,6 +116,30 @@ const getDefaultState = () => ({
   // Pending referral code
   pendingReferral: null,
 
+  // Quiz preferences — the last difficulty chosen, per mode.
+  //
+  // ITS OWN SECTION, AND NOT settings, DELIBERATELY. The js/ tree shares
+  // STORAGE_KEY and reads state.settings back (js/screens.js:1529 among
+  // others), so a key it has never heard of does not belong in that blob. This
+  // section is safe from it in both directions: js/'s deepMerge copies unknown
+  // top-level keys through verbatim, and its validateState shape-resets only
+  // users, currentUser and stats — so a section it does not understand survives
+  // a round-trip through the live app rather than being erased.
+  //
+  // Verified by reading js/storage.js, not assumed.
+  //
+  // NO LEGACY KEY. This has never existed outside app-v2, so there is nothing
+  // to migrate and nothing is added to LEGACY_KEYS — that list only drives
+  // migrateLegacyData, which runs solely when the unified blob is absent.
+  //
+  // difficultyByMode is keyed by mode id and holds a difficulty string. An
+  // absent mode means "no choice made", which is not the same as a choice of
+  // the default — the caller resolves that, so the default can change later
+  // without rewriting anyone's stored preference.
+  quizPreferences: {
+    difficultyByMode: {}
+  },
+
   // Daily Challenge
   dailyChallenge: {
     lastCompletedDate: null,
@@ -225,6 +249,16 @@ const validateState = (state) => {
   }
   if (!validated.stats || typeof validated.stats !== 'object' || Array.isArray(validated.stats)) {
     validated.stats = defaults.stats;
+  }
+  // Added with the section itself in step 12a, rather than left for the first
+  // corrupt blob to find. deepMerge's object branch is guarded on the SOURCE
+  // being an object, so a stored `"quizPreferences": "easy"` takes the scalar
+  // branch and replaces the default object wholesale — every reader would then
+  // see a string where it expects a map. Guarding here rather than at the call
+  // site protects readers added later, which is why the three above are here.
+  if (!validated.quizPreferences || typeof validated.quizPreferences !== 'object' ||
+      Array.isArray(validated.quizPreferences)) {
+    validated.quizPreferences = defaults.quizPreferences;
   }
 
   return validated;
@@ -508,7 +542,8 @@ const SALVAGEABLE_SECTIONS = {
   dailyGoals: 'object',
   onboarding: 'object',
   streakProtection: 'object',
-  dailyChallenge: 'object'
+  dailyChallenge: 'object',
+  quizPreferences: 'object'
 };
 
 /**

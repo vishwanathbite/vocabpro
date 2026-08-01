@@ -30,6 +30,66 @@ import {
 } from './helpers.js';
 import { BookmarksManager } from './bookmarks.js';
 import { StatsManager } from './gamification.js';
+/* loader.js is imported for the two difficulty constants alone. It is a leaf
+   module with no static imports and no top-level side effects — its `importers`
+   map holds functions, not calls — so this pulls in no data and adds no cycle. */
+import { VOCAB_LEVELS, MIXED } from '../data/loader.js';
+
+/**
+ * The words a session draws from.
+ *
+ * REPLACES `vocabularyDB[quizDifficulty] || []`, which was written out at three
+ * sites below, and the `[...easyWords, ...mediumWords, ...hardWords]` flatten,
+ * which was written out at two more. Mixed would have been a sixth copy of the
+ * three-level shape; routing all five through here makes it the only one.
+ *
+ * Reads the global inside the function body, never at module top level, exactly
+ * as the rest of this module does — so importing it is safe with no data
+ * loaded, and an unloaded level contributes nothing rather than throwing.
+ *
+ * @param {string} difficulty A member of VOCAB_LEVELS, or MIXED
+ * @returns {Array} The word pool; empty if the level is absent or unloaded
+ */
+export const poolFor = (difficulty) => {
+  if (typeof vocabularyDB === 'undefined' || !vocabularyDB) return [];
+
+  if (difficulty === MIXED) {
+    return VOCAB_LEVELS.flatMap(level => vocabularyDB[level] || []);
+  }
+
+  return vocabularyDB[difficulty] || [];
+};
+
+/**
+ * The pool a word's DISTRACTORS are drawn from — its own level, always.
+ *
+ * SAME-LEVEL, AND THIS IS NOT A DETAIL. Cross-level distractors make a Mixed
+ * quiz EASIER, not harder: put three hard definitions beside one easy word and
+ * the student picks the familiar-looking option without knowing the word at
+ * all. The question stops testing vocabulary and starts testing which option
+ * looks approachable. A plausible distractor has to sit at the same level as
+ * the answer, so the only way to tell them apart is to know the word.
+ *
+ * A NO-OP FOR SINGLE-DIFFICULTY SESSIONS, provably: every word in
+ * vocabularyDB.easy carries difficulty 'easy' and likewise for the other two —
+ * verified across all 4,009 words, zero missing, one distinct value per file —
+ * so for those sessions this returns the same array the caller already had.
+ * Only Mixed sees a difference.
+ *
+ * Falls back to the session pool if the word carries no difficulty or its level
+ * is not loaded, so a question is never left with no distractors at all.
+ *
+ * @param {Object} word        The word the question is being built from
+ * @param {Array}  sessionPool The pool the question itself was drawn from
+ * @returns {Array} Words to draw distractors from
+ */
+const distractorPoolFor = (word, sessionPool) => {
+  if (typeof vocabularyDB === 'undefined' || !vocabularyDB) return sessionPool;
+
+  const ownLevel = word && word.difficulty ? vocabularyDB[word.difficulty] : null;
+
+  return Array.isArray(ownLevel) && ownLevel.length > 0 ? ownLevel : sessionPool;
+};
 
 /**
  * Questions per quiz. THE SINGLE SOURCE — exported so nothing has to restate it.
@@ -143,7 +203,7 @@ export function generateQuestions(quizMode, quizDifficulty) {
 
     if (quizMode === 'vocab') {
       // Vocabulary mode: Definition matching
-      const words = vocabularyDB[quizDifficulty] || [];
+      const words = poolFor(quizDifficulty);
       if (words.length === 0) {
         console.warn(`No words found for difficulty: ${quizDifficulty}`);
         return [];
@@ -153,7 +213,7 @@ export function generateQuestions(quizMode, quizDifficulty) {
 
       generatedQuestions = selectedWords.map(word => {
         if (!word || !word.word || !word.definition) return null;
-        const distractors = generateSmartDistractors(word.definition, words, 3);
+        const distractors = generateSmartDistractors(word.definition, distractorPoolFor(word, words), 3);
         const options = shuffleArray([word.definition, ...distractors]);
 
         return {
@@ -167,7 +227,7 @@ export function generateQuestions(quizMode, quizDifficulty) {
       }).filter(q => q !== null);
     } else if (quizMode === 'synonym') {
       // Synonym mode
-      const words = vocabularyDB[quizDifficulty] || [];
+      const words = poolFor(quizDifficulty);
       if (words.length === 0) {
         console.warn(`No words found for difficulty: ${quizDifficulty}`);
         return [];
@@ -178,7 +238,7 @@ export function generateQuestions(quizMode, quizDifficulty) {
         if (!word || !word.word || !word.synonyms || word.synonyms.length === 0) return null;
         const correctSyn = randomItem(word.synonyms);
         if (!correctSyn) return null;
-        const allSynonyms = buildSynonymPool(words, word.synonyms);
+        const allSynonyms = buildSynonymPool(distractorPoolFor(word, words), word.synonyms);
         const distractors = sample(allSynonyms, 3, new Set([correctSyn]));
         const options = shuffleArray([correctSyn, ...distractors]);
 
@@ -193,7 +253,7 @@ export function generateQuestions(quizMode, quizDifficulty) {
       }).filter(q => q !== null);
     } else if (quizMode === 'antonym') {
       // Antonym mode
-      const words = vocabularyDB[quizDifficulty] || [];
+      const words = poolFor(quizDifficulty);
       if (words.length === 0) {
         console.warn(`No words found for difficulty: ${quizDifficulty}`);
         return [];
@@ -204,7 +264,12 @@ export function generateQuestions(quizMode, quizDifficulty) {
         if (!word || !word.word || !word.antonyms || word.antonyms.length === 0) return null;
         const correctAnt = randomItem(word.antonyms);
         if (!correctAnt) return null;
-        const allAntonyms = buildAntonymPool(words, word.antonyms);
+        // Same-level, for the same reason synonyms are — see distractorPoolFor.
+        // The brief named generateSmartDistractors and buildSynonymPool; antonyms
+        // are included because the argument does not distinguish them, and an
+        // antonym quiz left drawing across levels would be the one mode where a
+        // Mixed session is quietly easier than the level it is testing.
+        const allAntonyms = buildAntonymPool(distractorPoolFor(word, words), word.antonyms);
         const distractors = sample(allAntonyms, 3, new Set([correctAnt]));
         const options = shuffleArray([correctAnt, ...distractors]);
 
@@ -331,10 +396,8 @@ export function generateQuestions(quizMode, quizDifficulty) {
       // Difficulty is deliberately ignored. A pool word is served because it was
       // missed, not because of which pool it came from, so quizDifficulty plays
       // no part here.
-      const easyWords = vocabularyDB.easy || [];
-      const mediumWords = vocabularyDB.medium || [];
-      const hardWords = vocabularyDB.hard || [];
-      const allWords = [...easyWords, ...mediumWords, ...hardWords];
+      // The same flatten Mixed needs, so it goes through the same helper.
+      const allWords = poolFor(MIXED);
 
       const reviewPool = StatsManager.loadStats().reviewPool;
 
@@ -385,10 +448,11 @@ export function generateQuestions(quizMode, quizDifficulty) {
         return [];
       }
 
-      const easyWords = vocabularyDB.easy || [];
-      const mediumWords = vocabularyDB.medium || [];
-      const hardWords = vocabularyDB.hard || [];
-      const allWords = [...easyWords, ...mediumWords, ...hardWords];
+      // Fifth and last site of the three-level flatten, now the same helper.
+      // Not in this commit's scope — bookmarks mode has no launch point — but
+      // leaving it open-coded would have kept a copy alive for the next reader
+      // to follow.
+      const allWords = poolFor(MIXED);
 
       // Same three shapes Smart Review serves, so both go through one builder.
       generatedQuestions = bookmarkedWords

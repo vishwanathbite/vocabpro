@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
 import { ArrowLeft, Check, Volume2, X } from '../components/icons.jsx'
 import { KeyboardShortcuts } from '../logic/settings.js'
@@ -98,6 +98,32 @@ export default function QuizScreen({
   onExit
 }) {
   const [confirmingExit, setConfirmingExit] = useState(false)
+
+  /**
+   * Take focus on mount, because nothing else will.
+   *
+   * A quiz is usually launched from inside the difficulty sheet, and AppShell
+   * branching unmounts the whole tab tree — the sheet with it. BottomSheet
+   * restores focus to its trigger only `if (document.contains(el))`, and the
+   * trigger has just been unmounted, so the restore is correctly skipped and
+   * focus falls to <body>. A keyboard user would be tabbing from the top of the
+   * document and a screen-reader user would hear nothing announced, at the one
+   * moment the entire screen changed under them.
+   *
+   * The HEADING rather than the first option: it names the question, so what is
+   * announced is what to answer. tabIndex -1 makes it programmatically
+   * focusable without adding it to the tab order.
+   *
+   * ON MOUNT ONLY — an empty dependency array, not per question. Pulling focus
+   * back on every advance would interrupt a screen reader mid-sentence and
+   * fight a keyboard user who has already tabbed to an option; the options are
+   * the next tab stop from here anyway.
+   */
+  const headingRef = useRef(null)
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
 
   /* The live app's rule: leaving before answering anything on the first
      question needs no confirmation, since there is nothing to lose. */
@@ -241,7 +267,11 @@ export default function QuizScreen({
 
       <main className="mx-auto w-full max-w-content px-4 pt-6 pb-12">
         {/* --- QUESTION ---------------------------------------------------- */}
-        <h1 className="text-xl leading-snug font-semibold text-white">
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-xl leading-snug font-semibold text-white focus:outline-none"
+        >
           {questionTextFor(mode, currentQuestion)}
         </h1>
 

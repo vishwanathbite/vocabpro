@@ -26,7 +26,9 @@ import {
   DATASET,
   DIFFICULTIES,
   DEFAULT_DIFFICULTY,
-  isStartableMode
+  MIXED,
+  isStartableMode,
+  isValidDifficulty
 } from './quiz-modes.js'
 import { loadVocabularyLevel, loadAcronyms, loadOneWord } from '../data/loader.js'
 import { generateQuestions } from '../logic/quiz-generation.js'
@@ -54,6 +56,18 @@ import { StatsManager } from '../logic/gamification.js'
  */
 export const LAUNCH_MESSAGE = {
   starting: 'Preparing your quiz...',
+  /* Mixed gets its own wait line because it is the one launch that can make a
+     student wait on purpose. It needs medium and hard — ~376 kB gzip, which is
+     roughly 7.5 s on a 50 kB/s connection — where every other mode either has
+     its data already or needs far less. Naming the levels says what the wait is
+     buying, and naming the connection stops a slow one reading as a hang.
+
+     WE WAIT. We do not degrade to the levels that happen to be loaded: a Mixed
+     quiz that quietly serves easy-only words is the exact failure this feature
+     exists to prevent, and it is invisible to the student, who has no way to
+     tell nine easy words from a fair mix. */
+  startingMixed:
+    'Loading all three levels for a Mixed quiz. This can take a moment on a slow connection.',
   loading: 'These words are still loading. Give it a moment, then try again.',
   empty: 'No questions available for this mode right now — try another one.',
   'nothing-to-review':
@@ -79,9 +93,25 @@ const loadersFor = (spec, level) =>
   spec.datasets.map((key) => {
     if (key === DATASET.ACRONYMS) return loadAcronyms()
     if (key === DATASET.ONEWORD) return loadOneWord()
-    return level
-      ? loadVocabularyLevel(level)
-      : Promise.all(DIFFICULTIES.map(loadVocabularyLevel))
+
+    // ALL THREE for Mixed, and for Smart Review, which has no level at all.
+    //
+    // This is the whole guarantee. The awaited promise is the SAME one the
+    // background warm created — loadOnce caches by key — so a tap during
+    // warming joins the in-flight import rather than racing a second one, and
+    // resolution means loadOnce's isPopulated check passed. There is no path
+    // from here to a generator running against a half-loaded vocabularyDB.
+    //
+    // DO NOT REPLACE THIS WITH A DIRECT READ of vocabularyDB.easy/medium/hard.
+    // daily-challenge.js:262-264 and :309 do exactly that, with `|| []` and no
+    // await, and it is why a challenge started early yields 4 questions instead
+    // of 10 and says nothing. An unloaded level and a loaded-empty one are both
+    // `[]` — ensureVocabularyDB creates the empty arrays eagerly — so a direct
+    // read cannot tell "still loading" from "nothing there". Awaiting can: it
+    // resolves for loaded-and-populated and rejects for loaded-and-empty.
+    return !level || level === MIXED
+      ? Promise.all(DIFFICULTIES.map(loadVocabularyLevel))
+      : loadVocabularyLevel(level)
   })
 
 /**
@@ -108,7 +138,14 @@ export async function startQuiz({ mode, difficulty } = {}) {
   }
 
   const spec = QUIZ_MODES[mode]
-  const level = spec.takesDifficulty ? difficulty || DEFAULT_DIFFICULTY : null
+
+  // A stored preference is read back from a blob the js/ tree also writes, and
+  // could be a value from a future version or a corrupt one. An unrecognised
+  // difficulty falls back to the default rather than reaching poolFor, where it
+  // would resolve to an empty pool and report 'empty' — which would blame the
+  // corpus for a bad stored string.
+  const requested = isValidDifficulty(difficulty) ? difficulty : DEFAULT_DIFFICULTY
+  const level = spec.takesDifficulty ? requested : null
 
   // CHECKED BEFORE LOADING, not after. An empty pool is knowable from storage
   // alone, and the student should not wait on ~1.8 MB of databases to be told
