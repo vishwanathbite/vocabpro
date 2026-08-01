@@ -140,13 +140,27 @@ export async function startQuiz({ mode, difficulty } = {}) {
     // resolved, so the ids in it match nothing loaded. Reported as 'loading'
     // per the agreed rule for a non-empty pool that yields no questions.
     //
-    // WORTH KNOWING: with the datasets awaited above, the loading race this
-    // rule was written for is closed. What can still land here is a pool
-    // holding ids from a retired database — an idiom saved by the js/ tree,
-    // which shares STORAGE_KEY and whose idiomsDB is deliberately never ported.
-    // Those ids are stale rather than pending, and no amount of retrying will
-    // resolve them. Distinguishing the two needs a pool entry that records
-    // which database it came from, which is a storage change.
+    // UNREACHABLE TODAY, and worth recording why rather than leaving the branch
+    // looking speculative. Two routes were checked by grep:
+    //
+    //   - js/ cannot seed the pool. reviewPool appears nowhere in that tree;
+    //     it was introduced in step 8 in app-v2 only. The two trees share
+    //     STORAGE_KEY, so js/ can see the blob, but it never touches the field.
+    //   - app-v2 cannot put an idiom in it. idiomsDB is never assigned here,
+    //     loader.js deliberately does not port it, and no idiom mode exists in
+    //     QUIZ_MODES, so the idiom branches of generateQuestions are
+    //     unreachable from any launch point.
+    //
+    // The pool's only writers are updateStats via quiz-scoring (called by
+    // useQuizSession) and via match-scoring (still callerless), so every id in
+    // it was written by a mode in QUIZ_MODES — all of which resolve against
+    // databases awaited above.
+    //
+    // The real stale case arrives with the PR-D data removal: a word dropped
+    // from the corpus stays in the pool of anyone who had already missed it,
+    // and no retry will resolve it. Telling that apart from a genuine load
+    // failure needs a pool entry that records which database it came from,
+    // which is a storage change and belongs with that work.
     return { ok: false, mode, reason: 'loading' }
   }
 
