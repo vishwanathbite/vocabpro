@@ -14,8 +14,21 @@ import QuizScreen from '../screens/QuizScreen.jsx'
  * remounting would carry the first session's index and score into it, because
  * every value in the hook is initialised once per mount.
  */
-export default function QuizSession({ session, onExit }) {
-  const quiz = useQuizSession(session, onExit)
+/**
+ * FINISHING AND ABANDONING ARE DIFFERENT EVENTS, as of step 13.
+ *
+ * Both used to be `onExit`: the hook was handed it as its onComplete and the
+ * screen as its onExit, so the two arrived at AppShell indistinguishable and a
+ * finished session could not be told from a walked-away one. That was fine
+ * while both did the same thing — return to the shell — and is the first thing
+ * that had to change for a results screen to be reachable at all.
+ *
+ * They stay separate all the way down rather than being merged behind a flag:
+ * onComplete carries the summary and onExit carries nothing, which is the real
+ * difference between them.
+ */
+export default function QuizSession({ session, onComplete, onExit }) {
+  const quiz = useQuizSession(session, onComplete)
 
   return (
     <QuizScreen
@@ -37,12 +50,9 @@ export default function QuizSession({ session, onExit }) {
       unansweredCount={quiz.unansweredCount}
       onAnswer={quiz.answer}
       onNext={quiz.next}
-      /* Exiting and finishing land in the same place for now: the shell, with
-         the tab panel remounted. The difference is that finishing has already
-         written the history entry and hands `onComplete` a summary, which is
-         what Commit B's results screen consumes. The summary is passed
-         through rather than dropped so that wiring is a change of destination,
-         not a change of plumbing. */
+      /* Abandoning only. Finishing goes through the hook's complete(), which
+         writes the history entry and calls onComplete with the summary; it
+         never reaches this prop. */
       onExit={onExit}
     />
   )

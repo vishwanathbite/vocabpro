@@ -122,3 +122,21 @@ export const shareContent = async (shareData) => {
 export const formatNumber = (num) => {
   return num.toLocaleString('en-IN');
 };
+
+/*
+ * Dumb pluralisation: append an 's' unless the count is exactly 1. No irregular
+ * nouns, no library — enough for the counted nouns this app actually renders
+ * ("word", "question"), and nothing more.
+ *
+ * MOVED HERE FROM LearnScreen IN STEP 13, at the second copy rather than the
+ * fourth. It was written screen-local and said so, correctly, while one screen
+ * used it; the results screen's pool-delta lines count words too, and
+ * re-declaring two identical lines there is how the CARD/ROW and
+ * DIFFICULTIES duplications started. format.js imports nothing, so this adds
+ * no cycle and no cost to the screens that do not use it.
+ *
+ * `pluralise` is separate from `plural` for the sites that render the number in
+ * their own element, where the noun cannot travel with it.
+ */
+export const pluralise = (n, noun) => (n === 1 ? noun : `${noun}s`);
+export const plural = (n, noun) => `${n} ${pluralise(n, noun)}`;

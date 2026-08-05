@@ -5,6 +5,7 @@ import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
 import { DailyChallengeManager } from '../logic/daily-challenge.js'
+import { pluralise, plural } from '../logic/format.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
 import LaunchNotice from '../quiz/LaunchNotice.jsx'
 
@@ -39,13 +40,9 @@ const GOAL_PRESETS = [
    step does not wire. */
 const CHALLENGE_QUESTIONS = 10
 
-/* Dumb pluralisation: append an 's' unless the count is exactly 1. No irregular
-   nouns, no library — this is not a general-purpose utility, only enough for the
-   handful of counted nouns on this screen. `pluralise` exists separately for the
-   one site that renders the number in its own bold span, where the noun cannot
-   travel with it. */
-const pluralise = (n, noun) => (n === 1 ? noun : `${noun}s`)
-const plural = (n, noun) => `${n} ${pluralise(n, noun)}`
+/* pluralise/plural were declared here and MOVED to logic/format.js in step 13,
+   when the results screen became the second screen counting words. Same two
+   function bodies, imported rather than restated; see the note there. */
 
 /* DEVICE-LOCAL, not IST. The IST boundary is a correctness rule for the daily
    challenge and the streak — everyone must get the same challenge on the same

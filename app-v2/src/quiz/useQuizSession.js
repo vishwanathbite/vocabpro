@@ -161,6 +161,59 @@ export function useQuizSession(session, onComplete) {
   // otherwise write a second history entry for the same session.
   const completedRef = useRef(false)
 
+  // ---- What only completion needs ----------------------------------------
+  //
+  // All three are ACCUMULATED PER ANSWER, never re-derived at the end, because
+  // none of them survives to complete(): statsRef is reassigned on every answer,
+  // and lastAnswer is nulled by next(). They are refs rather than state because
+  // nothing renders them until the session is over, so a re-render per answer
+  // would be pure cost.
+
+  /**
+   * The review pool as it stood when the session started.
+   *
+   * THE WHOLE REASON THIS EXISTS: by the time complete() runs, statsRef.current
+   * is the post-final-answer object, so the pool it holds is the END state and
+   * the start state is unrecoverable. Without this snapshot the screen could
+   * report the pool's size but not what the session did to it — and "3 words
+   * added" is the only part of that a student cannot already see.
+   *
+   * Copied rather than referenced. updateStats re-clones every array field
+   * (STATS_ARRAY_FIELDS) so the original is never mutated and a bare reference
+   * would in fact be safe — but that safety is a property of another module,
+   * and a snapshot that owns its array cannot be invalidated by a change there.
+   */
+  const startingPoolRef = useRef(null)
+  if (startingPoolRef.current === null) {
+    startingPoolRef.current = Array.isArray(statsRef.current.reviewPool)
+      ? [...statsRef.current.reviewPool]
+      : []
+  }
+
+  /**
+   * Every question answered wrong, with what it takes to review it.
+   *
+   * wordData is the STORED ITEM, carried by every question generateQuestions
+   * builds, so the definition and the rest travel with the mistake and the
+   * screen needs no second lookup against a database that may not be loaded.
+   *
+   * No de-duplication, and none needed: generateQuestions samples without
+   * replacement for every mode, and Smart Review shuffles a pool whose entries
+   * are unique by construction, so a word cannot be asked twice in one session.
+   */
+  const wrongAnswersRef = useRef([])
+
+  /**
+   * Every badge earned across the session — ALL of them, not newBadges[0].
+   *
+   * The moment queue shows only the first badge of any single answer
+   * (moments.js), which is right for an interruption and wrong for a record:
+   * points_100 and questions_50 can cross on the same answer, and the second
+   * would otherwise appear nowhere but Progress. The summary is where a student
+   * can look rather than dismiss, so it gets the complete set.
+   */
+  const sessionBadgesRef = useRef([])
+
   /**
    * Sound is read once per session.
    *
@@ -198,6 +251,23 @@ export function useQuizSession(session, onComplete) {
    * and `date`, computes `accuracy` from questionsCorrect/questionsTotal, and
    * defaults the `timeSpent` the entry does not carry — so the entry is
    * complete as returned.
+   *
+   * THE PAYLOAD IS EXTENDED HERE, NOT INSIDE summarizeQuizResults, and not by
+   * having AppShell reach into quiz.questions.
+   *
+   * Not in summarizeQuizResults: that function is a verified port whose
+   * docstring maps every field it returns to the js/ lines it came from
+   * ("Exact payload for setQuizResults (app.js:1493-1503)"). Adding fields js/
+   * never produced would break that correspondence, which is the thing that
+   * makes the port checkable. It also has no way to know any of this — the
+   * wrong answers, the starting pool and the session's badges are accumulated
+   * across ten calls to answer(), and summarize is handed one snapshot.
+   *
+   * Not in AppShell: it does still hold quiz.questions, so the wrong answers
+   * could have been reconstructed there. But only with a per-question outcome
+   * list it would also have to be given, and then the screen would assemble its
+   * content from two objects that must agree about the same session. One object
+   * crosses the boundary, and it is complete.
    */
   const complete = useCallback(() => {
     if (completedRef.current) return
@@ -215,7 +285,29 @@ export function useQuizSession(session, onComplete) {
     QuizHistoryManager.addQuiz(summary.historyEntry)
     stopSpeech()
 
-    onComplete(summary)
+    // The pool delta, in both directions. Same set-difference shape as step
+    // 12b's inline mark, but bracketing the whole session rather than one
+    // answer — so unlike that one it can report more than a single word, and a
+    // word that entered on question 2 and left on question 9 correctly appears
+    // in neither list.
+    const finalPool = Array.isArray(statsRef.current.reviewPool)
+      ? statsRef.current.reviewPool
+      : []
+    const startingPool = startingPoolRef.current
+
+    onComplete({
+      ...summary,
+      review: {
+        wrong: wrongAnswersRef.current,
+        poolAdded: finalPool.filter((w) => !startingPool.includes(w)),
+        poolRemoved: startingPool.filter((w) => !finalPool.includes(w)),
+        // Read straight off the final stats rather than re-loaded from storage:
+        // this is what decides whether "Practise again" is offered for Smart
+        // Review, and a re-read could disagree with the delta above.
+        poolRemaining: finalPool.length,
+        badges: sessionBadgesRef.current
+      }
+    })
   }, [questions, mode, difficulty, onComplete])
 
   /**
@@ -284,6 +376,26 @@ export function useQuizSession(session, onComplete) {
       setScore(scoreRef.current)
 
       if (correct) correctCountRef.current += 1
+
+      // Accumulate what only the summary reads. Pushes, not derivations —
+      // scoreAnswer already resolved wordId, and currentQuestion carries the
+      // rest. `correct` here is the correct ANSWER TEXT, not the boolean:
+      // `option` is what the student picked and this is what they should have.
+      if (!correct) {
+        wrongAnswersRef.current.push({
+          wordId: result.wordId,
+          wordData: currentQuestion.wordData,
+          picked: option,
+          correct: currentQuestion.correct
+        })
+      }
+
+      // Spread, so the ref keeps one flat list rather than an array of arrays.
+      // Each badge appears at most once across a session: getNewBadges diffs
+      // against previousBadges, which step 5 above advances on every answer.
+      if (result.newBadges.length > 0) {
+        sessionBadgesRef.current.push(...result.newBadges)
+      }
 
       // 6. The two quiet marks, derived from the pair of stats objects that are
       //    both in scope here and nowhere else. `previousStats` is read BEFORE

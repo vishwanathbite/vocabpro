@@ -5,6 +5,7 @@ import PracticeScreen from '../screens/PracticeScreen.jsx'
 import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
 import QuizSession from '../quiz/QuizSession.jsx'
+import ResultsScreen from '../quiz/ResultsScreen.jsx'
 import { startQuiz } from '../quiz/startQuiz.js'
 import { loadInitialData, loadVocabularyLevel } from '../data/loader.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
@@ -73,16 +74,22 @@ export default function AppShell() {
   const [retryCount, setRetryCount] = useState(0)
 
   /**
-   * The quiz, in all four of its states — one value, not four flags.
+   * The quiz, in all five of its states — one value, not five flags.
    *
    *   null                                     no quiz
    *   { status:'starting', mode }              loaders in flight
    *   { status:'failed', mode, reason }        one of the three typed failures
-   *   { status:'running', mode, difficulty, questions, startedAt }
+   *   { status:'running',  mode, difficulty, questions, startedAt }
+   *   { status:'complete', mode, difficulty, summary }
    *
-   * Only 'running' branches the render. The other two are handed straight back
-   * down to the launch screens so the message appears under the tile that was
-   * tapped, rather than as a banner somewhere else on the page.
+   * 'running' and 'complete' each branch the render. The other two are handed
+   * straight back down to the launch screens so the message appears under the
+   * tile that was tapped, rather than as a banner somewhere else on the page.
+   *
+   * 'complete' CARRIES mode AND difficulty FORWARD from the running session,
+   * and that is what makes "Practise again" possible without re-picking: the
+   * difficulty stored here is the RESOLVED one startQuiz returned, so a Mixed
+   * session repeats as Mixed rather than falling back to the default.
    */
   const [quiz, setQuiz] = useState(null)
 
@@ -188,9 +195,53 @@ export default function AppShell() {
       <QuizSession
         key={quiz.startedAt}
         session={quiz}
-        /* Commit B puts the results screen here instead of returning straight
-           to the shell; useQuizSession already hands this the summary. */
+        /* FINISHING AND ABANDONING NOW DIVERGE HERE. Both used to be the same
+           callback, which is why the shell could not tell them apart.
+
+           The functional update reads the running session rather than closing
+           over it, so mode and difficulty are carried forward from whatever is
+           actually running — not from a render that may have been captured
+           before the session started. */
+        onComplete={(summary) =>
+          setQuiz((q) => ({
+            status: 'complete',
+            mode: q.mode,
+            difficulty: q.difficulty,
+            summary
+          }))
+        }
         onExit={() => setQuiz(null)}
+      />
+    )
+  }
+
+  /**
+   * The results screen REPLACES the quiz, exactly as the quiz replaced the
+   * shell — the session subtree unmounts.
+   *
+   * Safe, and deliberate. Step 12b's drain guarantee means complete() cannot
+   * run while a celebration moment is pending, so nothing is destroyed
+   * mid-display. And unmounting is what makes "Practise again" clean: every
+   * value in useQuizSession initialises once per mount, so a fresh session
+   * needs a fresh mount rather than a reset path that would be a second list to
+   * keep in step with the initialisers.
+   *
+   * No tab bar here either, for the same reason the quiz has none: the session
+   * just written to storage is the thing on screen, and a stray tap on Progress
+   * would discard the one view of it that exists.
+   */
+  if (quiz?.status === 'complete') {
+    return (
+      <ResultsScreen
+        mode={quiz.mode}
+        summary={quiz.summary}
+        /* Straight back through the ordinary launcher. It sets 'starting',
+           awaits the loaders and stamps a new startedAt, so the replacement
+           session gets a new key and therefore a new mount. A typed failure
+           lands in 'failed' and falls through to the tab it was launched from,
+           which is the existing behaviour for every other launch. */
+        onPractiseAgain={() => handleStartQuiz({ mode: quiz.mode, difficulty: quiz.difficulty })}
+        onDone={() => setQuiz(null)}
       />
     )
   }

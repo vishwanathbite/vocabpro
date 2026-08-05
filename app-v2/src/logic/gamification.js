@@ -387,19 +387,21 @@ const getStreakEmoji = (streak) => {
   return '📝';
 };
 
-/**
- * Get streak message based on streak value
- * @param {number} streak - Current streak
- * @returns {string} - Motivational message
+/*
+ * getStreakMessage WAS HERE, DELETED IN PHASE 5B STEP 13.
+ *
+ * Unexported and never called, in either tree. It tiered on 3/5/10/20/50 — the
+ * pre-step-7 streak thresholds — so against the live STREAK_MILESTONES it named
+ * a milestone at 3, 5 and 20 where nothing is awarded and stayed generic at 25
+ * and 75 where a badge lands. getStreakEmoji carried the identical stale list
+ * and was retiered in step 12b; this one is superseded outright by
+ * STREAK_LINES in quiz/moments.js, which is written per real milestone.
+ *
+ * Recorded rather than silently removed because it is the second of the two
+ * stale-threshold copies flagged in step 12b, and a future reader finding
+ * STREAK_LINES may wonder whether an older message table was meant to be reused.
+ * It was not: its thresholds were wrong and its copy shouted.
  */
-const getStreakMessage = (streak) => {
-  if (streak >= 50) return 'PHENOMENAL! You\'re unstoppable!';
-  if (streak >= 20) return 'AMAZING! Keep it up!';
-  if (streak >= 10) return 'EXCELLENT! You\'re on fire!';
-  if (streak >= 5) return 'GREAT! Keep the momentum!';
-  if (streak >= 3) return 'Good streak! Stay focused!';
-  return '';
-};
 
 // ===========================
 // SCORING SYSTEM
@@ -742,19 +744,32 @@ const recordModePlayed = (stats, mode) => {
   return newStats;
 };
 
-/**
- * Get performance grade based on accuracy
- * @param {number} accuracy - Accuracy percentage (0-100)
- * @returns {Object} - {grade, color, message}
+/*
+ * getPerformanceGrade WAS HERE, DELETED IN PHASE 5B STEP 13.
+ *
+ * Unexported, zero callers, and NOT reusable by the results screen that would
+ * have been its first — which is why it is deleted rather than exported. Three
+ * independent reasons, any one sufficient:
+ *
+ *   1. ITS COPY CONTRADICTS THE APPROVED COPY. It tiered 90/80/70/60/50 into six
+ *      grades; the results headline is three tiers at 80/60. They agree on
+ *      'Excellent!' at 80 and 'Keep Practicing!' at the floor and disagree in
+ *      between — 60 reads 'Fair' here and 'Good Job!' in js/'s modal
+ *      (js/app.js:2134). Using this would have meant changing agreed copy.
+ *
+ *   2. ITS `color` IS THE LEVEL_CONFIG.color HAZARD AGAIN. Tailwind class
+ *      strings delivered from a data table at runtime are never seen by v4's
+ *      source scanner, so text-green-400 and friends would not be generated and
+ *      the grade would render unstyled. app-v2 declined LEVEL_CONFIG.color for
+ *      exactly this; importing the same shape here would reintroduce it.
+ *
+ *   3. `grade` (A+/B/F) appears nowhere in the design.
+ *
+ * Exporting it would have meant importing a function to use one third of it
+ * while carefully not touching the other two thirds. The results screen states
+ * its three thresholds once, in quiz/results-copy.js, and that is the only
+ * accuracy tiering in app-v2.
  */
-const getPerformanceGrade = (accuracy) => {
-  if (accuracy >= 90) return { grade: 'A+', color: 'text-green-500', message: 'Outstanding!' };
-  if (accuracy >= 80) return { grade: 'A', color: 'text-green-400', message: 'Excellent!' };
-  if (accuracy >= 70) return { grade: 'B', color: 'text-blue-500', message: 'Good!' };
-  if (accuracy >= 60) return { grade: 'C', color: 'text-yellow-500', message: 'Fair' };
-  if (accuracy >= 50) return { grade: 'D', color: 'text-orange-500', message: 'Needs Improvement' };
-  return { grade: 'F', color: 'text-red-500', message: 'Keep Practicing!' };
-};
 
 // ===========================
 // STREAK PROTECTION SYSTEM
@@ -1032,9 +1047,14 @@ const StatsManager = {
 // rather than hung off StreakProtection to keep the one privileged mutation
 // entry point visible at the import site: a caller reaching for it has to name
 // it, and cannot reach it by accident while reading shield counts.
-// updateStreak, getStreakMessage, getPerformanceGrade and POINTS_CONFIG stay
-// internal (unexported), as in the original. (QUALITY_RATINGS was listed here
-// too, but it never lived in this module — it was srs.js's, and went with it.)
+// updateStreak and POINTS_CONFIG stay internal (unexported), as in the
+// original. (QUALITY_RATINGS was listed here too, but it never lived in this
+// module — it was srs.js's, and went with it.)
+//
+// getStreakMessage and getPerformanceGrade were also on this list and are now
+// DELETED, in step 13; see the notes where each stood. Both were unexported
+// with zero callers, and both carried thresholds that had fallen out of step
+// with the tables that superseded them.
 export {
   LEVEL_CONFIG,
   getLevelInfo,
