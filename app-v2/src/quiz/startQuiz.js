@@ -28,6 +28,7 @@ import {
   DEFAULT_DIFFICULTY,
   MIXED,
   isStartableMode,
+  isScoredMode,
   isValidDifficulty
 } from './quiz-modes.js'
 import { loadVocabularyLevel, loadAcronyms, loadOneWord } from '../data/loader.js'
@@ -134,6 +135,17 @@ export async function startQuiz({ mode, difficulty } = {}) {
     // QUIZ_MODES. Reported rather than thrown so a future launch point with a
     // typo degrades to an ordinary empty state instead of unmounting the tree.
     console.warn(`startQuiz: unknown mode "${mode}"`)
+    return { ok: false, mode, reason: 'empty' }
+  }
+
+  if (!isScoredMode(mode)) {
+    /* THIS FUNCTION IS THE SCORED PATH, AND ONLY THAT.
+       Flashcards joined QUIZ_MODES in step 14, so isStartableMode now admits a
+       mode that has no questions and must never be scored. Without this guard
+       it would fall through to generateQuestions, which has no flashcard branch
+       — it would warn, return [], and surface as 'empty', blaming the corpus for
+       a routing mistake. Refused by name instead, and loudly. */
+    console.warn(`startQuiz: "${mode}" is not a scored mode; use startFlashcards`)
     return { ok: false, mode, reason: 'empty' }
   }
 

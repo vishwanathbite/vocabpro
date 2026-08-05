@@ -6,7 +6,11 @@ import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
 import QuizSession from '../quiz/QuizSession.jsx'
 import ResultsScreen from '../quiz/ResultsScreen.jsx'
+import FlashcardSession from '../quiz/FlashcardSession.jsx'
+import FlashcardSummary from '../quiz/FlashcardSummary.jsx'
 import { startQuiz } from '../quiz/startQuiz.js'
+import { startFlashcards } from '../quiz/startFlashcards.js'
+import { isScoredMode } from '../quiz/quiz-modes.js'
 import { loadInitialData, loadVocabularyLevel } from '../data/loader.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 
@@ -93,26 +97,82 @@ export default function AppShell() {
    */
   const [quiz, setQuiz] = useState(null)
 
+  /**
+   * The flashcard session, in its own state value — never inside `quiz`.
+   *
+   *   null                                          no session
+   *   { status:'running',  mode, difficulty, cards, startedAt }
+   *   { status:'complete', mode, difficulty, known, unknown }
+   *
+   * SEPARATE BECAUSE THE FIELD NAMES WOULD OTHERWISE LIE. `quiz` carries
+   * `questions`, and a flashcard has no question — no stem, no options, no
+   * correct answer. Putting cards in a field called questions would make the
+   * shell read as though flashcards were a kind of quiz, which is the exact
+   * confusion `scored: false` exists to prevent.
+   *
+   * The 'starting' and 'failed' states are NOT duplicated here. Both launchers
+   * return the same failure shape, both pre-session states are only ever handed
+   * back down to the launch screens for LaunchNotice to render under the tapped
+   * tile, and that notice keys on mode — so `quiz` holds them for either kind
+   * and `flash` only ever holds a session that actually started.
+   *
+   * MUTUAL EXCLUSION is maintained at the single point where sessions are
+   * created: handleStartQuiz clears both before setting either, so there is no
+   * ordering in which both become non-null. It is an invariant of that one
+   * function rather than of the types — if a second creation site is ever
+   * added, it has to clear the other value too.
+   */
+  const [flash, setFlash] = useState(null)
+
   /* A second tap while the first launch is in flight would run the loaders and
      the generator twice and leave the loser's questions built for nothing. A
      ref rather than a read of `quiz`, because the guard has to hold within the
      same tick as the tap, before any state has re-rendered. */
   const launchingRef = useRef(false)
 
+  /**
+   * THE ONE PLACE A SESSION OF EITHER KIND IS CREATED.
+   *
+   * Both tiles call this; the mode table decides which launcher runs. The
+   * Practice screen does not know there are two, which is what keeps the tile
+   * list and the launch behaviour from drifting apart — the same reason
+   * `takesDifficulty` rather than a second list decides who gets a picker.
+   */
   const handleStartQuiz = useCallback(async ({ mode, difficulty } = {}) => {
     if (launchingRef.current) return
     launchingRef.current = true
-    // difficulty is carried through the starting state so the notice can say
-    // what the wait is for — Mixed has its own line.
+
+    // Clear both first. This is what makes the two branches exclusive: whatever
+    // was on screen is gone before either state is set, so no render can see a
+    // running quiz and a running flashcard session at once.
+    setQuiz(null)
+    setFlash(null)
+
+    const scored = isScoredMode(mode)
+
+    // The pre-session states live on `quiz` for BOTH kinds — see the note on
+    // `flash`. difficulty is carried through so the notice can say what the
+    // wait is for; Mixed has its own line.
     setQuiz({ status: 'starting', mode, difficulty })
 
     try {
-      const result = await startQuiz({ mode, difficulty })
-      setQuiz(
-        result.ok
-          ? { status: 'running', ...result, startedAt: Date.now() }
-          : { status: 'failed', mode: result.mode, reason: result.reason },
-      )
+      const result = scored
+        ? await startQuiz({ mode, difficulty })
+        : await startFlashcards({ difficulty })
+
+      if (!result.ok) {
+        setQuiz({ status: 'failed', mode: result.mode, reason: result.reason })
+        return
+      }
+
+      if (scored) {
+        setQuiz({ status: 'running', ...result, startedAt: Date.now() })
+      } else {
+        // Handing the started session to `flash` and releasing `quiz`, so the
+        // shell is never holding a 'starting' quiz behind a running card set.
+        setQuiz(null)
+        setFlash({ status: 'running', ...result, startedAt: Date.now() })
+      }
     } finally {
       launchingRef.current = false
     }
@@ -242,6 +302,48 @@ export default function AppShell() {
            which is the existing behaviour for every other launch. */
         onPractiseAgain={() => handleStartQuiz({ mode: quiz.mode, difficulty: quiz.difficulty })}
         onDone={() => setQuiz(null)}
+      />
+    )
+  }
+
+  /**
+   * The flashcard branches, reached only when `quiz` is null — see the note on
+   * `flash`. Both replace the shell for the same reasons the quiz does: every
+   * screen reads its numbers in a lazy initialiser, so unmounting the tab panel
+   * is what makes Practice and Progress re-read on the way back, and removing
+   * the tab bar stops a stray tap discarding a session in progress.
+   */
+  if (flash?.status === 'running') {
+    return (
+      <FlashcardSession
+        key={flash.startedAt}
+        session={flash}
+        onComplete={({ known, unknown }) =>
+          setFlash((f) => ({
+            status: 'complete',
+            mode: f.mode,
+            difficulty: f.difficulty,
+            known,
+            unknown
+          }))
+        }
+        onExit={() => setFlash(null)}
+      />
+    )
+  }
+
+  if (flash?.status === 'complete') {
+    return (
+      <FlashcardSummary
+        known={flash.known}
+        unknown={flash.unknown}
+        /* Straight back through the same launcher, which stamps a new
+           startedAt and therefore forces a fresh mount — the mode record is a
+           once-per-mount write, so a reset rather than a remount would skip it
+           on the second session. Flashcards have no equivalent of Smart
+           Review's empty pool, so this is never a dead button. */
+        onPractiseAgain={() => handleStartQuiz({ mode: flash.mode, difficulty: flash.difficulty })}
+        onDone={() => setFlash(null)}
       />
     )
   }

@@ -22,10 +22,16 @@
  * are the difficulty set and the mixed marker, taken from the modules that own
  * them rather than restated here — see DIFFICULTIES.
  *
- * DELIBERATELY ABSENT: flashcard, daily, bookmarks, idiom, idiom-reverse,
- * match. Flashcards are self-reported and never reach the scoring path; the
- * daily challenge builds its own questions in daily-challenge.js; the other
- * three are cut or unbuilt. A mode absent from this table cannot be started.
+ * DELIBERATELY ABSENT: daily, bookmarks, idiom, idiom-reverse, match. The daily
+ * challenge builds its own questions in daily-challenge.js; the other four are
+ * cut or unbuilt. A mode absent from this table cannot be started.
+ *
+ * FLASHCARDS JOINED THE TABLE IN STEP 14, and brought `scored` with them. They
+ * were held out while the table meant "startable AND scored", because they are
+ * neither scored nor question-shaped. Keeping them out cost a second copy of
+ * their name and description in PracticeScreen and a difficulty sheet that
+ * titled itself "Quiz difficulty", since it resolves its heading through this
+ * table. They are in; `scored` is what the launcher branches on.
  */
 
 import { VOCAB_LEVELS, MIXED } from '../data/loader.js'
@@ -124,6 +130,11 @@ export const isValidDifficulty = (value) =>
  * or a one-word substitute can enter it just as a vocabulary word can — so a
  * pool word is unresolvable until every database it might have come from is
  * present. Loading only vocabulary would make a pool of acronyms look empty.
+ *
+ * `scored` IS STATED ON EVERY ROW, never left to default. It decides which
+ * launcher runs and, downstream of that, whether a session may write to stats
+ * at all — so "absent means scored" would be an implicit default gating the one
+ * thing step 14 locked down. Six true, one false, all written out.
  */
 export const QUIZ_MODES = {
   vocab: {
@@ -132,6 +143,7 @@ export const QUIZ_MODES = {
     description: 'Match words with their definitions',
     group: 'Words',
     takesDifficulty: true,
+    scored: true,
     datasets: [DATASET.VOCAB]
   },
   synonym: {
@@ -140,6 +152,7 @@ export const QUIZ_MODES = {
     description: 'Find words with similar meanings',
     group: 'Words',
     takesDifficulty: true,
+    scored: true,
     datasets: [DATASET.VOCAB]
   },
   antonym: {
@@ -148,6 +161,7 @@ export const QUIZ_MODES = {
     description: 'Find words with opposite meanings',
     group: 'Words',
     takesDifficulty: true,
+    scored: true,
     datasets: [DATASET.VOCAB]
   },
   oneword: {
@@ -156,6 +170,7 @@ export const QUIZ_MODES = {
     description: 'Replace phrases with single words',
     group: 'Expressions',
     takesDifficulty: false,
+    scored: true,
     datasets: [DATASET.ONEWORD]
   },
   acronym: {
@@ -164,7 +179,29 @@ export const QUIZ_MODES = {
     description: 'Expand common acronyms',
     group: 'Expressions',
     takesDifficulty: false,
+    scored: true,
     datasets: [DATASET.ACRONYMS]
+  },
+  /* Before Smart Review in the Study group, which is the order the Practice tab
+     already showed when this tile was appended locally there. Learning comes
+     before revising. */
+  flashcard: {
+    id: 'flashcard',
+    name: 'Flashcards',
+    /* The live app's wording, carried from PracticeScreen's local tile rather
+       than rewritten. */
+    description: 'Flip cards to learn without pressure',
+    group: 'Study',
+    /* Flashcards exist to meet UNFAMILIAR words, and unfamiliar is relative to
+       the student rather than to the corpus — so this takes the same picker as
+       the quiz modes, Mixed included, instead of being pinned to hard. */
+    takesDifficulty: true,
+    /* THE ONE FALSE. Self-reported: the student presses Know / Don't know with
+       nothing checked against them. Scoring that would let a student master the
+       corpus by thumb and let "Don't know" inject an untested word into Smart
+       Review. startQuiz refuses this mode outright; startFlashcards serves it. */
+    scored: false,
+    datasets: [DATASET.VOCAB]
   },
   review: {
     id: 'review',
@@ -175,12 +212,23 @@ export const QUIZ_MODES = {
     description: 'Revise the words you keep getting wrong.',
     group: 'Study',
     takesDifficulty: false,
+    scored: true,
     datasets: [DATASET.VOCAB, DATASET.ACRONYMS, DATASET.ONEWORD]
   }
 }
 
 /** Whether a mode id can be started at all. */
 export const isStartableMode = (mode) => Object.hasOwn(QUIZ_MODES, mode)
+
+/**
+ * Whether a mode's sessions are scored — which decides the launcher, the hook,
+ * the screen, and whether anything may reach updateStats.
+ *
+ * Read as a strict `=== true` rather than a truthiness test, so a row that
+ * somehow lost the field is treated as UNSCORED. The safe direction for a
+ * missing marker is the one that writes nothing.
+ */
+export const isScoredMode = (mode) => QUIZ_MODES[mode]?.scored === true
 
 /**
  * The heading shown while a session of this mode is running.

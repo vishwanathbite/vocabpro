@@ -9,9 +9,10 @@ import LaunchNotice from '../quiz/LaunchNotice.jsx'
 /**
  * Practice tab — the seven quiz modes, grouped.
  *
- * SIX TILES ARE LIVE as of step 11: vocab, synonym, antonym, oneword, acronym
- * and review all start a session. Flashcards remain inert — they are not a
- * scored mode, they never reach updateStats, and their screen does not exist.
+ * ALL SEVEN TILES ARE LIVE as of step 14. Six start a scored quiz; Flashcards
+ * start a self-reported card session through a different launcher, chosen by
+ * `scored` in the mode table. This screen does not know the difference — it
+ * reports the tap and the shell routes it.
  *
  * NAMES AND DESCRIPTIONS NOW COME FROM quiz/quiz-modes.js. They used to be a
  * local GROUPS table here, which was correct while nothing else needed them;
@@ -33,23 +34,12 @@ import LaunchNotice from '../quiz/LaunchNotice.jsx'
    ROW is the shared neutral row — the same chrome Learn's "Continue practising"
    uses. It moved to components/chrome.js in step 7b. */
 
-/* Flashcards are not in QUIZ_MODES, because that table is what a session can be
-   started from and flashcards cannot be scored. The tile still belongs on this
-   screen, so it is appended to its group here — inert, exactly as every tile on
-   this screen was before step 11. Its wording is the live app's, as the others
-   were before they moved into the mode table. */
-const FLASHCARD_TILE = {
-  id: 'flashcard',
-  name: 'Flashcards',
-  description: 'Flip cards to learn without pressure',
-  inert: true,
-}
-
-const GROUPS = MODE_GROUPS.map((group) =>
-  group.heading === 'Study'
-    ? { ...group, modes: [FLASHCARD_TILE, ...group.modes] }
-    : group,
-)
+/* The flashcard tile was declared HERE until step 14 — a local object carrying
+   its own copy of the name and description, appended to the Study group and
+   marked inert, because flashcards were not in QUIZ_MODES. They are now, with
+   `scored: false`, so the second copy is gone and this screen renders all seven
+   tiles from one table. MODE_GROUPS already places it first in Study. */
+const GROUPS = MODE_GROUPS
 
 export default function PracticeScreen({ onStartQuiz, launch }) {
   /* Which mode's difficulty sheet is open, or null. The only state on this
@@ -102,7 +92,10 @@ export default function PracticeScreen({ onStartQuiz, launch }) {
                 /* Trailing stop stripped before it is re-added, so a description
                    that already ends in one does not read out as two. */
                 aria-label={`${mode.name}. ${mode.description.replace(/\.$/, '')}.`}
-                onClick={mode.inert ? undefined : () => handleTile(mode.id)}
+                /* No inert tiles left as of step 14 — all seven start a
+                   session. Flashcards route to a different launcher, but that
+                   decision belongs to the shell, not to this tile. */
+                onClick={() => handleTile(mode.id)}
                 className={ROW}
               >
                 <span className="font-medium text-white">{mode.name}</span>

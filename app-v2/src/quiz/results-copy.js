@@ -95,7 +95,14 @@ export const WHY_NONE_LEFT =
 /** Badges earned across the whole session, not just the one shown as a moment. */
 export const BADGES_HEADING = 'Earned this session'
 
-/** Actions. */
+/**
+ * Actions. SHARED WITH THE FLASHCARD END CARD, which imports both from here.
+ *
+ * The two screens are different in every other respect, but they offer the same
+ * two choices and the labels must not drift — "Practise again" against a
+ * "Practice again" elsewhere is the kind of difference nobody notices and every
+ * user does. One spelling, one file.
+ */
 export const PRACTISE_AGAIN = 'Practise again'
 export const DONE = 'Done'
 
