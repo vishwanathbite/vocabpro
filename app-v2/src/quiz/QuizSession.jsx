@@ -28,6 +28,10 @@ export default function QuizSession({ session, onExit }) {
       isCorrect={quiz.isCorrect}
       isLastQuestion={quiz.isLastQuestion}
       score={quiz.score}
+      currentMoment={quiz.currentMoment}
+      onDismissMoment={quiz.dismissMoment}
+      poolExit={quiz.poolExit}
+      towardMastery={quiz.towardMastery}
       keyboardEnabled={quiz.keyboardEnabled}
       needsExitConfirm={quiz.needsExitConfirm}
       unansweredCount={quiz.unansweredCount}

@@ -352,15 +352,38 @@ const updateStreak = (isCorrect, currentStreak) => {
 
 /**
  * Get streak emoji based on streak value
+ *
+ * RETIERED IN PHASE 5B STEP 12B, and read from STREAK_MILESTONES rather than
+ * from literals. It tiered on [3, 5, 10, 20, 50] — the pre-step-7 streak badge
+ * thresholds, and the third copy of that stale list in this codebase after the
+ * one quiz-scoring.js carried. Against the live [10, 25, 50, 75] it collapsed
+ * the top: 50 and 75 both landed in the `>= 50` band and returned 💫, so the
+ * two rarest achievements in the app looked identical, and 25 was shown the
+ * band named for 20.
+ *
+ * PREVIOUSLY LEFT ALONE ON PURPOSE, as a gradual gauge that happened to move
+ * with a streak rather than a table of awards — which was the right call while
+ * nothing read it. Step 12b gives it a consumer: the streak moment renders this
+ * emoji beside the milestone number, which turns a loose gauge into a claim
+ * about which milestone was reached. A claim has to be exact.
+ *
+ * ONE EMOJI PER MILESTONE, four distinct, and each is the icon of the badge
+ * that same milestone awards — 🔥 On Fire, 🌟 Hot Streak, ⚡ Unstoppable,
+ * 💫 Phenomenal. The badge and the moment are one event to a student, so they
+ * now carry one mark. Below the first milestone there is no award and no claim
+ * to make, hence the neutral fallback.
+ *
+ * The bands stay `>=` rather than exact equality: this is still a gauge, and a
+ * streak of 30 should read as the 25 band, not fall through to the fallback.
+ *
  * @param {number} streak - Current streak
  * @returns {string} - Emoji representing streak level
  */
 const getStreakEmoji = (streak) => {
-  if (streak >= 50) return '💫';
-  if (streak >= 20) return '⚡';
-  if (streak >= 10) return '🌟';
-  if (streak >= 5) return '🔥';
-  if (streak >= 3) return '✨';
+  if (streak >= STREAK_MILESTONES[3]) return '💫';
+  if (streak >= STREAK_MILESTONES[2]) return '⚡';
+  if (streak >= STREAK_MILESTONES[1]) return '🌟';
+  if (streak >= STREAK_MILESTONES[0]) return '🔥';
   return '📝';
 };
 

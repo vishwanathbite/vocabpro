@@ -31,7 +31,8 @@
  * no longer exists. Surfacing it would show question ten a ten-question delay.
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { buildMoments } from './moments.js'
 import { scoreAnswer } from '../logic/quiz-scoring.js'
 import { summarizeQuizResults } from '../logic/quiz-summary.js'
 import { StatsManager } from '../logic/gamification.js'
@@ -58,14 +59,73 @@ export function useQuizSession(session, onComplete) {
   const [score, setScore] = useState(0)
 
   /**
-   * The last answer's celebration values, held for Commit B.
+   * The last answer's celebration payload.
    *
-   * Nothing renders these yet. They are kept because they are only derivable at
-   * the moment the answer is scored — getNewBadges compares against a
-   * previousBadges list that has already moved on by the next answer, so a
-   * later pass could not recompute them from stored state.
+   * Only derivable at the moment the answer is scored — getNewBadges compares
+   * against a previousBadges list that has already moved on by the next answer,
+   * and the review pool has already been overwritten — so a later pass could
+   * not recompute any of it from stored state.
+   *
+   *   moments        ordered queue, see moments.js; may be empty
+   *   poolExit       the word that left the review pool, or null
+   *   towardMastery  the word that took its first correct, or null
+   *
+   * The two marks are NOT moments. They are quiet inline lines in the feedback
+   * panel: a word leaves the pool roughly three times in a session, and a
+   * full-screen interruption at that rate would train the student to dismiss
+   * without reading, which is exactly what would then happen to a badge.
    */
   const [lastAnswer, setLastAnswer] = useState(null)
+
+  /**
+   * How far into lastAnswer.moments the student has got.
+   *
+   * A CURSOR, NOT A SHIFTED ARRAY. Dismissing by slicing the queue would make
+   * the queue itself change identity on every dismissal, and the sound effect
+   * below keys off the current moment — a new array reference for the same
+   * remaining moment would replay its sound.
+   */
+  const [momentIndex, setMomentIndex] = useState(0)
+
+  /**
+   * The moment on screen, or null.
+   *
+   * Derived, never stored. Two sources of truth for "what is showing" is how a
+   * queue ends up rendering one moment while blocking on another.
+   */
+  const currentMoment = lastAnswer?.moments?.[momentIndex] ?? null
+
+  /* Pulled out as scalars so the sound effect below depends on values rather
+     than on an object identity it would have to be told to ignore. */
+  const momentKey = currentMoment?.key ?? null
+  const momentKind = currentMoment?.kind ?? null
+
+  /**
+   * Sound rides the moment being SHOWN, not the answer being scored.
+   *
+   * js/ plays each sound beside the setState that reveals it (app.js:1390,
+   * 1400), and with a serialised queue those are different instants: a level-up
+   * queued behind a badge is heard when the badge is dismissed, not when the
+   * answer was given. Playing both at scoring time would stack two fanfares
+   * over one another and leave the level-up silent when it finally appears.
+   *
+   * STREAK AND GOAL ARE SILENT, matching js/ — it plays nothing for either, and
+   * this step is not the place to invent audio. So is the pool-exit mark.
+   *
+   * Keyed on the moment's `key` rather than the object, so a re-render with an
+   * equal-but-new object cannot replay. On mount currentMoment is null, which
+   * is why React 19 StrictMode's double-invoked mount effect plays nothing
+   * twice; every later run is a genuine dependency change and fires once.
+   */
+  useEffect(() => {
+    if (momentKind === 'badge') SoundManager.playAchievement()
+    else if (momentKind === 'levelUp') SoundManager.playLevelUp()
+  }, [momentKey, momentKind])
+
+  /** Advance the queue. The only way a moment is dismissed. */
+  const dismissMoment = useCallback(() => {
+    setMomentIndex((i) => i + 1)
+  }, [])
 
   // ---- Carry-forward values ----------------------------------------------
   //
@@ -179,12 +239,19 @@ export function useQuizSession(session, onComplete) {
       setIsCorrect(correct)
       setShowResult(true)
 
+      // The PRE-answer stats, pinned before step 5 moves the ref on. Step 6
+      // needs both sides of the same answer, and by the time it runs the ref
+      // holds the post-answer object. updateStats never aliases its input
+      // (STATS_ARRAY_FIELDS is re-cloned there), so this stays a genuine
+      // before-picture rather than a second view of the same arrays.
+      const previousStats = statsRef.current
+
       // 2. Score. Time is injected rather than read inside, so the derivation
       //    stays deterministic.
       const result = scoreAnswer({
         answer: option,
         currentQuestion,
-        stats: statsRef.current,
+        stats: previousStats,
         difficulty,
         mode,
         previousBadges: previousBadgesRef.current,
@@ -218,13 +285,69 @@ export function useQuizSession(session, onComplete) {
 
       if (correct) correctCountRef.current += 1
 
-      // Held for Commit B. responseTime is deliberately not among them.
+      // 6. The two quiet marks, derived from the pair of stats objects that are
+      //    both in scope here and nowhere else. `previousStats` is read BEFORE
+      //    step 5 advanced statsRef, which is why this block sits after the
+      //    scoring and reads a local rather than the ref.
+      //
+      //    Array.isArray on both sides: loadStats normalises reviewPool and
+      //    updateStats always writes an array back, so neither is expected to
+      //    be missing — but a .filter on a corrupt store would unmount the
+      //    React tree, and this is a decoration.
+      const poolBefore = Array.isArray(previousStats.reviewPool) ? previousStats.reviewPool : []
+      const poolAfter = Array.isArray(result.newStats.reviewPool) ? result.newStats.reviewPool : []
+
+      // THE POOL EXIT. Exactly 0 or 1 words, and no false positives.
+      // updateStats filters the single `word` it was handed, on one branch
+      // (gamification.js:590), so no answer can shed two. A word that was never
+      // in the pool and is promoted to mastered hits the same filter, but the
+      // difference against poolBefore is empty for it, so it is not announced.
+      //
+      // Entry and exit cannot collide on one answer either: entry is the
+      // wrong-answer branch, exit is inside the correct branch. The difference
+      // is therefore never masked by an addition.
+      const departed = poolBefore.filter((w) => !poolAfter.includes(w))
+      const poolExit = departed.length > 0 ? departed[0] : null
+
+      // FIRST CORRECT ON A POOL WORD: struggling -> learning, the move that
+      // sheds nothing. A pool word needs two corrects, so a student's first
+      // review session after a bad quiz shows no exits however well they do.
+      // This is the honest thing to say instead of nothing.
+      //
+      // GATED ON THE WORD ACTUALLY BEING IN THE POOL, not just on the list
+      // move. Struggling and pooled are written on the same branch today, so
+      // the two agree for anything this app recorded — but a save written
+      // before reviewPool existed (step 8) can hold a populated
+      // strugglingWordsList and an empty pool, and the copy names Smart Review.
+      const struggling = Array.isArray(previousStats.strugglingWordsList)
+        ? previousStats.strugglingWordsList
+        : []
+      const learningAfter = Array.isArray(result.newStats.learningWordsList)
+        ? result.newStats.learningWordsList
+        : []
+      const towardMastery =
+        correct &&
+        result.wordId &&
+        poolBefore.includes(result.wordId) &&
+        struggling.includes(result.wordId) &&
+        learningAfter.includes(result.wordId)
+          ? result.wordId
+          : null
+
+      // 7. Queue the moments and rewind the cursor. Both in one place, so a
+      //    queue can never be shown from an index the previous answer left
+      //    behind. responseTime is deliberately not among the values kept.
       setLastAnswer({
-        newBadges: result.newBadges,
-        levelUp: result.levelUp,
-        streakMilestone: result.streakMilestone,
-        goalJustCompleted: !wasGoalComplete && isGoalComplete
+        moments: buildMoments({
+          newBadges: result.newBadges,
+          levelUp: result.levelUp,
+          streakMilestone: result.streakMilestone,
+          goalJustCompleted: !wasGoalComplete && isGoalComplete
+        }),
+        poolExit,
+        towardMastery
       })
+      setMomentIndex(0)
     },
     [showResult, currentQuestion, difficulty, mode]
   )
@@ -238,6 +361,26 @@ export function useQuizSession(session, onComplete) {
   const next = useCallback(() => {
     if (!showResult) return
 
+    /* THE QUEUE MUST DRAIN FIRST, and this line is what guarantees it.
+
+       This is the whole answer to "moments on the final answer must show
+       BEFORE the results screen". Nothing is scheduled into a subtree about to
+       unmount, because the subtree cannot unmount while a moment is pending:
+       complete() is reachable only through here, and here refuses. The student
+       dismisses the badge, dismisses the level-up, and only then does the
+       Finish Quiz button do anything.
+
+       IT LIVES IN THE HOOK, not in the screen, because the hook owns
+       complete(). QuizScreen also hides the Next button behind the overlay and
+       suppresses its Enter binding, but those are ergonomics — a stray call
+       from anywhere still cannot end the session early. Two layers, one of
+       which is load-bearing.
+
+       It reads currentMoment, which is derived from state rather than a ref, so
+       this callback re-creates when the queue advances; complete's own
+       identity is unaffected. */
+    if (currentMoment) return
+
     if (isLastQuestion) {
       complete()
       return
@@ -248,8 +391,9 @@ export function useQuizSession(session, onComplete) {
     setIsCorrect(false)
     setSelectedAnswer(null)
     setLastAnswer(null)
+    setMomentIndex(0)
     stopSpeech()
-  }, [showResult, isLastQuestion, complete])
+  }, [showResult, currentMoment, isLastQuestion, complete])
 
   /**
    * Whether leaving right now needs confirming.
@@ -275,7 +419,12 @@ export function useQuizSession(session, onComplete) {
     isCorrect,
     isLastQuestion,
     score,
-    lastAnswer,
+    currentMoment,
+    dismissMoment,
+    /* The two quiet marks, flattened out of lastAnswer so the screen reads two
+       optional strings rather than reaching through a payload shape. */
+    poolExit: lastAnswer?.poolExit ?? null,
+    towardMastery: lastAnswer?.towardMastery ?? null,
     keyboardEnabled: keyboardEnabledRef.current,
     needsExitConfirm,
     unansweredCount,

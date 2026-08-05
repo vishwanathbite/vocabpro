@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Volume2, X } from '../components/icons.jsx'
 import { KeyboardShortcuts } from '../logic/settings.js'
 import { SoundManager } from '../logic/sound.js'
 import { speakWord } from '../logic/speech.js'
+import MomentOverlay from '../quiz/MomentOverlay.jsx'
 import { modeTitle, questionTextFor } from '../quiz/quiz-modes.js'
 
 /**
@@ -90,6 +91,10 @@ export default function QuizScreen({
   isCorrect,
   isLastQuestion,
   score,
+  currentMoment,
+  onDismissMoment,
+  poolExit,
+  towardMastery,
   keyboardEnabled,
   needsExitConfirm,
   unansweredCount,
@@ -98,6 +103,18 @@ export default function QuizScreen({
   onExit
 }) {
   const [confirmingExit, setConfirmingExit] = useState(false)
+
+  /* A moment covers the screen, so everything behind it is made inert for the
+     duration: no focus, no clicks, no assistive-technology reach. This is the
+     ergonomic half of "Next must not be reachable behind an overlay" — the
+     load-bearing half is useQuizSession's next(), which refuses to advance or
+     complete while a moment is pending, so nothing here can end a session
+     early even if this attribute were dropped.
+
+     Applied to the header and main separately rather than to a new wrapper
+     element: the header is `sticky` and the root is the height context, so
+     introducing a div between them risks a layout change for no gain. */
+  const backgroundInert = currentMoment ? true : undefined
 
   /**
    * Take focus on mount, because nothing else will.
@@ -154,7 +171,18 @@ export default function QuizScreen({
     if (!keyboardEnabled) return
 
     const onKeyDown = (e) => {
-      if (confirmingExit) return
+      /* Same guard the exit sheet gets, and for the same reason. Enter and
+         Space are bound to `next` below whenever showResult is true, which is
+         exactly when a moment is on screen — so without this, the one Enter
+         that dismisses the moment would also advance the question, and on the
+         last question would end the session behind the overlay.
+
+         MomentOverlay's own Escape handler is on document in the CAPTURE phase
+         and stops propagation, so this listener never sees that key; this
+         covers everything else it does see. Enter and Space are left alone
+         here rather than re-handled: the overlay's dismiss button is focused
+         and is a real <button>, so the browser activates it natively. */
+      if (confirmingExit || currentMoment) return
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
 
       const shortcut = KeyboardShortcuts.quiz[e.key]
@@ -218,7 +246,7 @@ export default function QuizScreen({
       {/* --- HEADER ---------------------------------------------------------
           Sticky so the progress and the exit stay reachable on a long options
           list, and navy rather than translucent so nothing shows through it. */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-navy">
+      <header inert={backgroundInert} className="sticky top-0 z-40 border-b border-white/10 bg-navy">
         <div className="mx-auto w-full max-w-content px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -265,7 +293,7 @@ export default function QuizScreen({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-content px-4 pt-6 pb-12">
+      <main inert={backgroundInert} className="mx-auto w-full max-w-content px-4 pt-6 pb-12">
         {/* --- QUESTION ---------------------------------------------------- */}
         <h1
           ref={headingRef}
@@ -395,6 +423,41 @@ export default function QuizScreen({
                 ))}
               </dl>
             )}
+
+            {/* --- SMART REVIEW MARKS -----------------------------------
+                QUIET AND INLINE, never an overlay and never queued. A word
+                leaves the pool around three times in a session; a full-screen
+                interruption at that rate teaches the student to dismiss
+                without reading, and the next thing dismissed unread would be a
+                badge.
+
+                INSIDE this panel, which already carries role="status"
+                aria-live="polite". A mark placed here is announced as part of
+                the one result announcement. A sibling live region would make
+                two announcements race for the same moment, and screen readers
+                do not reliably order them.
+
+                MUTUALLY EXCLUSIVE BY CONSTRUCTION, not by this ternary: the
+                exit is learning -> mastered and the progress line is
+                struggling -> learning, and one answer moves a word one step.
+                The chain is written so that a future third state cannot show
+                two marks at once by accident. */}
+            {poolExit ? (
+              <p className="mt-4 border-t border-white/10 pt-3 text-sm text-emerald-200">
+                <span className="font-semibold text-white">Mastered.</span> {poolExit} leaves Smart
+                Review.
+              </p>
+            ) : towardMastery ? (
+              /* THE FIRST-SESSION LINE. A pool word needs two corrects, so a
+                 student's first review session after a bad quiz sheds nothing
+                 however well they do — and silence there reads as "that
+                 achieved nothing" rather than "you are halfway". This says
+                 what actually changed and what it takes to finish. */
+              <p className="mt-4 border-t border-white/10 pt-3 text-sm text-slate-300">
+                <span className="font-semibold text-white">Halfway.</span> One more correct answer
+                and {towardMastery} leaves Smart Review.
+              </p>
+            ) : null}
           </div>
         )}
 
@@ -411,6 +474,22 @@ export default function QuizScreen({
           </button>
         )}
       </main>
+
+      {/* --- CELEBRATION MOMENT ---------------------------------------------
+          ONE AT A TIME. useQuizSession hands down a single moment or null, so
+          two can never be mounted together — the queue and its cursor live
+          there, and this renders whatever is current. Dismissing advances the
+          cursor; the last dismissal leaves null and reveals the quiz again. */}
+      {currentMoment && (
+        <MomentOverlay
+          /* Remounts between moments, which is what re-runs the focus effect
+             and guarantees the second moment's button takes focus rather than
+             inheriting the first one's. */
+          key={currentMoment.key}
+          moment={currentMoment}
+          onDismiss={onDismissMoment}
+        />
+      )}
 
       {/* --- EXIT CONFIRMATION ---------------------------------------------
           Copy is the live app's, verbatim (js/app.js:1527-1531). "Earned points
