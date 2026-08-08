@@ -30,6 +30,8 @@ import {
   calculatePoints,
   STREAK_MILESTONES
 } from './gamification.js';
+/* helpers.js is a leaf — it imports nothing — so this adds no cycle. */
+import { wordIdOf } from './helpers.js';
 
 /**
  * Score a single quiz answer.
@@ -60,8 +62,16 @@ export function scoreAnswer({
   const correct = answer === currentQuestion.correct;
   const responseTime = now - (currentQuestion.startTime || now);
 
-  // Canonical word identity, resolved the same way everywhere in the app.
-  const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase || currentQuestion.wordData?.idiom;
+  // Canonical word identity. This used to claim it was "resolved the same way
+  // everywhere in the app" while spelling the arm list out inline — which made
+  // the claim aspirational, since the same list was independently written at
+  // quiz-generation.js and quiz-summary.js. It is now true: all three import
+  // wordIdOf.
+  //
+  // THE ID DERIVED HERE IS PERSISTED. It goes to updateStats below, which writes
+  // it into stats.reviewPool and the mastery lists, and quiz-generation's
+  // indexLoadedItemsById is what has to resolve it back. See wordIdOf.
+  const wordId = wordIdOf(currentQuestion);
 
   // POINTS KEY. The word's OWN difficulty first, then the question's source
   // mode, then the quiz's selected difficulty, then the session's mode.

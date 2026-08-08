@@ -26,7 +26,8 @@ import {
   randomItem,
   generateSmartDistractors,
   buildSynonymPool,
-  buildAntonymPool
+  buildAntonymPool,
+  wordIdOf
 } from './helpers.js';
 import { BookmarksManager } from './bookmarks.js';
 import { StatsManager } from './gamification.js';
@@ -200,6 +201,10 @@ const buildQuestionFromItem = (item, vocabPool) => {
  * Index every loaded database by the identity expression the rest of the app
  * uses, so a saved id resolves back to its item whatever kind it is.
  *
+ * "The identity expression the rest of the app uses" was, until now, a second
+ * hand-written copy of that expression. It is wordIdOf, imported — the same
+ * function quiz-scoring.js calls to produce the ids this map has to match.
+ *
  * Only what has actually loaded is indexed. AppShell paints on easy vocabulary
  * alone and pulls the rest in behind it, so an id can be genuinely unresolvable
  * at the moment a screen asks — that is a loading state, not a missing word, and
@@ -219,7 +224,11 @@ const indexLoadedItemsById = (vocabWords) => {
   ];
 
   for (const item of indexable) {
-    const id = item && (item.word || item.acronym || item.phrase || item.idiom);
+    /* THE READ SIDE of the key quiz-scoring.js writes. Both call wordIdOf, which
+       is the point — an item indexed under a different string than the one
+       stored in reviewPool is a word that can never be served and therefore
+       never removed from it. */
+    const id = wordIdOf(item);
     if (id && !byId.has(id)) {
       byId.set(id, item);
     }

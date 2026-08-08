@@ -31,6 +31,8 @@
  */
 
 import { getLevelInfo, STATS_ARRAY_FIELDS } from './gamification.js';
+/* helpers.js is a leaf — it imports nothing — so this adds no cycle. */
+import { wordIdOf } from './helpers.js';
 
 /**
  * Summarize a completed quiz.
@@ -54,9 +56,12 @@ export function summarizeQuizResults({
 }) {
   const sessionTotal = questions.length;
 
-  const words = questions
-    .map(q => q.word || q.wordData?.acronym || q.wordData?.phrase || q.wordData?.idiom)
-    .filter(Boolean);
+  /* Same resolver as the scoring and generation sites — see wordIdOf. This one
+     is the low-stakes member of the family: historyEntry.words is stored but
+     nothing renders it, so a divergence here would have been invisible rather
+     than stranding a word in Smart Review. It shares the implementation anyway,
+     so the family has one member and not two-plus-one. */
+  const words = questions.map(wordIdOf).filter(Boolean);
 
   // Track idiom-specific badge stats.
   // The original calls setStats ONLY inside this branch (app.js:1490), so
