@@ -404,8 +404,43 @@ const DailyChallengeManager = {
    * and becomes deterministic and testable.
    */
   calculateDailyPoints(correctCount, totalQuestions, questions, streak = this.getStreak()) {
+    /* A CHALLENGE WITH NO QUESTIONS PAYS NOTHING AT ALL.
+     *
+     * The perfect-score test below is `correctCount === totalQuestions`, which
+     * reads 0 === 0 as a perfect run — so an empty challenge collected the full
+     * 50-point bonus for answering nothing, exactly the way an empty quiz
+     * session would have read as 100% accuracy in summarizeQuizResults.
+     *
+     * ZERO OUTRIGHT, not "streak bonus without the perfect bonus". The streak
+     * bonus is paid for COMPLETING a challenge on consecutive days, and a
+     * challenge with no questions was not completed — it was never posed. Paying
+     * it would be the same defect at a different number, and a worse one: at
+     * `Math.min(streak * 10, 100)` a long-streak user would collect up to 100
+     * points from an empty challenge where the perfect bonus gave 50.
+     *
+     * Written as `!(totalQuestions > 0)` rather than `<= 0` so that a NaN or
+     * undefined total — which compares false against everything and would
+     * otherwise slip past both this guard and the perfect-score test, while the
+     * loop below still charged for correctCount questions — also returns 0.
+     */
+    if (!(totalQuestions > 0)) {
+      return 0;
+    }
+
     let points = 0;
-    // Base points per correct answer with difficulty bonus
+    /* CHARGES THE FIRST correctCount QUESTIONS, NOT THE ONES ANSWERED CORRECTLY.
+     * KNOWN, DELIBERATELY NOT FIXED HERE — do not fix half of it later.
+     *
+     * `questions[i]` walks the array in its stored order while `correctCount` is
+     * only a count, so answering 3 of 8 pays for questions 0, 1 and 2 whatever
+     * was actually right. Correcting it needs the per-question outcomes, which
+     * this signature does not receive, so the fix is a signature change plus a
+     * caller that passes them. There is no caller in app-v2 today — the daily
+     * challenge screen is unbuilt, and completeDailyChallenge takes `points` as
+     * an injected argument — so the defect is latent rather than live. It is
+     * deferred to the daily challenge screen commit, which is the one that will
+     * have the outcomes to hand.
+     */
     for (let i = 0; i < correctCount; i++) {
       const q = questions[i];
       const diff = q ? q.difficulty : 'easy';

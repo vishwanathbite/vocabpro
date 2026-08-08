@@ -117,6 +117,33 @@ export const QUESTIONS_PER_QUIZ = 10;
  * three now that acronyms and one-word substitutes can enter the pool, so this
  * is the one copy rather than a second.
  *
+ * `sourceMode` RECORDS WHICH KIND THIS ITEM IS, and it exists because this is
+ * the only place that still knows.
+ *
+ * A vocabulary word carries its own `difficulty` field, so a scorer can always
+ * recover what it should pay for one. Acronyms and one-word substitutes carry no
+ * such field — in the dedicated acronym and oneword modes that is harmless,
+ * because the session's mode IS the right points key there. In Smart Review it
+ * is not: the mode is 'review', which no points table has an entry for, so a
+ * reviewed acronym fell through to a base-10 default instead of its own 12.
+ *
+ * The three branches below are the last point at which the kind is known — after
+ * this the question is a flat object and the only way back would be sniffing
+ * wordData's shape at scoring time, re-deriving downstream what was certain
+ * here. So each branch stamps the mode id whose points key applies to it.
+ *
+ * NOT A NEW CONSTANT: 'acronym' and 'oneword' are the existing mode ids, already
+ * written in this file as the dispatch literals at the oneword and acronym
+ * branches of generateQuestions, and already the keys those two modes score
+ * under. No number is restated — the values stay in POINTS_CONFIG, and this
+ * names a key rather than a price.
+ *
+ * THE VOCABULARY BRANCH IS DELIBERATELY UNSTAMPED. Its source mode would be
+ * 'vocab', which is NOT a points key — vocabulary is priced by difficulty, not
+ * by mode. Stamping it would put a value into the chain that means nothing to
+ * the scorer, and if it ever won precedence it would price every vocabulary word
+ * at the default. The absence is the correct answer here, not an omission.
+ *
  * @param {Object} item      Vocabulary word, acronym or one-word substitute
  * @param {Array}  vocabPool Flattened vocabulary, for definition distractors
  * @returns {Object|null} A question, or null if the item is not a shape we serve
@@ -125,6 +152,14 @@ const buildQuestionFromItem = (item, vocabPool) => {
   if (!item) return null;
 
   if (item.word && item.definition) {
+    /* NO sourceMode HERE, ON PURPOSE — sourceMode is intentionally partial, not
+       incomplete. This branch's source mode would be 'vocab', which is not a key
+       in POINTS_CONFIG; vocabulary is priced by its own `difficulty` field, which
+       every one of these items carries. Stamping it would put a meaningless key
+       into the scorer's chain, and the moment sourceMode won precedence over
+       difficulty it would price every vocabulary word at the base-10 default —
+       reintroducing, for the whole corpus, the exact defect the field was added
+       to fix for acronyms and one-word substitutes. */
     const distractors = generateSmartDistractors(item.definition, vocabPool, 3);
     return {
       question: `What is the meaning of "${item.word}"?`,
@@ -142,6 +177,7 @@ const buildQuestionFromItem = (item, vocabPool) => {
       options: shuffleArray([...item.options]),
       correct: item.full,
       wordData: item,
+      sourceMode: 'acronym',
       startTime: Date.now()
     };
   }
@@ -152,6 +188,7 @@ const buildQuestionFromItem = (item, vocabPool) => {
       options: shuffleArray([...item.options]),
       correct: item.answer,
       wordData: item,
+      sourceMode: 'oneword',
       startTime: Date.now()
     };
   }

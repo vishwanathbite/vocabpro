@@ -63,25 +63,43 @@ export function scoreAnswer({
   // Canonical word identity, resolved the same way everywhere in the app.
   const wordId = currentQuestion.word || currentQuestion.wordData?.acronym || currentQuestion.wordData?.phrase || currentQuestion.wordData?.idiom;
 
-  // POINTS KEY. The word's OWN difficulty comes first, then the quiz's selected
-  // difficulty, then the mode.
+  // POINTS KEY. The word's OWN difficulty first, then the question's source
+  // mode, then the quiz's selected difficulty, then the session's mode.
   //
-  // Smart Review is why. It is cross-difficulty by design, so it passes no
-  // difficulty and this used to resolve to the mode string 'review' — which is
-  // not a key in POINTS_CONFIG, so calculatePoints fell through to its `|| 10`
-  // and every reviewed word scored as easy. A hard word reviewed earned 10
-  // instead of 20, and the words in the pool are the ones the student found
-  // hardest. Any future multiplier on Smart Review would have been multiplying
-  // that flat 10 and partly cancelling this fix, which is why it lands first.
+  // Smart Review is why the chain exists at all. It is cross-difficulty by
+  // design, so it passes no difficulty and this used to resolve to the mode
+  // string 'review' — which is not a key in POINTS_CONFIG, so calculatePoints
+  // fell through to its `|| 10` and every reviewed word scored as easy. A hard
+  // word reviewed earned 10 instead of 20, and the words in the pool are the
+  // ones the student found hardest. Any future multiplier on Smart Review would
+  // have been multiplying that flat 10 and partly cancelling this fix, which is
+  // why the word's own difficulty lands first.
   //
-  // No field is invented: all 4,009 vocabulary words already carry
-  // `difficulty: 'easy' | 'medium' | 'hard'` in the data files. Acronyms and
-  // one-word substitutes carry none, so they fall through to the mode and keep
-  // scoring 12 exactly as before — for them the mode IS the points key.
+  // `sourceMode` IS THE SECOND LINK, AND IT EXISTS BECAUSE THE FIRST ONE ONLY
+  // COVERS VOCABULARY. All 4,009 vocabulary words carry
+  // `difficulty: 'easy' | 'medium' | 'hard'` in the data files; acronyms and
+  // one-word substitutes carry none, in either tree. The earlier version of this
+  // comment claimed those two therefore "fall through to the mode and keep
+  // scoring 12 exactly as before". That was true of the DEDICATED acronym and
+  // oneword modes, where the session's mode genuinely is the points key — and
+  // false of Smart Review, which is the case this whole block is about: there
+  // the mode is 'review', so both categories took the base-10 default and a
+  // reviewed acronym was paid as if it were an easy word.
   //
-  // For an ordinary difficulty-selected quiz the first two agree, so this is a
-  // no-op there; it only changes what Smart Review pays.
-  const difficultyOrMode = currentQuestion.wordData?.difficulty || difficulty || mode;
+  // buildQuestionFromItem now stamps `sourceMode` on exactly those two shapes at
+  // generation, where the kind is still known. So today:
+  //
+  //   reviewed vocabulary   -> its own difficulty  (10 / 15 / 20), then x1.5
+  //   reviewed acronym      -> 'acronym'           (12),           then x1.5
+  //   reviewed one-word     -> 'oneword'           (12),           then x1.5
+  //   dedicated acronym     -> no sourceMode, no difficulty, mode 'acronym' (12)
+  //   ordinary vocab quiz   -> its own difficulty, unchanged
+  //
+  // The dedicated modes are untouched: their questions are built by
+  // generateQuestions' own branches, which stamp nothing, so those sessions
+  // still resolve through `mode` exactly as before.
+  const difficultyOrMode =
+    currentQuestion.wordData?.difficulty || currentQuestion.sourceMode || difficulty || mode;
 
   // wordId, NOT currentQuestion.word. generateQuestions sets `word` for the
   // vocabulary-shaped modes but not for acronym or oneword, so those two used to

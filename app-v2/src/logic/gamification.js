@@ -864,12 +864,9 @@ const StreakProtection = {
    * Add shields (e.g., as a reward)
    * @param {number} count - Number of shields to add
    */
-  addShields: (count) => {
-    const data = StreakProtection.loadData();
-    data.shields = Math.min(data.shields + count, 5); // Max 5 shields
-    StreakProtection.saveData(data);
-    return data.shields;
-  },
+  /* addShields WAS HERE, DELETED IN THE STEP 14 FOLLOW-UP. awardWeeklyShieldIfDue
+     is the single sanctioned shield granter and stops at 3; this had zero callers
+     in either tree and capped at 5, a ceiling nothing else in the app enforces. */
 
   /**
    * Check if streak should be reset or protected
@@ -957,10 +954,11 @@ const StreakProtection = {
  * lastEarned means the next weekly award is due immediately rather than in
  * seven days.
  *
- * The ceiling of 3 below stays a bare literal, and stays deliberately out of
- * step with addShields' cap of 5. The weekly drip stops at 3; a granted reward
- * may reach 5 and is never trimmed back. Reconciling the two is a
- * component-rebuild decision, not this commit's.
+ * The ceiling of 3 below is now the ONLY shield ceiling in the app. It used to
+ * be deliberately out of step with addShields' cap of 5 — a granted reward could
+ * reach 5 and was never trimmed back — but addShields had no caller in either
+ * tree, so the 5 was unreachable and the disagreement was theoretical. That
+ * method is deleted; this is the single sanctioned granter and 3 is the cap.
  *
  * @param {string} [nowISO] - Current time as an ISO string; defaults to now.
  *   Injected rather than read from the global clock so the weekly boundary is
