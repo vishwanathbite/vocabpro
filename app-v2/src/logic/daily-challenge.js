@@ -13,9 +13,9 @@
  * calls, so destructuring its methods, converting them to standalone functions,
  * or turning this into a class would all break it.
  *
- * vocabularyDB and idiomsDB are referenced only INSIDE method bodies, never at
- * module top level, following the quiz-generation.js precedent — so the module
- * imports safely even though those globals are undefined at import time.
+ * vocabularyDB is referenced only INSIDE method bodies, never at module top
+ * level, following the quiz-generation.js precedent — so the module imports
+ * safely even though that global is undefined at import time.
  *
  * ---------------------------------------------------------------------------
  * PRESERVED DEFECTS — deliberate, all Phase 5 work. Not oversights:
@@ -53,8 +53,13 @@
  *      question it builds carries startTime: Date.now().
  *
  *   5. seededSample under-delivers rather than throwing when n exceeds the
- *      pool. If idiomsDB has not lazy-loaded, the challenge silently serves
- *      fewer than the intended 10 questions instead of failing.
+ *      pool. If a vocabularyDB difficulty has not lazy-loaded, the challenge
+ *      silently serves fewer than the intended 10 questions instead of
+ *      failing — a missing `easy` costs 4 of the 10, a missing `medium` or
+ *      `hard` 3 each. Nothing logs and nothing throws; the short plan simply
+ *      produces a short question list. Whether the screen refuses to start,
+ *      retries the load, or serves the remainder is a screen-level decision
+ *      and is deliberately not made here.
  * ---------------------------------------------------------------------------
  */
 
@@ -239,14 +244,13 @@ const DailyChallengeManager = {
    * reshuffled on every remount. Phase 5 step 7a made that RNG injectable;
    * step 7b passes the date-seeded rng into all three call sites below.
    *
-   * KNOWN GAP, deliberately not closed here: with idiomsDB absent this returns
-   * 8 questions rather than 10, silently. The live app treats that as
-   * acceptable — js/app.js:1557 preloads idioms with
-   * `catch (e) { /* non-critical — challenge works without idioms *\/ }` — and
-   * idioms are scheduled for removal from this app at Phase 6, at which point
-   * the mix should be rebalanced to ten vocabulary-sourced questions. Guarding
-   * it here would either contradict that live intent or build a guard due for
-   * deletion in one phase.
+   * TEN QUESTIONS, ALL VOCABULARY. The 4/3/3 plan below is the whole set. The
+   * two appended idiom questions are gone with idiomsDB: idioms are cut from
+   * app-v2 and idioms.js was never ported (data/loader.js), so the only way
+   * that block could ever have fired was a stray global — and the daily
+   * challenge must not be the one screen where a student still meets an idiom.
+   * While it stood, a loaded idiomsDB served 12 questions, not the 10 the plan
+   * was rebalanced to deliver.
    */
   generateQuestions() {
     // Same defensive check as quiz-generation.js:33. Without it the flatten
@@ -268,28 +272,16 @@ const DailyChallengeManager = {
     //
     // REBALANCED from 3/3/2 in Phase 5b step 4b-follow-up. The old split gave
     // 8 vocabulary questions and reached the intended 10 only by appending 2
-    // idiom questions. Idioms are removed at Phase 6, so the vocabulary mix now
-    // carries the full 10 on its own and the challenge no longer depends on a
-    // database that is going away.
+    // idiom questions. Idioms are gone, so the vocabulary mix carries the full
+    // 10 on its own and the challenge no longer depends on a database that was
+    // never ported.
     const easyWords = seededSample(easyPool, 4, rng);
     const mediumWords = seededSample(mediumPool, 3, rng);
     const hardWords = seededSample(hardPool, 3, rng);
 
-    // Pick 2 idiom questions
-    const idiomPool = typeof idiomsDB !== 'undefined' && Array.isArray(idiomsDB) ? [...idiomsDB] : [];
-    const idiomWords = seededSample(idiomPool, 2, rng);
-
     // Pair each word with the mode and difficulty of the slot it was selected
     // for, at selection time.
     //
-    // This used to be two flat length-8 arrays index-mapped onto the combined
-    // word list. That mapping was only correct while every pool delivered its
-    // full quota: if easyPool yielded 2 words instead of 3, every later word
-    // slid one slot left, so a word drawn from hardPool could be labelled
-    // 'medium' and score 5 points instead of 10 in calculateDailyPoints. The
-    // grouping below cannot slide — a word carries its own group's difficulty
-    // whatever the other pools return. For full pools it produces exactly the
-    // same eight pairings as before.
     // Modes are index-mapped WITHIN each group, so every modes array must stay
     // the same length as its group's word count. The two added slots are an
     // antonym on easy and a synonym on hard, which takes the mix from
@@ -376,23 +368,8 @@ const DailyChallengeManager = {
       };
     }).filter(q => q !== null);
 
-    // Generate idiom questions
-    const idiomQuestions = idiomWords.map(item => {
-      if (!item || !item.idiom || !item.meaning) return null;
-      const distractorPool = idiomPool
-        .filter(d => d.meaning !== item.meaning)
-        .map(d => d.meaning);
-      const distractors = seededSample(distractorPool, 3, rng);
-      const options = seededShuffle([item.meaning, ...distractors], rng);
-      return {
-        question: item.idiom,
-        options, correct: item.meaning, wordData: item, word: item.idiom,
-        dailyMode: 'Idiom', difficulty: item.difficulty || 'medium', startTime: Date.now()
-      };
-    }).filter(q => q !== null);
-
     // Final shuffle
-    return seededShuffle([...questions, ...idiomQuestions], rng);
+    return seededShuffle(questions, rng);
   },
 
   /**

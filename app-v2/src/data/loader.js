@@ -15,9 +15,10 @@
  *
  * IDIOMS ARE DELIBERATELY ABSENT. idioms.js was not ported: idioms are being
  * removed entirely at Phase 6 and move to a separate app. `idiomsDB` therefore
- * stays undefined, which every consumer already tolerates — the daily challenge
- * serves 8 questions instead of 10 (daily-challenge.js:242-249) and the idiom
- * quiz modes warn and return [].
+ * stays undefined, which every remaining consumer already tolerates — the idiom
+ * quiz modes warn and return []. The daily challenge no longer reads it at all:
+ * its idiom questions were removed and its 4/3/3 vocabulary plan serves the
+ * full 10 on its own.
  *
  * FAILURE IS LOUD, BY DESIGN. Every loader verifies the global is actually
  * populated after the import and rejects if it is not. The js/ tree shipped a
