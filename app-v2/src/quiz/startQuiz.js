@@ -69,8 +69,18 @@ export const LAUNCH_MESSAGE = {
      tell nine easy words from a fair mix. */
   startingMixed:
     'Loading all three levels for a Mixed quiz. This can take a moment on a slow connection.',
+  /* The daily challenge waits on the same three levels Mixed does, and for a
+     harder reason: it is ALWAYS ten questions drawn 4/3/3, so it cannot start
+     on easy alone the way a Mixed quiz technically could. Its own line because
+     "Preparing your quiz" is not what the student tapped. Approved. */
+  startingDaily: 'Preparing today’s challenge…',
   loading: 'These words are still loading. Give it a moment, then try again.',
   empty: 'No questions available for this mode right now — try another one.',
+  /* Every level loaded and the corpus still could not fill ten slots. Distinct
+     from 'loading' because that one names the words rather than the challenge,
+     and from 'empty' because that line offers another mode and there is no
+     other daily challenge. Approved. */
+  'challenge-short': 'Could not load today’s challenge. Check your connection and try again.',
   'nothing-to-review':
     'Nothing to review yet — take any quiz, and the words you get wrong will collect here, ready to master.'
 }

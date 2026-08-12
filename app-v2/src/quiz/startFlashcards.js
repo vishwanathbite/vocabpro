@@ -41,14 +41,17 @@ import { sample } from '../logic/helpers.js'
  * where a question is answered, scored and reviewed. Ten cards would be a
  * thirty-second session.
  *
- * DO NOT "UNIFY" THIS WITH QUESTIONS_PER_QUIZ. quiz-generation.js:101-106
- * already records that CHALLENGE_QUESTIONS (LearnScreen) and the daily
- * challenge's 4+3+3 split are second sources of a counted-item number that have
- * drifted; this is a fourth number in that family and the temptation to
- * collapse them will recur. They are not copies of one another — they are four
- * different session lengths that happen to be integers. The day one of them
- * genuinely should follow another, import it; until then, each states its own
- * and says why.
+ * DO NOT "UNIFY" THIS WITH QUESTIONS_PER_QUIZ, or with the daily challenge's
+ * DAILY_CHALLENGE_QUESTIONS. Those two are both 10 and are still deliberately
+ * independent of each other; this is a third number in the same family, and the
+ * temptation to collapse them will recur. They are not copies of one another —
+ * they are three different session lengths that happen to be integers. The day
+ * one of them genuinely should follow another, import it; until then, each
+ * states its own and says why.
+ *
+ * (The genuine duplicate this note used to cite, LearnScreen's local
+ * CHALLENGE_QUESTIONS, was a second copy of the CHALLENGE's own length and has
+ * been reconciled — it now imports it.)
  */
 export const CARDS_PER_SESSION = 15
 

@@ -8,9 +8,12 @@ import QuizSession from '../quiz/QuizSession.jsx'
 import ResultsScreen from '../quiz/ResultsScreen.jsx'
 import FlashcardSession from '../quiz/FlashcardSession.jsx'
 import FlashcardSummary from '../quiz/FlashcardSummary.jsx'
+import DailyChallengeSession from '../quiz/DailyChallengeSession.jsx'
 import { startQuiz } from '../quiz/startQuiz.js'
 import { startFlashcards } from '../quiz/startFlashcards.js'
-import { isScoredMode } from '../quiz/quiz-modes.js'
+import { startDailyChallenge } from '../quiz/startDailyChallenge.js'
+import { isScoredMode, DAILY_MODE } from '../quiz/quiz-modes.js'
+import { CHALLENGE_TITLE } from '../quiz/results-copy.js'
 import { loadInitialData, loadVocabularyLevel } from '../data/loader.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 
@@ -124,6 +127,26 @@ export default function AppShell() {
    */
   const [flash, setFlash] = useState(null)
 
+  /**
+   * The daily challenge session, in its own state value — the THIRD, alongside
+   * `quiz` and `flash`.
+   *
+   *   null                                       no challenge
+   *   { status:'running',  mode, questions, startedAt }
+   *   { status:'complete', mode, summary }
+   *
+   * SEPARATE FOR THE SAME REASON `flash` IS. `quiz` means "a session startQuiz
+   * produced", and the challenge is not one: it has no QUIZ_MODES row, no
+   * difficulty, its own generator and its own launcher. Putting it in `quiz`
+   * would make every branch that reads quiz.mode or quiz.difficulty have to know
+   * about a mode that has neither.
+   *
+   * Its 'starting' and 'failed' states are NOT here, exactly as for flashcards:
+   * both live on `quiz` so the one LaunchNotice can render them under the tile
+   * or card that was tapped, keyed on mode.
+   */
+  const [daily, setDaily] = useState(null)
+
   /* A second tap while the first launch is in flight would run the loaders and
      the generator twice and leave the loser's questions built for nothing. A
      ref rather than a read of `quiz`, because the guard has to hold within the
@@ -142,11 +165,34 @@ export default function AppShell() {
     if (launchingRef.current) return
     launchingRef.current = true
 
-    // Clear both first. This is what makes the two branches exclusive: whatever
-    // was on screen is gone before either state is set, so no render can see a
-    // running quiz and a running flashcard session at once.
+    // CLEAR ALL THREE first. This is what makes the branches exclusive:
+    // whatever was on screen is gone before any state is set, so no render can
+    // see two sessions at once. It became three with the daily challenge —
+    // mutual exclusion is an invariant of this one function rather than of the
+    // types, so a new session kind has to be cleared here too.
     setQuiz(null)
     setFlash(null)
+    setDaily(null)
+
+    /* THE DAILY CHALLENGE IS ITS OWN LAUNCHER, checked before the mode table:
+       DAILY_MODE is deliberately absent from QUIZ_MODES, so isScoredMode would
+       report false and route it to startFlashcards. It awaits all three
+       vocabulary levels and refuses to start a short challenge. */
+    if (mode === DAILY_MODE) {
+      setQuiz({ status: 'starting', mode })
+      try {
+        const result = await startDailyChallenge()
+        if (!result.ok) {
+          setQuiz({ status: 'failed', mode: result.mode, reason: result.reason })
+          return
+        }
+        setQuiz(null)
+        setDaily({ status: 'running', ...result, startedAt: Date.now() })
+      } finally {
+        launchingRef.current = false
+      }
+      return
+    }
 
     const scored = isScoredMode(mode)
 
@@ -328,6 +374,47 @@ export default function AppShell() {
           }))
         }
         onExit={() => setFlash(null)}
+      />
+    )
+  }
+
+  /**
+   * The daily challenge branches. Reached only when `quiz` is null, like the
+   * flashcard ones, and replacing the shell for the same reasons: the tab panel
+   * unmounts so Learn re-reads its numbers on the way back — which is what makes
+   * the challenge card flip to "done" — and the tab bar goes so a stray tap
+   * cannot discard a session in progress.
+   */
+  if (daily?.status === 'running') {
+    return (
+      <DailyChallengeSession
+        key={daily.startedAt}
+        session={daily}
+        onComplete={(summary) =>
+          setDaily((d) => ({ status: 'complete', mode: d.mode, summary }))
+        }
+        onExit={() => setDaily(null)}
+      />
+    )
+  }
+
+  /**
+   * The SAME results screen the quiz uses. The challenge omits the three Smart
+   * Review pool fields from its summary rather than passing zeroes, which is
+   * what makes that section disappear, and `mode` is what suppresses the
+   * "Practise again" button — there is no second attempt at today's challenge.
+   */
+  if (daily?.status === 'complete') {
+    return (
+      <ResultsScreen
+        mode={daily.mode}
+        summary={daily.summary}
+        title={CHALLENGE_TITLE}
+        /* Never rendered — canPractiseAgain is false for DAILY_MODE — but
+           passed rather than omitted so the prop is not undefined if that
+           gate ever changes. */
+        onPractiseAgain={() => setDaily(null)}
+        onDone={() => setDaily(null)}
       />
     )
   }

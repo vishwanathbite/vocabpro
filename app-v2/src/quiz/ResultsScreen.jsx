@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { CARD } from '../components/chrome.js'
 import { plural } from '../logic/format.js'
+import { DAILY_MODE } from './quiz-modes.js'
 import {
   ANSWER_LABEL,
   BADGES_HEADING,
@@ -67,12 +68,19 @@ function WrongRow({ entry }) {
       <p className="font-semibold text-white">{wordId}</p>
 
       <dl className="mt-2 space-y-1 text-sm">
-        <div className="flex gap-2">
-          <dt className="shrink-0 text-slate-400">{CHOSE_LABEL}:</dt>
-          {/* Muted, not red. The mistake is already made and this screen is for
-              what to do next; a red wash over ten rows reads as a scolding. */}
-          <dd className="text-slate-400 line-through">{picked}</dd>
-        </div>
+        {/* Omitted when the session did not record what was picked, rather than
+            printing an empty strikethrough under "You chose". Every session
+            kind records it today; the guard is so a payload that cannot say
+            degrades to showing the answer alone. */}
+        {picked != null && (
+          <div className="flex gap-2">
+            <dt className="shrink-0 text-slate-400">{CHOSE_LABEL}:</dt>
+            {/* Muted, not red. The mistake is already made and this screen is
+                for what to do next; a red wash over ten rows reads as a
+                scolding. */}
+            <dd className="text-slate-400 line-through">{picked}</dd>
+          </div>
+        )}
         <div className="flex gap-2">
           <dt className="shrink-0 text-slate-400">{ANSWER_LABEL}:</dt>
           <dd className="text-emerald-200">{correct}</dd>
@@ -91,12 +99,35 @@ function WrongRow({ entry }) {
 export default function ResultsScreen({
   mode,
   summary,
+  /* The eyebrow above the headline. Defaults to js/'s exact string, so every
+     existing call site is unchanged; the daily challenge passes its own,
+     because "Quiz Complete!" is not what the student just finished. A prop
+     rather than a mode lookup for the same reason the pool section gates on
+     data presence: the screen should not carry a table of who it serves. */
+  title = TITLE,
   onPractiseAgain,
   onDone
 }) {
   const { quizResults, review } = summary
   const { correctCount, totalQuestions, score, accuracy } = quizResults
   const { wrong, poolAdded, poolRemoved, poolRemaining, badges } = review
+
+  /**
+   * WHETHER THIS SESSION TOUCHED SMART REVIEW AT ALL.
+   *
+   * GATED ON THE FIELDS BEING PRESENT, not on their values, and not on the mode.
+   * A daily challenge does not write to the review pool, so it omits the three
+   * pool fields rather than passing zeroes — and the difference matters, because
+   * every line in that section is written to be honest about a zero. "0 words
+   * left Smart Review today", followed by the explanation that a word needs two
+   * correct answers before it leaves, is true and useful after a quiz and simply
+   * false after a session that could never have moved the pool either way.
+   *
+   * Presence, not mode, so a future session kind gets the right behaviour by
+   * passing or omitting the data rather than by being added to a list here.
+   */
+  const touchedPool =
+    Array.isArray(poolAdded) && Array.isArray(poolRemoved) && Number.isFinite(poolRemaining)
 
   /**
    * Take focus on mount, for the same reason QuizScreen's heading does: the
@@ -119,7 +150,18 @@ export default function ResultsScreen({
      section directly above says how many words left and none remain, so a
      student is told what happened and is not also handed a control that
      contradicts it. Every other mode can always be repeated. */
-  const canPractiseAgain = !(mode === 'review' && poolRemaining === 0)
+  /* THE DAILY CHALLENGE HAS NO SECOND ATTEMPT, and that is the other case.
+     Today's challenge is one shared set of ten questions, already recorded
+     against today's date and already counted toward the streak — offering
+     "Practise again" would either replay the same ten for no credit or read as
+     though a better score were still available. The Learn card now says the
+     challenge is done; this screen must not contradict it.
+
+     Nothing replaces it here, unlike the cleared-pool case below: "come back
+     tomorrow" is what the Learn screen already communicates, and Done returns
+     the student straight to it. */
+  const poolWasCleared = mode === 'review' && poolRemaining === 0
+  const canPractiseAgain = mode !== DAILY_MODE && !poolWasCleared
 
   return (
     <div className="min-h-screen bg-navy">
@@ -129,7 +171,7 @@ export default function ResultsScreen({
             not a grid: a session with no closing number reads as though the app
             lost track, but the grid is what makes it a scoreboard. */}
         <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-          {TITLE}
+          {title}
         </p>
         <h1
           ref={headingRef}
@@ -151,7 +193,13 @@ export default function ResultsScreen({
             <p className="mt-1 text-sm text-slate-400">{NOTHING_WRONG}</p>
           ) : (
             <>
-              <p className="mt-1 text-sm text-slate-400">{WRONG_SUBTITLE}</p>
+              {/* The subtitle is a claim about Smart Review — "these are in
+                  Smart Review now" — so it rides the same gate as the section
+                  below it. A daily challenge does not add its missed words to
+                  the pool, and saying it did would be the one outright false
+                  sentence on this screen. The words themselves are still listed:
+                  they are the whole point of the section, pool or no pool. */}
+              {touchedPool && <p className="mt-1 text-sm text-slate-400">{WRONG_SUBTITLE}</p>}
               <ul className="mt-3 flex flex-col gap-2">
                 {wrong.map((entry) => (
                   <WrongRow key={entry.wordId} entry={entry} />
@@ -162,16 +210,20 @@ export default function ResultsScreen({
         </section>
 
         {/* --- SMART REVIEW DELTA ------------------------------------------
-            The "left" line is unconditional, including at zero — see
-            results-copy.js. The "added" line is suppressed at zero. */}
-        <section className="mt-8">
-          <h2 className="text-sm font-semibold text-white">{POOL_HEADING}</h2>
-          <div className="mt-1 space-y-1 text-sm text-slate-400">
-            {poolAdded.length > 0 && <p>{poolAddedLine(plural(poolAdded.length, 'word'))}</p>}
-            <p>{poolLeftLine(plural(poolRemoved.length, 'word'))}</p>
-            {poolRemoved.length === 0 && <p className="text-slate-500">{WHY_NONE_LEFT}</p>}
-          </div>
-        </section>
+            Hidden entirely for a session that cannot move the pool — see
+            touchedPool. Within a session that can, the "left" line is
+            unconditional, including at zero — see results-copy.js — and the
+            "added" line is suppressed at zero. */}
+        {touchedPool && (
+          <section className="mt-8">
+            <h2 className="text-sm font-semibold text-white">{POOL_HEADING}</h2>
+            <div className="mt-1 space-y-1 text-sm text-slate-400">
+              {poolAdded.length > 0 && <p>{poolAddedLine(plural(poolAdded.length, 'word'))}</p>}
+              <p>{poolLeftLine(plural(poolRemoved.length, 'word'))}</p>
+              {poolRemoved.length === 0 && <p className="text-slate-500">{WHY_NONE_LEFT}</p>}
+            </div>
+          </section>
+        )}
 
         {/* --- BADGES -------------------------------------------------------
             ALL of the session's badges, not just the one shown as a moment. */}
@@ -197,7 +249,7 @@ export default function ResultsScreen({
         {/* --- ACTIONS ------------------------------------------------------
             One purple surface, spent on the action that continues practice. */}
         <div className="mt-10 flex flex-col gap-2">
-          {canPractiseAgain ? (
+          {canPractiseAgain && (
             <button
               type="button"
               onClick={onPractiseAgain}
@@ -205,9 +257,16 @@ export default function ResultsScreen({
             >
               {PRACTISE_AGAIN}
             </button>
-          ) : (
-            <p className="px-1 text-sm text-slate-400">{POOL_CLEARED}</p>
           )}
+
+          {/* POOL_CLEARED EXPLAINS A MISSING BUTTON, and only the one it was
+              written for. It says Smart Review is clear, which is the reason a
+              cleared-pool review session cannot repeat — and is simply not true
+              of a daily challenge, which has no second attempt for an unrelated
+              reason and never touched the pool at all. Gated on the pool case
+              rather than on `!canPractiseAgain`, so a third suppressed-button
+              case cannot inherit this sentence by default. */}
+          {poolWasCleared && <p className="px-1 text-sm text-slate-400">{POOL_CLEARED}</p>}
 
           <button
             type="button"

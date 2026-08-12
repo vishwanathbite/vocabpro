@@ -29,22 +29,32 @@
  * scalars are read. The returned newStats is value-identical to the original's.
  *
  * ---------------------------------------------------------------------------
- * PRESERVED, do not "fix" here — Phase 5 work:
+ * NO LONGER PRESERVED — fixed with the daily challenge screen:
  *
- *   1. No new-badge notification. This handler recomputes earnedBadges and
- *      level but never calls getNewBadges, plays no sound and shows no
- *      achievement toast — unlike handleAnswer and handleMatchComplete. A user
- *      who earns daily_challenge_7 gets no notification; the badge simply
- *      appears in their collection. That absence is reproduced exactly here.
+ *   1. Badges awarded silently. This handler recomputed earnedBadges and level
+ *      but never called getNewBadges, so a badge earned in a challenge appeared
+ *      in the collection with no announcement — unlike handleAnswer and
+ *      handleMatchComplete. It now returns `newBadges` and `previousBadgesNext`
+ *      in exactly the shape quiz-scoring.js does (:122 and :160), and the
+ *      session hook feeds them to the SAME buildMoments queue the quiz uses.
+ *      No second announcement mechanism was built.
+ *
+ * STILL TRUE, and not this commit's to fix:
  *
  *   2. dailyChallengeStreak is written onto the stats object here (app.js:1593)
  *      and this is its ONLY write anywhere, yet the field is absent from the
- *      default stats shape in storage.js. Until a daily challenge completes,
- *      the daily_challenge_7 badge condition evaluates `undefined >= 7`.
+ *      default stats shape in storage.js. It no longer gates anything: the
+ *      daily_challenge_7 badge that read it was retired in app-v2
+ *      (gamification.js:142), so this write now feeds no condition at all.
  * ---------------------------------------------------------------------------
  */
 
-import { getLevelInfo, getEarnedBadges, STATS_ARRAY_FIELDS } from './gamification.js';
+import {
+  getLevelInfo,
+  getEarnedBadges,
+  getNewBadges,
+  STATS_ARRAY_FIELDS
+} from './gamification.js';
 
 /**
  * Compute the result of a completed daily challenge.
@@ -55,6 +65,11 @@ import { getLevelInfo, getEarnedBadges, STATS_ARRAY_FIELDS } from './gamificatio
  * @param {Object}  args.stats                   - Current statistics
  * @param {number}  args.points                  - From calculateDailyPoints (wrapper)
  * @param {number}  args.streak                  - From completeChallenge (wrapper)
+ * @param {Array}   [args.previousBadges]        - Badge ID STRINGS held before this
+ *   challenge, read once at session start. Strings, not objects — getNewBadges
+ *   compares with `.includes`, so badge objects would match nothing and
+ *   re-announce the student's entire collection.
+ * @param {number}  [args.previousLevel]         - Level before this challenge
  * @returns {Object} Completion result; see the return block below.
  */
 export function completeDailyChallenge({
@@ -62,7 +77,9 @@ export function completeDailyChallenge({
   correctCount,
   stats,
   points,
-  streak
+  streak,
+  previousBadges = [],
+  previousLevel = null
 }) {
   const totalQ = dailyChallengeQuestions.length;
 
@@ -85,10 +102,30 @@ export function completeDailyChallenge({
   const earnedBadges = getEarnedBadges(newStats);
   newStats.earnedBadges = earnedBadges.map(b => b.id);
 
+  /* THE ANNOUNCEMENT, in quiz-scoring.js's exact shape (:122 and :160).
+     Diffed ONCE per challenge rather than once per answer, which is the real
+     difference between this path and the quiz's: nothing here writes stats
+     mid-session, so there is no carry-forward list to advance between answers
+     and none of useQuizSession's per-answer badge bookkeeping applies. */
+  const newBadges = getNewBadges(newStats, previousBadges);
+
+  /* Level-up, on the same test quiz-scoring.js:125 uses. Null rather than a
+     stale object when the level did not move, and null when the caller passed
+     no previousLevel — an unknown previous level must not read as a level-up. */
+  const levelUp =
+    previousLevel !== null && newStats.level > previousLevel ? levelInfo : null;
+
   return {
     totalQ,
     newStats,
     levelInfo,
+    newBadges,
+    levelUp,
+    // Mirrors quiz-scoring.js:160. ID strings, ready to be the next call's
+    // previousBadges — the challenge is one session, so nothing reads it today,
+    // and it exists so a second diff against this result cannot be built from
+    // the badge OBJECTS above by mistake.
+    previousBadgesNext: newStats.earnedBadges,
 
     // Exact payload the wrapper hands to QuizHistoryManager.addQuiz
     // (app.js:1601-1608). difficulty is hard-coded 'mixed', score carries the

@@ -99,12 +99,16 @@ const distractorPoolFor = (word, sessionPool) => {
  * default parameters (its limit = 10 on getDueWords and getStrugglingWords, and
  * count = 10 on selectSRSOptimizedWords). Those died with SM-2.
  *
- * Two copies remain outside this module and are NOT yet reading from here:
- * CHALLENGE_QUESTIONS (LearnScreen.jsx:36) and the daily challenge's own 4+3+3
- * split (daily-challenge.js:274-276), both already annotated as second sources
- * at their sites. Reconciling them is the challenge screen's work, not this
- * commit's — the daily challenge deliberately does not serve ten vocabulary
- * questions today.
+ * The two copies this note used to list are GONE. LearnScreen's local
+ * CHALLENGE_QUESTIONS and the daily challenge's inline 4+3+3 split were
+ * reconciled with the challenge screen: DAILY_PLAN in daily-challenge.js is now
+ * the one place the challenge's shape is written, and DAILY_CHALLENGE_QUESTIONS
+ * is derived from it and imported by the card.
+ *
+ * DELIBERATELY STILL SEPARATE FROM THIS CONSTANT, though both are 10. A quiz's
+ * length and a daily challenge's length are two independent product decisions
+ * that happen to agree today; importing one from the other would make retuning
+ * either silently move the other. See startFlashcards.js on the same point.
  */
 export const QUESTIONS_PER_QUIZ = 10;
 

@@ -81,6 +81,23 @@ const detailRows = (wordData) => {
   ].filter(([, value]) => value)
 }
 
+/* The two strings the daily challenge needs different, and nothing else.
+   Defaults reproduce the quiz exactly, so every existing call site is
+   unchanged by their existence.
+
+   scoreLabel: a challenge has no running points to show — its perfect and
+   streak bonuses are only knowable at the end — so it shows correct answers
+   and must not call them "Score".
+
+   exitCopy: "Earned points are saved" is TRUE of a quiz, which writes stats
+   after every answer, and FALSE of a challenge, which writes nothing until the
+   last question is finished. Leaving that sentence in place for both would
+   have made the app lie at the one moment a student is deciding whether to
+   walk away. */
+const DEFAULT_SCORE_LABEL = 'Score'
+const DEFAULT_EXIT_COPY = (unanswered) =>
+  `You have ${unanswered} unanswered questions. Leave quiz? Earned points are saved.`
+
 export default function QuizScreen({
   mode,
   questions,
@@ -91,6 +108,10 @@ export default function QuizScreen({
   isCorrect,
   isLastQuestion,
   score,
+  scoreLabel = DEFAULT_SCORE_LABEL,
+  exitTitle = 'Exit Quiz?',
+  exitCopy = DEFAULT_EXIT_COPY,
+  exitConfirmLabel = 'Exit Quiz',
   currentMoment,
   onDismissMoment,
   poolExit,
@@ -266,7 +287,7 @@ export default function QuizScreen({
               aria-atomic="true"
               className="text-sm font-semibold text-white tabular-nums"
             >
-              Score: {score}
+              {scoreLabel}: {score}
             </span>
           </div>
 
@@ -492,26 +513,26 @@ export default function QuizScreen({
       )}
 
       {/* --- EXIT CONFIRMATION ---------------------------------------------
-          Copy is the live app's, verbatim (js/app.js:1527-1531). "Earned points
-          are saved" is a statement of fact rather than reassurance: stats, the
-          review pool and daily-goal progress are written after every answer, so
-          leaving costs only the unanswered questions and the history entry. */}
+          The quiz copy is the live app's, verbatim (js/app.js:1527-1531).
+          "Earned points are saved" is a statement of fact rather than
+          reassurance: stats, the review pool and daily-goal progress are
+          written after every answer, so leaving costs only the unanswered
+          questions and the history entry. The daily challenge overrides it,
+          because for that session the same sentence would be false. */}
       <BottomSheet
         isOpen={confirmingExit}
         onClose={() => setConfirmingExit(false)}
-        title="Exit Quiz?"
+        title={exitTitle}
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-300">
-            You have {unansweredCount} unanswered questions. Leave quiz? Earned points are saved.
-          </p>
+          <p className="text-sm text-slate-300">{exitCopy(unansweredCount)}</p>
           <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={onExit}
               className="min-touch w-full rounded-lg border border-red-400/40 bg-red-400/10 px-4 font-semibold text-red-200 transition-colors hover:bg-red-400/20"
             >
-              Exit Quiz
+              {exitConfirmLabel}
             </button>
             <button
               type="button"

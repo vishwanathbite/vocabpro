@@ -41,8 +41,14 @@ export const headlineFor = (accuracy) =>
   (HEADLINE_TIERS.find((t) => accuracy >= t.min) ?? HEADLINE_TIERS[HEADLINE_TIERS.length - 1])
     .headline
 
-/** Modal title, from js/app.js:2125, verbatim. */
+/**
+ * Modal title, from js/app.js:2125, verbatim. ResultsScreen's DEFAULT — it
+ * takes the title as a prop, so a session that is not a quiz can say so.
+ */
 export const TITLE = 'Quiz Complete!'
+
+/** The daily challenge's replacement for TITLE. Approved. */
+export const CHALLENGE_TITLE = 'Challenge Complete!'
 
 /**
  * The wrong-word section.

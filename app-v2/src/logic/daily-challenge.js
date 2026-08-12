@@ -53,20 +53,66 @@
  *      question it builds carries startTime: Date.now().
  *
  *   5. seededSample under-delivers rather than throwing when n exceeds the
- *      pool. If a vocabularyDB difficulty has not lazy-loaded, the challenge
- *      silently serves fewer than the intended 10 questions instead of
- *      failing — a missing `easy` costs 4 of the 10, a missing `medium` or
- *      `hard` 3 each. Nothing logs and nothing throws; the short plan simply
- *      produces a short question list. Whether the screen refuses to start,
- *      retries the load, or serves the remainder is a screen-level decision
- *      and is deliberately not made here.
+ *      pool. If a vocabularyDB difficulty has not lazy-loaded, generateQuestions
+ *      silently returns fewer than DAILY_CHALLENGE_QUESTIONS instead of failing
+ *      — a missing `easy` costs 4 of the 10, a missing `medium` or `hard` 3
+ *      each. Nothing logs and nothing throws; a short plan simply produces a
+ *      short question list.
+ *
+ *      STILL TRUE OF THIS FUNCTION, and now unreachable from the app.
+ *      startDailyChallenge awaits all three levels before calling it and
+ *      refuses to start a short challenge, so no student can be served one.
+ *      The guard is deliberately at the launcher rather than here: this
+ *      function is pure and synchronous and cannot await anything, and the
+ *      launcher is where "not loaded yet" can be told apart from "loaded and
+ *      empty" — exactly the distinction startQuiz.js:106-112 records.
  * ---------------------------------------------------------------------------
  */
 
 import { StorageManager } from './storage.js';
+import { POINTS_CONFIG } from './gamification.js';
 import { generateSmartDistractors } from './helpers.js';
 import { seededRandom, seededShuffle, seededSample } from './seeded-random.js';
 import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
+
+/**
+ * THE SHAPE OF A DAILY CHALLENGE. One row per difficulty, in draw order.
+ *
+ * `modes` IS ALSO THE COUNT — the number of words drawn from a difficulty is
+ * the length of its modes array, because the two must agree and a separate
+ * count field is the second number that eventually disagrees with the first.
+ * This replaces three inline seededSample calls with the quotas written as
+ * literals; a difficulty is retuned by adding or removing a mode here and
+ * nothing else changes.
+ *
+ * Modes are index-mapped WITHIN a row, so a short pool drops the tail of its
+ * own row and cannot shift another row's difficulty or price.
+ *
+ * The mix is 5 vocab / 3 synonym / 2 antonym across the ten.
+ */
+const DAILY_PLAN = [
+  { difficulty: 'easy', modes: ['vocab', 'synonym', 'vocab', 'antonym'] },
+  { difficulty: 'medium', modes: ['synonym', 'vocab', 'antonym'] },
+  { difficulty: 'hard', modes: ['vocab', 'vocab', 'synonym'] }
+];
+
+/**
+ * How many questions a daily challenge holds. DERIVED, never written down.
+ *
+ * LearnScreen carried its own `CHALLENGE_QUESTIONS = 10` because this module
+ * exported no count and the only way to learn the real number was to generate
+ * the questions. Its own comment asked for this export. The card now reads this
+ * value, so the announced count and the served count cannot drift.
+ *
+ * It is the INTENDED length, not a promise about any particular call: a
+ * challenge generated against a pool that has not loaded returns fewer. That is
+ * why startDailyChallenge awaits all three levels before generating, rather
+ * than trusting this number.
+ */
+export const DAILY_CHALLENGE_QUESTIONS = DAILY_PLAN.reduce(
+  (total, group) => total + group.modes.length,
+  0
+);
 
 const DailyChallengeManager = {
   /**
@@ -244,7 +290,7 @@ const DailyChallengeManager = {
    * reshuffled on every remount. Phase 5 step 7a made that RNG injectable;
    * step 7b passes the date-seeded rng into all three call sites below.
    *
-   * TEN QUESTIONS, ALL VOCABULARY. The 4/3/3 plan below is the whole set. The
+   * ALL VOCABULARY, and DAILY_PLAN is the whole set. The
    * two appended idiom questions are gone with idiomsDB: idioms are cut from
    * app-v2 and idioms.js was never ported (data/loader.js), so the only way
    * that block could ever have fired was a stray global — and the daily
@@ -264,39 +310,21 @@ const DailyChallengeManager = {
     const today = this.getToday();
     const rng = seededRandom('vocabpro-daily-' + today);
 
-    const easyPool = [...(vocabularyDB.easy || [])];
-    const mediumPool = [...(vocabularyDB.medium || [])];
-    const hardPool = [...(vocabularyDB.hard || [])];
-
-    // Pick 4 easy, 3 medium, 3 hard words = 10 vocabulary questions.
+    // Draw each row's words and pair them with the mode and difficulty of the
+    // slot they were selected for, at selection time.
     //
-    // REBALANCED from 3/3/2 in Phase 5b step 4b-follow-up. The old split gave
-    // 8 vocabulary questions and reached the intended 10 only by appending 2
-    // idiom questions. Idioms are gone, so the vocabulary mix carries the full
-    // 10 on its own and the challenge no longer depends on a database that was
-    // never ported.
-    const easyWords = seededSample(easyPool, 4, rng);
-    const mediumWords = seededSample(mediumPool, 3, rng);
-    const hardWords = seededSample(hardPool, 3, rng);
-
-    // Pair each word with the mode and difficulty of the slot it was selected
-    // for, at selection time.
-    //
-    // Modes are index-mapped WITHIN each group, so every modes array must stay
-    // the same length as its group's word count. The two added slots are an
-    // antonym on easy and a synonym on hard, which takes the mix from
-    // 5 vocab / 2 synonym / 1 antonym to 5 vocab / 3 synonym / 2 antonym.
-    const plan = [
-      { words: easyWords, difficulty: 'easy', modes: ['vocab', 'synonym', 'vocab', 'antonym'] },
-      { words: mediumWords, difficulty: 'medium', modes: ['synonym', 'vocab', 'antonym'] },
-      { words: hardWords, difficulty: 'hard', modes: ['vocab', 'vocab', 'synonym'] }
-    ].flatMap(group =>
-      group.words.map((word, i) => ({
+    // The rows are drawn IN ORDER, one seededSample per row, which is the same
+    // sequence of rng draws the three inline calls made — so the questions for
+    // a given date are unchanged by moving the quotas into DAILY_PLAN.
+    const plan = DAILY_PLAN.flatMap(group => {
+      const pool = [...(vocabularyDB[group.difficulty] || [])];
+      const words = seededSample(pool, group.modes.length, rng);
+      return words.map((word, i) => ({
         word,
         mode: group.modes[i],
         difficulty: group.difficulty
-      }))
-    );
+      }));
+    });
 
     const allVocab = [...(vocabularyDB.easy || []), ...(vocabularyDB.medium || []), ...(vocabularyDB.hard || [])];
 
@@ -375,12 +403,31 @@ const DailyChallengeManager = {
   /**
    * Calculate points for daily challenge results
    *
-   * `streak` is an additive optional parameter, following the nowISO precedent
-   * from step 2: omitted it defaults to this.getStreak() and behaviour is
-   * byte-identical to the original; supplied, the function touches no storage
-   * and becomes deterministic and testable.
+   * THE SIGNATURE CHANGED WITH ITS FIRST CALLER, which is the whole reason the
+   * fix waited for this commit.
+   *
+   * It used to take `(correctCount, totalQuestions, questions, streak)` and
+   * charge `questions[0 .. correctCount-1]` — the FIRST n questions, whatever
+   * the student actually got right. Answering the three hard questions of a ten
+   * correctly paid for whichever three happened to sit at the front of the
+   * shuffled array. A count cannot say WHICH, so no amount of care at the call
+   * site could have fixed it; it needed the per-question outcomes, and there was
+   * no caller to supply them.
+   *
+   * `outcomes` is a boolean array ALIGNED TO `questions` — outcomes[i] is
+   * whether questions[i] was answered correctly. Index alignment against the
+   * shuffled array is the contract; the caller records outcomes by the index it
+   * is currently displaying, so the two cannot come apart. correctCount and
+   * totalQuestions are derived here rather than passed, because a caller that
+   * can pass both a count and the outcomes it was counted from can pass two
+   * numbers that disagree.
+   *
+   * `streak` IS INJECTED AND HAS NO DEFAULT. It used to default to
+   * `this.getStreak()`, a storage read inside an otherwise pure scoring
+   * function; the caller reads it from completeChallenge, which is the value
+   * actually being awarded for.
    */
-  calculateDailyPoints(correctCount, totalQuestions, questions, streak = this.getStreak()) {
+  calculateDailyPoints({ questions, outcomes, streak }) {
     /* A CHALLENGE WITH NO QUESTIONS PAYS NOTHING AT ALL.
      *
      * The perfect-score test below is `correctCount === totalQuestions`, which
@@ -400,37 +447,48 @@ const DailyChallengeManager = {
      * otherwise slip past both this guard and the perfect-score test, while the
      * loop below still charged for correctCount questions — also returns 0.
      */
+    const list = Array.isArray(questions) ? questions : [];
+    const totalQuestions = list.length;
     if (!(totalQuestions > 0)) {
       return 0;
     }
 
-    let points = 0;
-    /* CHARGES THE FIRST correctCount QUESTIONS, NOT THE ONES ANSWERED CORRECTLY.
-     * KNOWN, DELIBERATELY NOT FIXED HERE — do not fix half of it later.
+    const results = Array.isArray(outcomes) ? outcomes : [];
+
+    /* CHARGES THE QUESTIONS ACTUALLY ANSWERED CORRECTLY.
      *
-     * `questions[i]` walks the array in its stored order while `correctCount` is
-     * only a count, so answering 3 of 8 pays for questions 0, 1 and 2 whatever
-     * was actually right. Correcting it needs the per-question outcomes, which
-     * this signature does not receive, so the fix is a signature change plus a
-     * caller that passes them. There is no caller in app-v2 today — the daily
-     * challenge screen is unbuilt, and completeDailyChallenge takes `points` as
-     * an injected argument — so the defect is latent rather than live. It is
-     * deferred to the daily challenge screen commit, which is the one that will
-     * have the outcomes to hand.
+     * Walks `questions` and prices only the indices `outcomes` marks true, so a
+     * student who got the three hard ones right is paid for three hard ones. An
+     * index the caller never recorded is not true and is therefore not charged
+     * — an abandoned challenge pays for what was answered, not for a prefix.
+     *
+     * Compared with `=== true` rather than for truthiness: an outcomes array
+     * carrying anything other than booleans is a caller bug, and the safe
+     * direction for a malformed entry is the one that does not pay out.
+     *
+     * PRICES READ FROM POINTS_CONFIG. This was a hand-written
+     * `10 base / +5 medium / +10 hard`, which is that table's easy/medium/hard
+     * spelled as arithmetic — the same numbers, in a second place, where a
+     * retune of the quiz prices would have silently left the challenge behind.
+     * POINTS_CONFIG.daily is the fallback for a question with no difficulty of
+     * its own, which is the key's first reader; it is 10, the same value the
+     * old `const diff = q ? q.difficulty : 'easy'` fallback resolved to.
      */
-    for (let i = 0; i < correctCount; i++) {
-      const q = questions[i];
-      const diff = q ? q.difficulty : 'easy';
-      points += 10; // base
-      if (diff === 'medium') points += 5;
-      if (diff === 'hard') points += 10;
+    let points = 0;
+    let correctCount = 0;
+    for (let i = 0; i < totalQuestions; i++) {
+      if (results[i] !== true) continue;
+      correctCount += 1;
+      points += POINTS_CONFIG[list[i]?.difficulty] ?? POINTS_CONFIG.daily;
     }
     // Perfect score bonus
     if (correctCount === totalQuestions) {
       points += 50;
     }
-    // Streak bonus
-    points += Math.min(streak * 10, 100);
+    /* Streak bonus. Guarded rather than trusted: `streak` is now required, and
+       an omitted one would make `Math.min(undefined * 10, 100)` NaN and poison
+       the whole total silently. A missing streak pays no streak bonus. */
+    points += Number.isFinite(streak) ? Math.min(streak * 10, 100) : 0;
     return points;
   }
 };

@@ -31,8 +31,9 @@
  * no longer exists. Surfacing it would show question ten a ten-question delay.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { buildMoments } from './moments.js'
+import { useMomentQueue } from './useMomentQueue.js'
 import { scoreAnswer } from '../logic/quiz-scoring.js'
 import { summarizeQuizResults } from '../logic/quiz-summary.js'
 import { StatsManager } from '../logic/gamification.js'
@@ -59,73 +60,31 @@ export function useQuizSession(session, onComplete) {
   const [score, setScore] = useState(0)
 
   /**
-   * The last answer's celebration payload.
+   * The last answer's two quiet marks.
    *
-   * Only derivable at the moment the answer is scored — getNewBadges compares
-   * against a previousBadges list that has already moved on by the next answer,
-   * and the review pool has already been overwritten — so a later pass could
-   * not recompute any of it from stored state.
+   * Only derivable at the moment the answer is scored — the review pool has
+   * already been overwritten by the next one — so a later pass could not
+   * recompute either from stored state.
    *
-   *   moments        ordered queue, see moments.js; may be empty
    *   poolExit       the word that left the review pool, or null
    *   towardMastery  the word that took its first correct, or null
    *
-   * The two marks are NOT moments. They are quiet inline lines in the feedback
-   * panel: a word leaves the pool roughly three times in a session, and a
-   * full-screen interruption at that rate would train the student to dismiss
-   * without reading, which is exactly what would then happen to a badge.
+   * NOT MOMENTS, and that is why they live here rather than in the queue. They
+   * are quiet inline lines in the feedback panel: a word leaves the pool roughly
+   * three times in a session, and a full-screen interruption at that rate would
+   * train the student to dismiss without reading, which is exactly what would
+   * then happen to a badge.
+   *
+   * The moments themselves moved to useMomentQueue in the daily challenge
+   * commit — the queue, its cursor and its sound are identical for both session
+   * kinds, and the challenge needed them without needing any of the per-answer
+   * bookkeeping around them.
    */
   const [lastAnswer, setLastAnswer] = useState(null)
 
-  /**
-   * How far into lastAnswer.moments the student has got.
-   *
-   * A CURSOR, NOT A SHIFTED ARRAY. Dismissing by slicing the queue would make
-   * the queue itself change identity on every dismissal, and the sound effect
-   * below keys off the current moment — a new array reference for the same
-   * remaining moment would replay its sound.
-   */
-  const [momentIndex, setMomentIndex] = useState(0)
-
-  /**
-   * The moment on screen, or null.
-   *
-   * Derived, never stored. Two sources of truth for "what is showing" is how a
-   * queue ends up rendering one moment while blocking on another.
-   */
-  const currentMoment = lastAnswer?.moments?.[momentIndex] ?? null
-
-  /* Pulled out as scalars so the sound effect below depends on values rather
-     than on an object identity it would have to be told to ignore. */
-  const momentKey = currentMoment?.key ?? null
-  const momentKind = currentMoment?.kind ?? null
-
-  /**
-   * Sound rides the moment being SHOWN, not the answer being scored.
-   *
-   * js/ plays each sound beside the setState that reveals it (app.js:1390,
-   * 1400), and with a serialised queue those are different instants: a level-up
-   * queued behind a badge is heard when the badge is dismissed, not when the
-   * answer was given. Playing both at scoring time would stack two fanfares
-   * over one another and leave the level-up silent when it finally appears.
-   *
-   * STREAK AND GOAL ARE SILENT, matching js/ — it plays nothing for either, and
-   * this step is not the place to invent audio. So is the pool-exit mark.
-   *
-   * Keyed on the moment's `key` rather than the object, so a re-render with an
-   * equal-but-new object cannot replay. On mount currentMoment is null, which
-   * is why React 19 StrictMode's double-invoked mount effect plays nothing
-   * twice; every later run is a genuine dependency change and fires once.
-   */
-  useEffect(() => {
-    if (momentKind === 'badge') SoundManager.playAchievement()
-    else if (momentKind === 'levelUp') SoundManager.playLevelUp()
-  }, [momentKey, momentKind])
-
-  /** Advance the queue. The only way a moment is dismissed. */
-  const dismissMoment = useCallback(() => {
-    setMomentIndex((i) => i + 1)
-  }, [])
+  const moments = useMomentQueue()
+  const currentMoment = moments.current
+  const dismissMoment = moments.dismiss
 
   // ---- Carry-forward values ----------------------------------------------
   //
@@ -446,22 +405,21 @@ export function useQuizSession(session, onComplete) {
           ? result.wordId
           : null
 
-      // 7. Queue the moments and rewind the cursor. Both in one place, so a
-      //    queue can never be shown from an index the previous answer left
-      //    behind. responseTime is deliberately not among the values kept.
-      setLastAnswer({
-        moments: buildMoments({
+      // 7. Queue the moments and record the two marks. `show` moves the queue
+      //    and its cursor together, so a queue can never be shown from an index
+      //    the previous answer left behind. responseTime is deliberately not
+      //    among the values kept.
+      moments.show(
+        buildMoments({
           newBadges: result.newBadges,
           levelUp: result.levelUp,
           streakMilestone: result.streakMilestone,
           goalJustCompleted: !wasGoalComplete && isGoalComplete
-        }),
-        poolExit,
-        towardMastery
-      })
-      setMomentIndex(0)
+        })
+      )
+      setLastAnswer({ poolExit, towardMastery })
     },
-    [showResult, currentQuestion, difficulty, mode]
+    [showResult, currentQuestion, difficulty, mode, moments]
   )
 
   /**
@@ -503,9 +461,9 @@ export function useQuizSession(session, onComplete) {
     setIsCorrect(false)
     setSelectedAnswer(null)
     setLastAnswer(null)
-    setMomentIndex(0)
+    moments.clear()
     stopSpeech()
-  }, [showResult, currentMoment, isLastQuestion, complete])
+  }, [showResult, currentMoment, isLastQuestion, complete, moments])
 
   /**
    * Whether leaving right now needs confirming.

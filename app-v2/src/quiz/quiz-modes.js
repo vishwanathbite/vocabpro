@@ -118,6 +118,33 @@ export const isValidDifficulty = (value) =>
   value === MIXED || VOCAB_LEVELS.includes(value)
 
 /**
+ * The daily challenge's id.
+ *
+ * A NAME, NOT A ROW. It is deliberately still absent from QUIZ_MODES — the
+ * table means "a mode startQuiz can run", and the challenge builds its own
+ * questions in daily-challenge.js and launches through startDailyChallenge. So
+ * isStartableMode('daily') stays false and startQuiz still refuses it.
+ *
+ * It exists because three places have to agree on the string — the launcher's
+ * failure payload, AppShell's session state and the LaunchNotice under the card
+ * — and a literal in each is how the notice ends up rendering under nothing.
+ */
+export const DAILY_MODE = 'daily'
+
+/**
+ * Titles for sessions that are NOT rows in QUIZ_MODES. Consulted only after the
+ * table, so it can never shadow a real mode's name.
+ */
+const OFF_TABLE_TITLES = { [DAILY_MODE]: 'Daily Challenge' }
+
+/* The two stems that are worded the same wherever they are asked. Written once
+   because the daily challenge asks them too, from its own `dailyMode` field
+   rather than from a mode id — and two copies of a sentence is how the same
+   question ends up phrased two ways in one app. */
+const synonymStem = (text) => `Find a synonym for: ${text}`
+const antonymStem = (text) => `Find an antonym for: ${text}`
+
+/**
  * Every startable mode.
  *
  * `datasets` is what must be RESOLVED, not merely requested, before
@@ -234,7 +261,8 @@ export const isScoredMode = (mode) => QUIZ_MODES[mode]?.scored === true
  * The heading shown while a session of this mode is running.
  * Matches getModeTitle at js/screens.js:901-915 for the five it covers.
  */
-export const modeTitle = (mode) => QUIZ_MODES[mode]?.name ?? 'Quiz'
+export const modeTitle = (mode) =>
+  QUIZ_MODES[mode]?.name ?? OFF_TABLE_TITLES[mode] ?? 'Quiz'
 
 /**
  * The sentence put to the student for one question.
@@ -266,8 +294,19 @@ export const questionTextFor = (mode, question) => {
     return text
   }
 
-  if (mode === 'synonym') return `Find a synonym for: ${text}`
-  if (mode === 'antonym') return `Find an antonym for: ${text}`
+  /* DISPATCHES ON THE QUESTION FOR THE DAILY CHALLENGE TOO, for the same reason
+     as Smart Review: one challenge mixes vocabulary, synonym and antonym slots,
+     so the mode alone cannot word it. generateQuestions stamps the slot it
+     built onto `dailyMode`, and writes the full sentence into `question` for
+     the vocabulary shape — which is why that shape falls through untouched. */
+  if (mode === DAILY_MODE) {
+    if (question.dailyMode === 'Synonym') return synonymStem(text)
+    if (question.dailyMode === 'Antonym') return antonymStem(text)
+    return text
+  }
+
+  if (mode === 'synonym') return synonymStem(text)
+  if (mode === 'antonym') return antonymStem(text)
   if (mode === 'oneword') return `One word for: ${text}`
   if (mode === 'acronym') return `What does ${text} stand for?`
 

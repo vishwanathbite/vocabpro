@@ -408,7 +408,15 @@ const getStreakEmoji = (streak) => {
 // ===========================
 
 /**
- * Points awarded based on difficulty
+ * Points awarded based on difficulty.
+ *
+ * EXPORTED as of the daily challenge commit, having been internal since the
+ * port. daily-challenge.js priced its questions with a hand-written
+ * `10 / +5 medium / +10 hard`, which is this table's easy/medium/hard spelled
+ * as arithmetic — a second copy of the prices, and one that could not read the
+ * `daily` key sitting here for it. The two agreed at the moment they were
+ * reconciled; exporting is what stops them drifting apart later, since a
+ * retune here now moves the challenge with it.
  */
 const POINTS_CONFIG = {
   easy: 10,
@@ -1045,9 +1053,15 @@ const StatsManager = {
 // rather than hung off StreakProtection to keep the one privileged mutation
 // entry point visible at the import site: a caller reaching for it has to name
 // it, and cannot reach it by accident while reading shield counts.
-// updateStreak and POINTS_CONFIG stay internal (unexported), as in the
-// original. (QUALITY_RATINGS was listed here too, but it never lived in this
-// module — it was srs.js's, and went with it.)
+// updateStreak stays internal (unexported), as in the original.
+// (QUALITY_RATINGS was listed here too, but it never lived in this module — it
+// was srs.js's, and went with it.)
+//
+// POINTS_CONFIG was on that internal list and is now EXPORTED — see the note
+// above it. It left the list because a second consumer appeared that prices
+// questions without going through calculatePoints: the daily challenge scores a
+// whole session at once, with its own perfect and streak bonuses, so it needs
+// the base prices rather than the per-answer function built around them.
 //
 // getStreakMessage and getPerformanceGrade were also on this list and are now
 // DELETED, in step 13; see the notes where each stood. Both were unexported
@@ -1055,6 +1069,7 @@ const StatsManager = {
 // with the tables that superseded them.
 export {
   LEVEL_CONFIG,
+  POINTS_CONFIG,
   getLevelInfo,
   getLevelProgress,
   BADGES,

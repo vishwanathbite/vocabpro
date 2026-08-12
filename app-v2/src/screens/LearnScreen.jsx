@@ -4,10 +4,11 @@ import { CARD, ROW } from '../components/chrome.js'
 import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
-import { DailyChallengeManager } from '../logic/daily-challenge.js'
+import { DailyChallengeManager, DAILY_CHALLENGE_QUESTIONS } from '../logic/daily-challenge.js'
 import { pluralise, plural } from '../logic/format.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
 import LaunchNotice from '../quiz/LaunchNotice.jsx'
+import { DAILY_MODE } from '../quiz/quiz-modes.js'
 
 /* Short names, deliberately not the stored ones. DAILY_GOAL_PRESETS in
    dailygoals.js calls these "Casual Learner", "Regular Practice", "Serious
@@ -25,20 +26,16 @@ const GOAL_PRESETS = [
   { id: 'intense', name: 'Intense', questions: 100 },
 ]
 
-/* SECOND SOURCE OF TRUTH — reconcile when the challenge screen is built.
-   daily-challenge.js exports no question count. generateQuestions derives its
-   own from three inline seededSample calls — 4 easy, 3 medium, 3 hard
-   (daily-challenge.js:274-276) — so the only way to read the real number is to
-   generate the questions, which is far too much work for a card that just
-   announces it. The two will drift if that split changes; the fix is to export
-   the count from daily-challenge.js, or derive both from one table.
+/* RECONCILED. This was a local `CHALLENGE_QUESTIONS = 10` — a second source of
+   truth for the challenge's length, kept because daily-challenge.js exported no
+   count and generating the questions to read one was far too much work for a
+   card that just announces it. The count is now derived from DAILY_PLAN and
+   exported, so the announced number and the served number are the same value.
 
-   The real length can also come out BELOW this. seededSample returns fewer
-   than asked when a pool is short, and AppShell paints on easy alone while
-   medium and hard load in the background, so a challenge started early yields
-   4 questions rather than 10. That belongs to the Start handler, which this
-   step does not wire. */
-const CHALLENGE_QUESTIONS = 10
+   The old note also warned that the real length could come out BELOW this,
+   because AppShell paints on easy alone while medium and hard load in the
+   background. startDailyChallenge now awaits all three levels and refuses to
+   start a short challenge, so the card cannot promise ten and deliver four. */
 
 /* pluralise/plural were declared here and MOVED to logic/format.js in step 13,
    when the results screen became the second screen counting words. Same two
@@ -71,12 +68,15 @@ const readGoalPresetId = () => {
 }
 
 /**
- * @param {Function} onStartQuiz Shell's launcher; only the Smart Review row
- *   uses it in this step. The daily challenge card and both "Continue
- *   practising" buttons stay inert — the challenge builds its own questions in
- *   daily-challenge.js and does not go through startQuiz, and "Continue" has no
- *   agreed destination yet. A tile that looks wired and does nothing reads as a
- *   bug, so neither gets a handler until it has somewhere to go.
+ * @param {Function} onStartQuiz Shell's launcher. The Smart Review row and the
+ *   daily challenge's Start button both use it: the challenge does not go
+ *   through startQuiz, but it goes through the same handleStartQuiz, which
+ *   branches on DAILY_MODE and routes it to startDailyChallenge. One launcher
+ *   is what keeps the mutual-exclusion invariant in one place.
+ *
+ *   Both "Continue practising" buttons stay inert — "Continue" still has no
+ *   agreed destination, and a tile that looks wired and does nothing reads as a
+ *   bug.
  * @param {Object|null} launch Shell's quiz state, for the notice under the row.
  */
 export default function LearnScreen({ onStartQuiz, launch }) {
@@ -178,9 +178,8 @@ export default function LearnScreen({ onStartQuiz, launch }) {
           State A: challenge is the purple card, Continue is outlined below.
           State B: challenge collapses to a slim row, Continue becomes purple.
 
-          Both buttons are still inert. Start and Continue navigate to screens
-          that do not exist yet, so they carry no onClick — wiring them is a
-          later step of Phase 5b.
+          Start is LIVE as of this step. Continue is still inert — it has no
+          agreed destination.
           --------------------------------------------------------------- */}
       {!challengeDone ? (
         <>
@@ -188,17 +187,26 @@ export default function LearnScreen({ onStartQuiz, launch }) {
             <p className="text-xs font-semibold tracking-wider text-white/70 uppercase">
               Today&rsquo;s challenge
             </p>
-            {/* Not pluralised: CHALLENGE_QUESTIONS is the constant 10 and cannot
-                reach 1, so the plural is always right. Not an oversight. */}
+            {/* pluralise, unlike the goal presets: this number is now imported
+                rather than a local literal, so this screen no longer knows it
+                cannot be 1. The plan would have to shrink to a single question
+                for it to matter, and the call costs nothing. */}
             <p className="mt-1 text-lg font-semibold text-white">
-              {CHALLENGE_QUESTIONS} questions
+              {DAILY_CHALLENGE_QUESTIONS} {pluralise(DAILY_CHALLENGE_QUESTIONS, 'question')}
             </p>
             <button
               type="button"
+              onClick={() => onStartQuiz({ mode: DAILY_MODE })}
               className="min-touch mt-3 w-full rounded-lg bg-white px-4 font-semibold text-primary transition-opacity hover:opacity-90"
             >
               Start
             </button>
+            {/* Inside the card, under the button that was tapped. The challenge
+                awaits all three vocabulary levels, so this is the one launch on
+                this screen that can genuinely make a student wait. */}
+            <div className="mt-2 [&>p]:text-white/80">
+              <LaunchNotice launch={launch} mode={DAILY_MODE} />
+            </div>
           </section>
 
           <button

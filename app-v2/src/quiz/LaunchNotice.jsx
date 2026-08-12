@@ -1,5 +1,5 @@
 import { LAUNCH_MESSAGE } from './startQuiz.js'
-import { MIXED } from './quiz-modes.js'
+import { DAILY_MODE, MIXED } from './quiz-modes.js'
 
 /**
  * The line under a tile that was tapped but has not produced a quiz.
@@ -25,12 +25,20 @@ export default function LaunchNotice({ launch, mode }) {
   if (!launch || launch.mode !== mode) return null
 
   if (launch.status === 'starting') {
-    /* Mixed says more, because it is the one launch that can genuinely make a
-       student wait — it needs medium and hard where every other mode has its
-       data already or needs far less. The generic line would leave a multi-
-       second pause looking like a hang. */
+    /* Mixed and the daily challenge say more, because they are the launches
+       that can genuinely make a student wait — both need medium and hard, where
+       every other mode has its data already or needs far less. The generic line
+       would leave a multi-second pause looking like a hang.
+
+       The challenge is checked FIRST and on its mode, not its difficulty: it
+       has no difficulty at all, so it would otherwise fall through to the
+       generic line while waiting on exactly the same two chunks Mixed does. */
     const message =
-      launch.difficulty === MIXED ? LAUNCH_MESSAGE.startingMixed : LAUNCH_MESSAGE.starting
+      launch.mode === DAILY_MODE
+        ? LAUNCH_MESSAGE.startingDaily
+        : launch.difficulty === MIXED
+          ? LAUNCH_MESSAGE.startingMixed
+          : LAUNCH_MESSAGE.starting
 
     return (
       <p role="status" aria-live="polite" className="px-1 text-sm text-slate-400">
