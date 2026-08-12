@@ -535,18 +535,63 @@
     // Single source of truth for the cache version used by this page.
     // MUST match CACHE_VERSION in sw.js. If the two drift, this cleaner deletes
     // the live cache on every page load and offline mode stops working.
-    window.VOCABPRO_CACHE_VERSION = 47;
+    window.VOCABPRO_CACHE_VERSION = 48;
 
-    // Delete only our own stale caches (vocabpro-v*), never the current one.
+    // Delete only our own stale caches (vocabpro-v*), never the current one —
+    // AND ONLY IF THE CURRENT ONE ACTUALLY HAS ANYTHING IN IT.
+    //
+    // This used to delete unconditionally, which silently defeated the matching
+    // guard in sw.js's activate handler. When an install failed to populate, the
+    // worker deliberately kept the previous cache so the user could still work
+    // offline; this cleaner then deleted it on the very next page load.
+    //
+    // Offline that was actively destructive rather than merely useless: a cold
+    // start falls back through caches.match('./index.html'), which searches
+    // EVERY cache, so the app booted fine from v47 — and then this code deleted
+    // v47 out from under the running page, so every asset requested after that
+    // point missed. The app came up and fell over.
+    //
+    // Same probe as the service worker's, for the same reason: open the current
+    // cache BY NAME and look inside that one. caches.match() searches them all
+    // and would find the old cache's copy, passing the check by finding exactly
+    // what it is deciding whether to delete.
     if ('caches' in window) {
       (function() {
         var currentCache = 'vocabpro-v' + window.VOCABPRO_CACHE_VERSION;
-        caches.keys().then(function(names) {
-          names.forEach(function(name) {
-            if (name.indexOf('vocabpro-v') === 0 && name !== currentCache) {
-              caches.delete(name);
-            }
+
+        // caches.has() first, because caches.open() CREATES the cache when it
+        // is absent. Creating an empty current cache from the page would be a
+        // side effect this cleaner has no business having, and it would also
+        // blur "absent" and "empty" into one state in the log.
+        caches.has(currentCache).then(function(exists) {
+          if (!exists) {
+            return { ok: false, why: 'cache ' + currentCache + ' does not exist yet' };
+          }
+          return caches.open(currentCache).then(function(cache) {
+            return cache.match('./index.html');
+          }).then(function(populated) {
+            return populated
+              ? { ok: true }
+              : { ok: false, why: 'cache ' + currentCache + ' has no ./index.html' };
           });
+        }).then(function(state) {
+          if (!state.ok) {
+            console.warn(
+              '[cache-cleaner] Deleting nothing: ' + state.why +
+              '. Keeping older vocabpro caches so the app can still work offline.'
+            );
+            return;
+          }
+          return caches.keys().then(function(names) {
+            names.forEach(function(name) {
+              if (name.indexOf('vocabpro-v') === 0 && name !== currentCache) {
+                caches.delete(name);
+              }
+            });
+          });
+        }).catch(function(error) {
+          // Never let a cache-API failure stop the page from booting.
+          console.warn('[cache-cleaner] Skipped:', error);
         });
       })();
     }

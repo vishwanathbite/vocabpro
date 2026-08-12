@@ -1,21 +1,35 @@
 /**
  * Service Worker for VocabPro PWA
- * Version 43 - Bump cache for the SW update-prompt fixes (prompt now withdraws
- * when no update is pending, survives the mount-order race, and is
- * dismissible); align PRECACHE_ASSETS with the ?v=40 versioned script URLs.
+ *
+ * Version 48 - Offline reliability. Two testers reported the app needing a
+ * connection despite a service worker that precaches everything; it precached
+ * nothing, some of the time, and could not tell.
+ *
+ *   - Precaching is now PER ASSET. cache.addAll() is atomic: one failed request
+ *     rejects the whole call and adds NOTHING. With 29 assets, several of them
+ *     megabyte-scale data files, a single blip on a flaky connection left the
+ *     cache completely empty. The rejection was caught and only logged, so the
+ *     worker installed and activated as if it had succeeded.
+ *   - Activation no longer deletes the previous cache unless the new one
+ *     actually populated. Before, the empty-cache case above went on to wipe
+ *     the last known-good cache, turning a bad install into a broken app.
  *
  * NOTE: CACHE_VERSION below is mirrored by window.VOCABPRO_CACHE_VERSION in
  * index.html (pre-SW cache cleaner). Bump both together or the cleaner will
  * delete the live cache on every page load.
  *
+ * The "Version NN" line above is prose and has drifted from CACHE_VERSION
+ * before — it read 43 while the constant was 47. CACHE_VERSION is the only one
+ * that does anything.
+ *
  * Strategy:
- * - Precache all critical assets on install
+ * - Precache all critical assets on install, individually
  * - Cache-first for local assets (fast, reliable offline)
  * - Network-first with cache fallback for CDN resources
  * - Always serve cached index.html for navigation when offline
  */
 
-const CACHE_VERSION = 47;
+const CACHE_VERSION = 48;
 const CACHE_NAME = `vocabpro-v${CACHE_VERSION}`;
 
 // Critical local assets that MUST be cached for offline use
@@ -67,13 +81,33 @@ self.addEventListener('install', (event) => {
     (async () => {
       const cache = await caches.open(CACHE_NAME);
 
-      // Cache local assets - these MUST succeed
-      try {
-        await cache.addAll(PRECACHE_ASSETS);
-        console.log('[SW] Precached local assets');
-      } catch (error) {
-        console.error('[SW] Failed to precache local assets:', error);
-        // Don't throw - allow SW to install even if some assets fail
+      // Cache local assets INDIVIDUALLY, not with addAll.
+      //
+      // cache.addAll() is ATOMIC: per spec it rejects if any single request
+      // fails and adds none of them. That is the whole offline bug. There are 29
+      // assets here and several are megabyte-scale data files, so on a slow or
+      // flaky connection the odds of all 29 succeeding in one shot are not good
+      // — and the cost of one failure was all 29. The rejection was then caught
+      // and logged, so the worker installed and activated reporting success with
+      // an empty cache, which is why this was invisible.
+      //
+      // Promise.allSettled over individual cache.add() calls: one failure costs
+      // exactly that one asset. A partial cache is worth far more than none —
+      // most of these are independently useful, and the misses self-heal on the
+      // next online load through handleLocalRequest's cache-on-fetch.
+      const results = await Promise.allSettled(
+        PRECACHE_ASSETS.map(asset => cache.add(asset))
+      );
+
+      // Name the failures. "Precached local assets" told us nothing; the whole
+      // reason this shipped broken is that a total failure and a total success
+      // logged the same way.
+      const failed = PRECACHE_ASSETS.filter((_, i) => results[i].status === 'rejected');
+      const cached = PRECACHE_ASSETS.length - failed.length;
+
+      console.log(`[SW] Precached ${cached}/${PRECACHE_ASSETS.length} local assets`);
+      if (failed.length > 0) {
+        console.warn('[SW] Failed to precache:', failed);
       }
 
       // Cache CDN assets - best effort, don't block install
@@ -102,16 +136,45 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      // Delete all caches that don't match current version
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames
-          .filter(name => name.startsWith('vocabpro-') && name !== CACHE_NAME)
-          .map(name => {
-            console.log('[SW] Deleting old cache:', name);
-            return caches.delete(name);
-          })
-      );
+      // NEVER DISCARD THE LAST KNOWN-GOOD CACHE FOR AN EMPTY NEW ONE.
+      //
+      // This used to delete every non-current cache unconditionally. Combined
+      // with an install that swallowed its own failure, a single bad install
+      // did not merely fail to help — it actively destroyed the working offline
+      // copy the user already had, and there was no way back without a
+      // successful online load. A user whose install blipped went from "works
+      // offline" to "needs a connection", permanently, with no signal.
+      //
+      // index.html is the probe because it is the one asset with no substitute:
+      // handleNavigationRequest falls back to it for every route, so a cache
+      // without it cannot serve a cold offline start whatever else it holds. It
+      // is a proxy for "did precaching do anything", not a claim that the cache
+      // is complete.
+      //
+      // Matched against the NEW cache specifically rather than caches.match(),
+      // which searches every cache and would happily find the old one — passing
+      // the check by finding exactly what it is meant to be deciding whether to
+      // delete.
+      const newCache = await caches.open(CACHE_NAME);
+      const populated = await newCache.match('./index.html');
+
+      if (!populated) {
+        console.warn(
+          `[SW] ${CACHE_NAME} has no ./index.html — precaching did not populate it. ` +
+          'Keeping previous caches so the app can still work offline. ' +
+          'They will be cleaned up on the next activation that populates cleanly.'
+        );
+      } else {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames
+            .filter(name => name.startsWith('vocabpro-') && name !== CACHE_NAME)
+            .map(name => {
+              console.log('[SW] Deleting old cache:', name);
+              return caches.delete(name);
+            })
+        );
+      }
 
       // Take control of all clients immediately
       await self.clients.claim();
