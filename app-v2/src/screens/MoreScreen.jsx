@@ -6,10 +6,10 @@ import { ChevronRight } from '../components/icons.jsx'
 /**
  * More tab — five entries: Bookmarks, Search, Settings, About, Literary Rides.
  *
- * ONE ROW IS INERT. Settings does not exist yet, so it carries no onClick.
- * Bookmarks and Search joined the working ones as their screens landed; About
- * opens a sheet and Literary Rides is a real outbound link, neither needing a
- * screen of its own.
+ * NOTHING IS INERT ANY MORE. Bookmarks, Search and Settings each open a
+ * sub-screen; About opens a sheet and Literary Rides is a real outbound link,
+ * neither needing a screen of its own. Settings was the last one, and with it
+ * the last inert control anywhere in the app.
  *
  * SETTINGS IS A ROW, NOT A PANEL. No toggles live here — every setting in
  * settings.js is currently unread by any screen, so putting switches on this tab
@@ -25,9 +25,9 @@ import { ChevronRight } from '../components/icons.jsx'
    the shared neutral row, moved to components/chrome.js in step 7b. */
 
 /* The rows that lead to their own screens. `open` names the sub-screen the shell
-   should show, or null while it does not exist yet — Search and Settings are
-   still unbuilt, so those two carry no handler, exactly as Bookmarks did until
-   its screen landed. A row that looks wired and does nothing reads as a bug. */
+   should show. All three are live as of the Settings screen; the field is kept
+   rather than collapsed because it is what the shell keys on, and a future row
+   for an unbuilt screen sets it to null to stay inert. */
 const ROWS = [
   {
     id: 'bookmarks',
@@ -41,7 +41,12 @@ const ROWS = [
     description: "Look up any word in the app's vocabulary",
     open: 'search',
   },
-  { id: 'settings', name: 'Settings', description: 'Sound, daily goal and display options', open: null },
+  {
+    id: 'settings',
+    name: 'Settings',
+    description: 'Sound, daily goal and text size',
+    open: 'settings',
+  },
 ]
 
 /**

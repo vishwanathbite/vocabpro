@@ -186,7 +186,7 @@ export default function ResultsScreen({
             Title and headline are js/'s, verbatim. The figures are ONE LINE,
             not a grid: a session with no closing number reads as though the app
             lost track, but the grid is what makes it a scoreboard. */}
-        <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+        <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
           {title}
         </p>
         <h1

@@ -81,7 +81,7 @@ export default function PracticeScreen({ onStartQuiz, launch }) {
       {GROUPS.map((group) => (
         <section key={group.heading} className="flex flex-col gap-2">
           {/* Same eyebrow treatment as Learn's "Word of the day" label. */}
-          <h2 className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+          <h2 className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
             {group.heading}
           </h2>
 

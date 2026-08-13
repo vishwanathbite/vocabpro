@@ -6,6 +6,7 @@ import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
 import BookmarksScreen from '../screens/BookmarksScreen.jsx'
 import SearchScreen from '../screens/SearchScreen.jsx'
+import SettingsScreen from '../screens/SettingsScreen.jsx'
 import QuizSession from '../quiz/QuizSession.jsx'
 import ResultsScreen from '../quiz/ResultsScreen.jsx'
 import FlashcardSession from '../quiz/FlashcardSession.jsx'
@@ -91,6 +92,7 @@ const SUB_SCREENS = {
      boot load, which resolves easy vocabulary only. It is the one screen where a
      partial load yields a wrong answer instead of a smaller one. */
   search: SearchScreen,
+  settings: SettingsScreen,
 }
 
 export default function AppShell() {

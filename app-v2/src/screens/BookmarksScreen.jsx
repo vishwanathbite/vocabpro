@@ -117,7 +117,7 @@ export default function BookmarksScreen({ onBack, onStartQuiz, launch }) {
                           itself and can still be removed. */}
                       {title ?? b.id}
                       {kind && (
-                        <span className="ml-2 align-middle text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                        <span className="ml-2 align-middle text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
                           {kind}
                         </span>
                       )}

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
 import { CARD, ROW } from '../components/chrome.js'
 import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
-import { DailyGoalsManager } from '../logic/dailygoals.js'
+import { DailyGoalsManager, DAILY_GOAL_PRESET_LIST } from '../logic/dailygoals.js'
 import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
 import { DailyChallengeManager, DAILY_CHALLENGE_QUESTIONS } from '../logic/daily-challenge.js'
 import { pluralise, plural } from '../logic/format.js'
@@ -10,21 +10,16 @@ import { getWordOfTheDay } from '../logic/word-of-day.js'
 import LaunchNotice from '../quiz/LaunchNotice.jsx'
 import { DAILY_MODE } from '../quiz/quiz-modes.js'
 
-/* Short names, deliberately not the stored ones. DAILY_GOAL_PRESETS in
-   dailygoals.js calls these "Casual Learner", "Regular Practice", "Serious
-   Study" and "Intense Training"; the screen shows the short forms. Matching is
-   therefore on id only — never on name. The question counts are identical in
-   both tables.
+/* RECONCILED with the Settings screen. This was a local array restating the four
+   ids, the four question counts and short display names — a second copy of a
+   table dailygoals.js already exported, and Settings would have been the third.
+   The short names moved INTO that table as `shortName`, beside the long stored
+   ones, so both screens read one source and neither can drift.
 
    The points field is gone from both, together. It used to be here as well, and
    the goal no longer completes on points, so carrying the number would mean
-   this table stating a target dailygoals.js does not hold. */
-const GOAL_PRESETS = [
-  { id: 'casual', name: 'Casual', questions: 10 },
-  { id: 'regular', name: 'Regular', questions: 25 },
-  { id: 'serious', name: 'Serious', questions: 50 },
-  { id: 'intense', name: 'Intense', questions: 100 },
-]
+   this screen stating a target dailygoals.js does not hold. */
+const GOAL_PRESETS = DAILY_GOAL_PRESET_LIST
 
 /* RECONCILED. This was a local `CHALLENGE_QUESTIONS = 10` — a second source of
    truth for the challenge's length, kept because daily-challenge.js exported no
@@ -310,7 +305,7 @@ export default function LearnScreen({ onStartQuiz, launch }) {
           onClick={() => setSheet('word')}
           className={`${CARD} min-touch mt-1 w-full px-4 py-3 text-left transition-colors hover:bg-white/[0.06]`}
         >
-          <span className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+          <span className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
             Word of the day
           </span>
           <span className="mt-1 block font-playfair text-2xl leading-tight font-bold text-white">
@@ -376,7 +371,9 @@ export default function LearnScreen({ onStartQuiz, launch }) {
                 }`}
               >
                 <span>
-                  <span className="block font-medium text-white">{p.name}</span>
+                  {/* shortName, not name — this row shows "Regular", not
+                      "Regular Practice". Both live on the shared table now. */}
+                  <span className="block font-medium text-white">{p.shortName}</span>
                   {/* Not pluralised: GOAL_PRESETS starts at 10 questions, so the
                       count cannot reach 1. Not an oversight.
 
@@ -393,8 +390,8 @@ export default function LearnScreen({ onStartQuiz, launch }) {
             )
           })}
           <p className="pt-2 text-xs text-slate-500">
-            {currentPreset && `Currently set to ${currentPreset.name}. `}Selection is wired up in a
-            later step.
+            {currentPreset && `Currently set to ${currentPreset.shortName}. `}Change it in More
+            &rsaquo; Settings.
           </p>
         </div>
       </BottomSheet>

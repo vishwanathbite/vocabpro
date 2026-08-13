@@ -242,7 +242,7 @@ export default function FlashcardScreen({
           >
             {/* FRONT */}
             <div className="backface-hidden absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center">
-              <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+              <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
                 TAP TO FLIP
               </p>
               <h1 className="font-playfair text-3xl leading-tight font-bold text-white">{word}</h1>
@@ -272,7 +272,7 @@ export default function FlashcardScreen({
               <dl className="space-y-3 text-left">
                 {rows.map(([label, value]) => (
                   <div key={label}>
-                    <dt className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                    <dt className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
                       {label}
                     </dt>
                     <dd className={label === 'Example' ? 'text-sm text-slate-300 italic' : 'text-white'}>

@@ -111,7 +111,7 @@ export default function MomentOverlay({ moment, onDismiss }) {
       >
         {/* aria-hidden: the eyebrow is read as part of the heading below via
             aria-labelledby's ordering, and announcing it twice is noise. */}
-        <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+        <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
           {moment.eyebrow}
         </p>
 

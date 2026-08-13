@@ -35,12 +35,34 @@ import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
  * would silently change how a custom goal completes in the shipping app.
  * getGoal's preset path returns no points and app-v2 reads none.
  */
+/* `shortName` JOINED THE TABLE with the Settings screen. LearnScreen carried a
+   local GOAL_PRESETS array holding the four ids, the four question counts and
+   its own short display names — a second copy of everything but the long names,
+   shipped even though this table was already exported. Settings would have been
+   the third. Both screens now read from here.
+
+   BOTH NAMES ARE REAL. The long one is js/'s and is what a stored preset is
+   called; the short one is what the phone screens show, because "Regular
+   Practice" beside a count does not fit a row. Neither is derivable from the
+   other, so both are stated. */
 const DAILY_GOAL_PRESETS = {
-  casual: { questions: 10, name: 'Casual Learner' },
-  regular: { questions: 25, name: 'Regular Practice' },
-  serious: { questions: 50, name: 'Serious Study' },
-  intense: { questions: 100, name: 'Intense Training' }
+  casual: { questions: 10, name: 'Casual Learner', shortName: 'Casual' },
+  regular: { questions: 25, name: 'Regular Practice', shortName: 'Regular' },
+  serious: { questions: 50, name: 'Serious Study', shortName: 'Serious' },
+  intense: { questions: 100, name: 'Intense Training', shortName: 'Intense' }
 };
+
+/**
+ * The four presets as an ordered list, for a picker.
+ *
+ * DERIVED, so a screen cannot list a preset that does not exist or miss one that
+ * does. Object key order is insertion order for string keys, which is the order
+ * above: gentlest first.
+ */
+const DAILY_GOAL_PRESET_LIST = Object.entries(DAILY_GOAL_PRESETS).map(([id, preset]) => ({
+  id,
+  ...preset
+}));
 
 const DEFAULT_GOAL = DAILY_GOAL_PRESETS.regular;
 
@@ -63,6 +85,41 @@ const createDayProgress = () => ({
   startTime: new Date().toISOString(),
   completed: false
 });
+
+/**
+ * Mark a day complete if it has earned it. THE ONLY WRITER OF `completed`.
+ *
+ * Extracted so updateProgress and setGoalPreset cannot disagree about what
+ * completion means — the second caller is why this exists at all.
+ *
+ * ONE-WAY, AND THAT IS THE CONTRACT. It can set `completed`; it can never clear
+ * it. A day the student finished stays finished:
+ *
+ *   - RAISING the goal mid-day (Casual to Intense at 6pm, having answered 10)
+ *     must not retract a completion already earned and already counted by
+ *     getStreak. Preserved by the `!completed` guard — this function simply does
+ *     not have a path that writes false.
+ *   - LOWERING it (Intense to Casual at 6pm, having answered 30) must complete
+ *     the day immediately. That is the defect this extraction fixes: completion
+ *     used to be evaluated ONLY inside updateProgress, so the day stayed
+ *     incomplete until the student happened to answer one more question, while
+ *     getProgressPercentage — which reads getGoal() live — already showed 100%.
+ *     A bar at 100% over an incomplete day, with a streak silently not counting
+ *     it, was unreachable only because nothing could change the preset.
+ *
+ * @param {Object} bucket A day progress bucket, mutated in place
+ * @param {number} goalQuestions The question target now in force
+ * @returns {boolean} Whether this call completed the day
+ */
+const markCompleteIfEarned = (bucket, goalQuestions) => {
+  if (!bucket || bucket.completed) return false;
+  if (!(goalQuestions > 0)) return false;
+  if (bucket.questionsAnswered < goalQuestions) return false;
+
+  bucket.completed = true;
+  bucket.completedAt = new Date().toISOString();
+  return true;
+};
 
 /**
  * Copy a history map and every day bucket inside it.
@@ -193,10 +250,45 @@ const DailyGoalsManager = {
   /**
    * Set goal preset
    */
+  /**
+   * Choose one of the four presets, and re-settle today against it.
+   *
+   * THE RE-EVALUATION IS THE POINT, not a nicety. Completion was only ever
+   * computed inside updateProgress, so before this the goal could move under a
+   * day that had already been answered and nothing would notice until the next
+   * question: lower the target at 6pm with 30 answered and getProgressPercentage
+   * — which reads getGoal() live — showed 100% while `completed` stayed false
+   * and the streak did not count the day. The two disagreed on screen.
+   *
+   * ONE-WAY, via markCompleteIfEarned: lowering the goal can complete today,
+   * raising it can never un-complete a day already earned. See the helper.
+   *
+   * Only TODAY is re-evaluated. Past days were completed against the goal in
+   * force at the time, which is the honest record — retroactively completing
+   * last Tuesday because the target dropped today would rewrite a streak the
+   * student did not earn.
+   *
+   * @param {string} preset One of the DAILY_GOAL_PRESETS keys
+   */
   setGoalPreset: (preset) => {
     const data = DailyGoalsManager.loadData();
     data.goalPreset = preset;
     data.customGoal = null;
+
+    /* Read AFTER the assignment above, so it is the new target. loadData
+       returns a copy, so getGoal would still see the old stored value —
+       hence the table lookup here rather than a getGoal() call. */
+    const goal = DAILY_GOAL_PRESETS[preset] || DEFAULT_GOAL;
+    const todayKey = DailyGoalsManager.getTodayKey();
+
+    /* Absent bucket means nothing was answered today, so there is nothing to
+       complete. Deliberately NOT created here: getTodayProgress was made a pure
+       read in Phase 5 step 3 precisely so a bucket is only ever written by a
+       real event, and "the student opened Settings" is not one. */
+    if (data.history[todayKey]) {
+      markCompleteIfEarned(data.history[todayKey], goal.questions);
+    }
+
     DailyGoalsManager.saveData(data);
   },
 
@@ -259,18 +351,13 @@ const DailyGoalsManager = {
     // see DAILY_GOAL_PRESETS. pointsAdded is still accumulated above, it just no
     // longer decides anything.
     //
-    // This is the ONLY place `completed` is written, and four things read it:
-    // isGoalComplete, getStreak (the Learn streak, the one shields protect),
-    // getWeekHistory (which spreads the bucket into the week bars), and this
-    // function's own idempotence guard. All four get stricter together, which is
-    // the intended effect — a day now takes the full question count.
+    // `completed` is written by markCompleteIfEarned and nowhere else, and four
+    // things read it: isGoalComplete, getStreak (the Learn streak, the one
+    // shields protect), getWeekHistory (which spreads the bucket into the week
+    // bars), and that helper's own idempotence guard. This used to be an inline
+    // block here; setGoalPreset became its second caller.
     const goal = DailyGoalsManager.getGoal();
-    if (data.history[todayKey].questionsAnswered >= goal.questions) {
-      if (!data.history[todayKey].completed) {
-        data.history[todayKey].completed = true;
-        data.history[todayKey].completedAt = new Date().toISOString();
-      }
-    }
+    markCompleteIfEarned(data.history[todayKey], goal.questions);
 
     DailyGoalsManager.saveData(data);
     return data.history[todayKey];
@@ -425,4 +512,8 @@ const DailyGoalsManager = {
 
 // Public API — same names the former window globals used.
 // DEFAULT_GOAL stays internal, as in the original.
-export { DAILY_GOAL_PRESETS, DailyGoalsManager };
+/* setCustomGoal has the SAME re-evaluation gap and is deliberately not changed
+   here: it has no caller in app-v2 (nothing offers a custom goal), so the defect
+   stays latent there, and fixing a path this commit cannot reach would be a
+   change nothing verifies. It becomes live the day a custom-goal control ships. */
+export { DAILY_GOAL_PRESETS, DAILY_GOAL_PRESET_LIST, DailyGoalsManager };

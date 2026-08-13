@@ -21,9 +21,15 @@ import { DailyGoalsManager } from './dailygoals.js';
  * Settings Manager - handles all app preferences
  * Uses centralized StorageManager for persistence
  */
+/* `STORAGE_KEY: 'vocabProSettings'` STOOD HERE and is deleted, with its twins on
+   QuizHistoryManager and OnboardingManager below. All three were labelled
+   "Legacy key for reference" and read by nothing: every access in this file goes
+   through StorageManager into a section of the unified blob. Same dead constant
+   removed from BookmarksManager with the Bookmarks screen — a key naming a store
+   nothing writes to is a false lead for the next reader. The real legacy keys
+   still live in storage.js's migrateLegacyData, which is the one place that has
+   any business knowing them. */
 const SettingsManager = {
-  STORAGE_KEY: 'vocabProSettings', // Legacy key for reference
-
   /**
    * Default settings
    */
@@ -252,7 +258,7 @@ const QuizPreferences = {
  * Uses centralized StorageManager for persistence
  */
 const QuizHistoryManager = {
-  STORAGE_KEY: 'vocabProQuizHistory', // Legacy key for reference
+  // Dead STORAGE_KEY deleted — see the note on SettingsManager above.
   MAX_HISTORY: 50, // Keep last 50 quizzes
 
   /**
@@ -413,7 +419,7 @@ const QuizHistoryManager = {
  * Uses centralized StorageManager for persistence
  */
 const OnboardingManager = {
-  STORAGE_KEY: 'vocabProOnboarding', // Legacy key for reference
+  // Dead STORAGE_KEY deleted — see the note on SettingsManager above.
 
   /**
    * Default onboarding status

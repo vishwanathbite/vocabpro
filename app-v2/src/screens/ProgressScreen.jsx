@@ -40,7 +40,7 @@ import { formatNumber } from '../logic/format.js'
    It is deliberately NOT repeated here. Do not copy the js/ wording back in. */
 const BEST_RUN_LABEL = 'Best run'
 
-const EYEBROW = 'text-[10px] font-semibold tracking-wider text-slate-400 uppercase'
+const EYEBROW = 'text-eyebrow font-semibold tracking-wider text-slate-400 uppercase'
 /* Readouts, not controls: no min-touch, because 48px is a touch-target floor and
    nothing on this screen is tappable. */
 const TILE = `${CARD} px-4 py-3`
@@ -324,7 +324,7 @@ export default function ProgressScreen() {
                 </span>
                 <span className="flex items-baseline gap-2">
                   {isCurrent && (
-                    <span className="text-[10px] font-semibold tracking-wider text-sky-400 uppercase">
+                    <span className="text-eyebrow font-semibold tracking-wider text-sky-400 uppercase">
                       Current
                     </span>
                   )}

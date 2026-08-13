@@ -206,7 +206,7 @@ export default function SearchScreen({ onBack }) {
                     <span className="min-w-0 flex-1">
                       <span className="block font-semibold text-white">
                         {title}
-                        <span className="ml-2 align-middle text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                        <span className="ml-2 align-middle text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
                           {tag}
                         </span>
                       </span>

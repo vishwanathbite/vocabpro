@@ -37,7 +37,7 @@ export default function FlashcardSummary({ known, unknown, onPractiseAgain, onDo
   return (
     <div className="min-h-screen bg-navy">
       <main className="mx-auto w-full max-w-content px-4 pt-8 pb-12">
-        <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+        <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
           Session complete!
         </p>
 
