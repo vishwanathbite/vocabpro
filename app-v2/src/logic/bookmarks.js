@@ -159,7 +159,17 @@ const BookmarksManager = {
   },
 
   /**
-   * Update bookmark review status
+   * Update bookmark review status.
+   *
+   * ITS ONE CALLER is useQuizSession.complete(), gated on the 'bookmarks' mode
+   * — once per word SERVED by a finished Saved Words session. Deliberately not
+   * called from anywhere else: an ordinary quiz does not review a bookmark, and
+   * Search looking a word up is not reviewing it either. See the note at that
+   * call site for why both exclusions matter to what reviewCount means.
+   *
+   * A no-op for an unknown id, which is how a word removed from the saved list
+   * mid-session resolves. Nothing is created here.
+   *
    * @param {string} wordId - Word identifier
    */
   markReviewed: (wordId) => {
@@ -167,7 +177,12 @@ const BookmarksManager = {
     const index = bookmarks.findIndex(b => b.id === wordId);
 
     if (index !== -1) {
-      bookmarks[index].reviewCount += 1;
+      /* `|| 0` because a bookmark can arrive without the field: importBookmarks
+         merges whatever JSON it is handed, and a js/-written entry predating the
+         counter would have none. `undefined + 1` is NaN, and one NaN is enough
+         to make the getForPractice comparator return NaN for every pair it
+         touches — silently flattening the ordering this call exists to drive. */
+      bookmarks[index].reviewCount = (bookmarks[index].reviewCount || 0) + 1;
       bookmarks[index].lastReviewed = new Date().toISOString();
       BookmarksManager.saveBookmarks(bookmarks);
     }
@@ -206,8 +221,16 @@ const BookmarksManager = {
        Fixed here rather than deferred because THIS COMMIT is what makes the
        function reachable: bookmarks mode had no launch point until now, so the
        defect was latent and is live the moment the button below it works. */
+    /* THE ORDERING IS LIVE as of the markReviewed wiring. Until then nothing
+       incremented reviewCount, every entry sat at 0, and this sort was a stable
+       no-op that returned the list in insertion order — correct, but not doing
+       what its name claimed. Now a finished Saved Words session advances the
+       words it served, so the next session reaches for the ones it did not.
+
+       `|| 0` on both sides for the same reason markReviewed guards its
+       increment: one undefined would make the comparator return NaN. */
     return [...bookmarks]
-      .sort((a, b) => a.reviewCount - b.reviewCount)
+      .sort((a, b) => (a.reviewCount || 0) - (b.reviewCount || 0))
       .slice(0, limit)
       .map(b => b.wordData);
   },

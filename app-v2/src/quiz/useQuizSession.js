@@ -37,6 +37,8 @@ import { useMomentQueue } from './useMomentQueue.js'
 import { scoreAnswer } from '../logic/quiz-scoring.js'
 import { summarizeQuizResults } from '../logic/quiz-summary.js'
 import { StatsManager } from '../logic/gamification.js'
+import { BookmarksManager } from '../logic/bookmarks.js'
+import { wordIdOf } from '../logic/helpers.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
 import { QuizHistoryManager, SettingsManager } from '../logic/settings.js'
 import { SoundManager } from '../logic/sound.js'
@@ -243,6 +245,42 @@ export function useQuizSession(session, onComplete) {
 
     QuizHistoryManager.addQuiz(summary.historyEntry)
     stopSpeech()
+
+    /* SAVED WORDS: record that these bookmarks have been reviewed.
+     *
+     * ONLY THIS MODE. A word met in an ordinary quiz is not a bookmark being
+     * reviewed — it was drawn from a difficulty pool and may not be bookmarked
+     * at all — and Smart Review has its own progression in the review pool.
+     * Gating on the mode is what keeps `reviewCount` meaning "times practised
+     * FROM the saved list" rather than "times seen anywhere", which is the only
+     * reading that makes getForPractice's least-reviewed-first ordering do what
+     * its name says. Search must never call this either, for the same reason at
+     * the other end: looking a word up is not reviewing it.
+     *
+     * PER WORD SERVED, NOT PER WORD CORRECT. The ordering asks which saved words
+     * the student has seen least, so a word answered wrongly has still been
+     * seen; counting only correct answers would keep re-serving exactly the
+     * words the student keeps missing while never advancing their count, and the
+     * "least reviewed" queue would silently become a "worst answered" queue.
+     *
+     * ONLY ON COMPLETION. This runs inside complete(), which an abandoned
+     * session never reaches — consistent with every other write in this hook,
+     * and with the challenge's rule that a session that did not finish records
+     * nothing.
+     *
+     * wordIdOf, NOT A FIFTH RESOLVER. These questions were built by
+     * buildQuestionFromItem from the bookmark's own embedded wordData, and the
+     * bookmark's id was produced by wordIdOf over that same item — so this
+     * resolves to the exact key markReviewed looks up. No de-duplication is
+     * needed: bookmarks are unique by id and getForPractice slices a unique
+     * list, so a word cannot be served twice in one session.
+     */
+    if (mode === 'bookmarks') {
+      for (const question of questions) {
+        const wordId = wordIdOf(question)
+        if (wordId) BookmarksManager.markReviewed(wordId)
+      }
+    }
 
     // The pool delta, in both directions. Same set-difference shape as step
     // 12b's inline mark, but bracketing the whole session rather than one
