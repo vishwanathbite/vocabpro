@@ -179,6 +179,39 @@ export const loadOneWord = () =>
 export const loadInitialData = () => loadVocabularyLevel('easy');
 
 /**
+ * Every dataset this app ships, resolved.
+ *
+ * FOR SEARCH, which is the one feature that must see the WHOLE corpus before it
+ * can answer honestly. A quiz mode that loads less serves fewer questions; a
+ * search that loads less tells a student the app does not contain a word it
+ * does contain, which is a wrong answer rather than a smaller one.
+ *
+ * NOT A THIRD LOADING PATTERN. These are the same loadOnce-cached promises every
+ * other caller awaits — a tap during AppShell's background warm joins the
+ * in-flight import rather than racing a second one — composed here instead of at
+ * the call site. It lives beside loadInitialData because both are named
+ * compositions of the same primitives: that one is "what a first paint needs",
+ * this one is "everything".
+ *
+ * It is deliberately NOT expressed through startQuiz's loadersFor. That maps a
+ * QUIZ_MODES row's `datasets` onto loaders, and search has no row; borrowing
+ * Smart Review's list would silently re-point search's corpus the day that mode
+ * changed its datasets.
+ *
+ * Promise.all, not allSettled: a search over a partial corpus is the failure
+ * this exists to prevent, so one rejection must fail the whole thing and let the
+ * caller say so. The loader evicts a rejected entry, making a retry genuine.
+ *
+ * @returns {Promise<void>} Rejects if any dataset fails to load
+ */
+export const loadAllData = () =>
+  Promise.all([
+    ...VOCAB_LEVELS.map(loadVocabularyLevel),
+    loadAcronyms(),
+    loadOneWord(),
+  ]).then(() => undefined);
+
+/**
  * Whether a dataset has been requested in this session. Does not trigger a load.
  * @param {string} key e.g. 'vocab:easy', 'acronyms', 'oneword'
  */

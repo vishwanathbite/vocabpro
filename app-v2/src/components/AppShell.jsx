@@ -5,6 +5,7 @@ import PracticeScreen from '../screens/PracticeScreen.jsx'
 import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
 import BookmarksScreen from '../screens/BookmarksScreen.jsx'
+import SearchScreen from '../screens/SearchScreen.jsx'
 import QuizSession from '../quiz/QuizSession.jsx'
 import ResultsScreen from '../quiz/ResultsScreen.jsx'
 import FlashcardSession from '../quiz/FlashcardSession.jsx'
@@ -86,6 +87,10 @@ const warmRemainingVocabulary = () => {
  */
 const SUB_SCREENS = {
   bookmarks: BookmarksScreen,
+  /* Search awaits the WHOLE corpus itself rather than relying on the shell's
+     boot load, which resolves easy vocabulary only. It is the one screen where a
+     partial load yields a wrong answer instead of a smaller one. */
+  search: SearchScreen,
 }
 
 export default function AppShell() {

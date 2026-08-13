@@ -6,9 +6,10 @@ import { ChevronRight } from '../components/icons.jsx'
 /**
  * More tab — five entries: Bookmarks, Search, Settings, About, Literary Rides.
  *
- * TWO ROWS ARE INERT. Search and Settings do not exist yet, so those carry no
- * onClick. Bookmarks joined the working ones when its screen landed; About opens
- * a sheet and Literary Rides is a real outbound link, neither needing a screen.
+ * ONE ROW IS INERT. Settings does not exist yet, so it carries no onClick.
+ * Bookmarks and Search joined the working ones as their screens landed; About
+ * opens a sheet and Literary Rides is a real outbound link, neither needing a
+ * screen of its own.
  *
  * SETTINGS IS A ROW, NOT A PANEL. No toggles live here — every setting in
  * settings.js is currently unread by any screen, so putting switches on this tab
@@ -34,7 +35,12 @@ const ROWS = [
     description: 'The words you have saved to revise later',
     open: 'bookmarks',
   },
-  { id: 'search', name: 'Search', description: "Look up any word in the app's vocabulary", open: null },
+  {
+    id: 'search',
+    name: 'Search',
+    description: "Look up any word in the app's vocabulary",
+    open: 'search',
+  },
   { id: 'settings', name: 'Settings', description: 'Sound, daily goal and display options', open: null },
 ]
 

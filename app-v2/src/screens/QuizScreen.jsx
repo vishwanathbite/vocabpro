@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
 import { ArrowLeft, Check, Volume2, X } from '../components/icons.jsx'
+import { detailRows } from '../logic/item-details.js'
 import { KeyboardShortcuts } from '../logic/settings.js'
 import { SoundManager } from '../logic/sound.js'
 import { speakWord } from '../logic/speech.js'
@@ -43,44 +44,9 @@ import { modeTitle, questionTextFor } from '../quiz/quiz-modes.js'
    array — and .slice guards a shorter set rather than rendering `undefined`. */
 const OPTION_LETTERS = ['A', 'B', 'C', 'D']
 
-/**
- * The stored item's own fields, labelled.
- *
- * DISPATCHES ON SHAPE, NOT MODE, for the same reason questionTextFor does: a
- * Smart Review session mixes all three kinds, so a mode-keyed list would label
- * an acronym's full form as a definition. The live app gated this on a mode
- * list (js/components.js:1277) and could afford to, because review could not
- * yet serve acronyms.
- *
- * Labels are the live app's, verbatim.
- */
-const detailRows = (wordData) => {
-  if (!wordData) return []
-
-  if (wordData.acronym) {
-    return [
-      ['Acronym', wordData.acronym],
-      ['Full Form', wordData.full],
-      ['Category', wordData.category]
-    ].filter(([, value]) => value)
-  }
-
-  if (wordData.phrase) {
-    return [
-      ['Phrase', wordData.phrase],
-      ['Answer', wordData.answer],
-      ['Explanation', wordData.explanation]
-    ].filter(([, value]) => value)
-  }
-
-  return [
-    ['Word', wordData.word],
-    ['Definition', wordData.definition],
-    ['Example', wordData.example],
-    ['Mnemonic', wordData.mnemonic],
-    ['Usage', wordData.usage]
-  ].filter(([, value]) => value)
-}
+/* detailRows STOOD HERE and moved to logic/item-details.js when Search became
+   its second caller. Same body, same labels, same shape dispatch — see the note
+   there for why it dispatches on the item rather than on the mode. */
 
 /* The two strings the daily challenge needs different, and nothing else.
    Defaults reproduce the quiz exactly, so every existing call site is
