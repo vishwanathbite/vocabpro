@@ -140,3 +140,46 @@ export const formatNumber = (num) => {
  */
 export const pluralise = (n, noun) => (n === 1 ? noun : `${noun}s`);
 export const plural = (n, noun) => `${n} ${pluralise(n, noun)}`;
+
+/**
+ * A day count as prose: 86 becomes "2 months, 26 days".
+ *
+ * WHY IT EXISTS. Streaks are now uncapped, so the number they report can grow
+ * without limit — and "86 days" is a figure a student has to stop and convert
+ * before it means anything, which is the opposite of what a streak is for.
+ *
+ * A MONTH HERE IS EXACTLY 30 DAYS, stated rather than assumed. Calendar months
+ * are 28 to 31, so any prose form is an approximation of a day count; the honest
+ * choice is a fixed divisor that always reconstructs the input — 2 × 30 + 26 is
+ * 86 exactly, and a student who counts back finds the same number. A calendar-
+ * accurate version would need the streak's start date and would still print a
+ * figure that disagrees with the count on the badge beside it.
+ *
+ * NO YEARS. At 12 months this keeps counting months ("14 months, 3 days")
+ * rather than introducing a second approximation on top of the first — twelve
+ * 30-day months is 360, not a year, and "1 year" would be wrong by five days in
+ * a way "12 months" is not.
+ *
+ * PURE, AND TAKES THE NUMBER. No storage, no clock, no streak semantics — it
+ * formats an integer, so it is equally usable for any day count and can be
+ * checked without setting up a streak.
+ *
+ * @param {number} days A whole number of days
+ * @returns {string} e.g. "0 days", "1 day", "30 days", "2 months, 26 days"
+ */
+export const formatDayCount = (days) => {
+  /* Anything that is not a usable count reads as zero rather than as "NaN
+     days". The floor also means a fractional input cannot print "1.5 days". */
+  if (!Number.isFinite(days) || days <= 0) return plural(0, 'day');
+
+  const whole = Math.floor(days);
+  const months = Math.floor(whole / 30);
+  const remainder = whole % 30;
+
+  if (months === 0) return plural(remainder, 'day');
+  /* An exact multiple of 30 drops the day half entirely: "2 months", never
+     "2 months, 0 days". */
+  if (remainder === 0) return plural(months, 'month');
+
+  return `${plural(months, 'month')}, ${plural(remainder, 'day')}`;
+};

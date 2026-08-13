@@ -5,7 +5,7 @@ import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager, DAILY_GOAL_PRESET_LIST } from '../logic/dailygoals.js'
 import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
 import { DailyChallengeManager, DAILY_CHALLENGE_QUESTIONS } from '../logic/daily-challenge.js'
-import { pluralise, plural } from '../logic/format.js'
+import { pluralise, plural, formatDayCount } from '../logic/format.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
 import LaunchNotice from '../quiz/LaunchNotice.jsx'
 import { DAILY_MODE } from '../quiz/quiz-modes.js'
@@ -329,7 +329,13 @@ export default function LearnScreen({ onStartQuiz, launch }) {
       <BottomSheet isOpen={sheet === 'streak'} onClose={() => setSheet(null)} title="Your streak">
         <div className="space-y-4 text-sm text-slate-300">
           <p>
-            <span className="font-semibold text-white tabular-nums">{plural(streak, 'day')}</span>{' '}
+            {/* formatDayCount, not plural(streak, 'day'). Streaks are uncapped
+                now, so this number can grow without limit, and "86 days" is a
+                figure a student has to stop and convert before it means
+                anything. The HEADER badge deliberately keeps the bare number —
+                a header is for glancing, this sheet is where a student reads
+                their record. */}
+            <span className="font-semibold text-white tabular-nums">{formatDayCount(streak)}</span>{' '}
             in a row.
             Your streak counts the days you hit your daily goal. Miss a day and it goes back to
             zero — unless you have a shield.

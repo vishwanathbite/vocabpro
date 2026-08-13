@@ -788,9 +788,13 @@ const recordModePlayed = (stats, mode) => {
  * Allows users to protect their streak with shields
  * Uses centralized StorageManager for persistence
  */
+/* `storageKey: 'vocabProStreakProtection'` STOOD HERE and is deleted — the
+   fourth of its kind, after BookmarksManager's and the three in settings.js. All
+   were labelled "Legacy key for reference" and read by nothing: every access
+   here goes through StorageManager into state.streakProtection. The real legacy
+   keys live in storage.js's migrateLegacyData, which is the one place with any
+   business knowing them. */
 const StreakProtection = {
-  storageKey: 'vocabProStreakProtection', // Legacy key for reference
-
   /**
    * Default streak protection data.
    *

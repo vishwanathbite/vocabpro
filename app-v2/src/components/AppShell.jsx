@@ -252,11 +252,22 @@ export default function AppShell() {
   useEffect(() => {
     let cancelled = false
 
-    // Prune daily-goals history older than 30 days. js/ ran this once from
-    // index.html:681; nothing in app-v2 called it, so history grew unbounded.
-    // Independent of the data load — it only touches storage.
+    /* Daily-goals maintenance, once per session. Independent of the data load —
+       both calls only touch storage.
+
+       THE ORDER IS LOAD-BEARING AND NOT ALPHABETICAL. syncCompletedDays lifts
+       every completed day out of `history` into the never-trimmed streak set;
+       cleanupHistory then deletes history days older than 30. Run the other way
+       round, the trim would destroy days before the sync could record them, and
+       an existing student's streak would be truncated to 30 by the very session
+       that was meant to uncap it. The sync must come first, every time. */
     if (!historyCleaned) {
       historyCleaned = true
+      try {
+        DailyGoalsManager.syncCompletedDays()
+      } catch (err) {
+        console.warn('Failed to sync completed-day records:', err)
+      }
       try {
         DailyGoalsManager.cleanupHistory()
       } catch (err) {

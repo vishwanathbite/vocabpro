@@ -122,6 +122,21 @@ const markCompleteIfEarned = (bucket, goalQuestions) => {
 };
 
 /**
+ * Record a day in the never-trimmed completed set.
+ *
+ * IDEMPOTENT BY THE `includes` GUARD, which is what makes every caller safe to
+ * run twice — the session sync below relies on it, and so does a day that
+ * updateProgress and setGoalPreset both decide is complete.
+ *
+ * @param {Object} data    Loaded goals data, mutated in place
+ * @param {string} dateKey An unpadded IST key from getTodayKey
+ */
+const recordCompletedDay = (data, dateKey) => {
+  if (!Array.isArray(data.completedDays)) data.completedDays = [];
+  if (!data.completedDays.includes(dateKey)) data.completedDays.push(dateKey);
+};
+
+/**
  * Copy a history map and every day bucket inside it.
  *
  * Added in Phase 5 step 4 to close an aliasing bug — see loadData below. Two
@@ -162,7 +177,12 @@ const DailyGoalsManager = {
   defaultData: {
     goalPreset: 'regular',
     customGoal: null,
-    history: {}
+    history: {},
+    /* The never-trimmed set of completed day keys — see storage.js, where the
+       same field is declared and the reasoning lives. Kept in step with that
+       declaration for the same reason the rest of this object is: the two must
+       not be readable as disagreeing. */
+    completedDays: []
   },
 
   /**
@@ -218,13 +238,24 @@ const DailyGoalsManager = {
    * customGoal is deliberately not copied: its default is null, so there is no
    * shared default object to alias, and nothing mutates it in place.
    *
+   * completedDays IS copied, for exactly the reason history is. It defaults to a
+   * shared module-level array, and recordCompletedDay pushes onto whatever
+   * loadData handed back — without the copy, the first push on a store with no
+   * dailyGoals section would append to defaultData.completedDays and leak that
+   * day into every later load that fell back to defaults. Same bug the history
+   * clone closed in Phase 5 step 4, one field over.
+   *
    * @returns {Object} Daily goals data, safe to mutate
    */
   loadData: () => {
     const state = StorageManager.loadState();
     const data = { ...DailyGoalsManager.defaultData, ...state.dailyGoals };
 
-    return { ...data, history: cloneHistory(data.history || {}) };
+    return {
+      ...data,
+      history: cloneHistory(data.history || {}),
+      completedDays: Array.isArray(data.completedDays) ? [...data.completedDays] : []
+    };
   },
 
   /**
@@ -285,8 +316,12 @@ const DailyGoalsManager = {
        complete. Deliberately NOT created here: getTodayProgress was made a pure
        read in Phase 5 step 3 precisely so a bucket is only ever written by a
        real event, and "the student opened Settings" is not one. */
-    if (data.history[todayKey]) {
-      markCompleteIfEarned(data.history[todayKey], goal.questions);
+    if (data.history[todayKey] && markCompleteIfEarned(data.history[todayKey], goal.questions)) {
+      /* Lowering the goal can newly complete today, and that day has to reach
+         the streak set as well — otherwise the bar would read 100% and the
+         streak would not count the day, which is the pair this branch exists
+         to keep in step. */
+      recordCompletedDay(data, todayKey);
     }
 
     DailyGoalsManager.saveData(data);
@@ -357,7 +392,12 @@ const DailyGoalsManager = {
     // bars), and that helper's own idempotence guard. This used to be an inline
     // block here; setGoalPreset became its second caller.
     const goal = DailyGoalsManager.getGoal();
-    markCompleteIfEarned(data.history[todayKey], goal.questions);
+    /* The bucket flag and the streak record move together. getStreak reads only
+       the set now, so a day marked complete here and NOT recorded there would
+       be complete on the week bars and invisible to the streak. */
+    if (markCompleteIfEarned(data.history[todayKey], goal.questions)) {
+      recordCompletedDay(data, todayKey);
+    }
 
     DailyGoalsManager.saveData(data);
     return data.history[todayKey];
@@ -397,25 +437,40 @@ const DailyGoalsManager = {
   },
 
   /**
-   * Get streak (consecutive days with completed goals)
+   * Get streak (consecutive days with completed goals).
    *
-   * Semantics untouched: the same 366 iterations, the same "don't break on
-   * today" rule, the same completed test. Only the key builder and the day step
-   * changed — it walks back through getTodayKey by a flat DAY_MS instead of
-   * inlining the format and calling setDate on a local Date.
+   * COUNTS FROM completedDays, NOT FROM history. That is the fix. It used to
+   * walk `history[dateKey].completed` over a hard 366 iterations, while
+   * cleanupHistory deletes every history day older than 30 and AppShell runs
+   * that on mount BEFORE this screen reads the streak — so the walk hit a
+   * missing day at 31 and stopped. Every streak was silently capped at ~30, and
+   * a student on 45 days was told 30. Unnoticed only because no tester had got
+   * that far. The completed set is never trimmed, so the count is now unbounded.
+   *
+   * THE 366 CEILING IS GONE, replaced by a bound that is a fact rather than a
+   * guess: a streak cannot be longer than the number of days ever recorded, so
+   * `size + 1` iterations is exact and still terminates on a corrupt blob that
+   * somehow holds every key back to the epoch.
+   *
+   * The "don't break on today" rule is unchanged, and is why the loop skips the
+   * break at i === 0: a day in progress has not failed, it just has not finished
+   * yet, so a student mid-morning still sees yesterday's streak rather than 0.
    *
    * @param {Date|number|string} [instant] - Defaults to now
    */
   getStreak: (instant = Date.now()) => {
     const data = DailyGoalsManager.loadData();
-    const nowMs = new Date(instant).getTime();
+
+    /* A Set once per call rather than `.includes` per day: the walk is O(streak)
+       and this makes each step O(1) instead of O(recorded days). */
+    const completed = new Set(data.completedDays);
+    const nowMs = epochMsOf(instant);
     let streak = 0;
 
-    // Check consecutive days backwards
-    for (let i = 0; i <= 365; i++) {
+    for (let i = 0; i <= completed.size; i++) {
       const dateKey = DailyGoalsManager.getTodayKey(nowMs - i * DAY_MS);
 
-      if (data.history[dateKey] && data.history[dateKey].completed) {
+      if (completed.has(dateKey)) {
         streak++;
       } else if (i > 0) {
         // Don't break on today if not completed yet
@@ -424,6 +479,48 @@ const DailyGoalsManager = {
     }
 
     return streak;
+  },
+
+  /**
+   * Bring completedDays in step with history. THE MIGRATION, and a repair.
+   *
+   * RUN ONCE PER SESSION, from AppShell's mount effect, and it MUST run BEFORE
+   * cleanupHistory — that call deletes history days older than 30, and a day
+   * deleted before this runs is a day that can never be recovered into the set.
+   * The two are adjacent in that effect for exactly this reason.
+   *
+   * IDEMPOTENT, SO RUNNING IT TWICE DOES NOTHING. It is a set union, not an
+   * append: recordCompletedDay skips a key already present. That is deliberate
+   * rather than incidental — it is what lets this run every session instead of
+   * needing a "have I migrated yet" flag, which would be a new stored field
+   * whose own correctness would then need defending.
+   *
+   * IT IS ALSO A STANDING REPAIR, not just a one-time seed. The js/ tree shares
+   * STORAGE_KEY and completes days by writing `history[key].completed` directly,
+   * knowing nothing about this set. Re-running the union every session means a
+   * day earned in that build is picked up here rather than silently breaking the
+   * streak — for as long as both builds are in use.
+   *
+   * @param {Date|number|string} [instant] - Unused today; accepted so the
+   *   signature matches the other maintenance calls beside it.
+   * @returns {number} How many days this call added
+   */
+  syncCompletedDays: () => {
+    const data = DailyGoalsManager.loadData();
+    const before = data.completedDays.length;
+
+    for (const [dateKey, bucket] of Object.entries(data.history)) {
+      if (bucket && typeof bucket === 'object' && bucket.completed) {
+        recordCompletedDay(data, dateKey);
+      }
+    }
+
+    const added = data.completedDays.length - before;
+    /* Only writes when something changed. On every session after the first this
+       is a pure read, which keeps a maintenance call off the write path for the
+       overwhelmingly common case. */
+    if (added > 0) DailyGoalsManager.saveData(data);
+    return added;
   },
 
   /**

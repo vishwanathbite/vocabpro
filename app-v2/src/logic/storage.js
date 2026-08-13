@@ -76,7 +76,20 @@ const getDefaultState = () => ({
   dailyGoals: {
     goalPreset: 'regular',
     customGoal: null,
-    history: {}
+    history: {},
+
+    /* THE STREAK'S SOURCE OF TRUTH, and deliberately NOT derived from `history`.
+       .
+       `history` is the bulky per-day record — questions, points, timestamps —
+       and it is trimmed to 30 days by cleanupHistory and again by the quota
+       path below. getStreak used to walk it, which silently capped every streak
+       at ~30: a student on 45 days was told 30, and nobody noticed because no
+       tester had reached 30.
+       .
+       This is the bare fact, one unpadded IST date key per completed day, and
+       it is NEVER trimmed. A year of daily study is ~365 keys, roughly 4 KB —
+       against a 5 MB quota, that is not a trade worth making. */
+    completedDays: []
   },
 
   // Quiz History
