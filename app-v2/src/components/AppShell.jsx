@@ -19,6 +19,8 @@ import { isScoredMode, DAILY_MODE } from '../quiz/quiz-modes.js'
 import { CHALLENGE_TITLE } from '../quiz/results-copy.js'
 import { loadInitialData, loadVocabularyLevel } from '../data/loader.js'
 import { DailyGoalsManager } from '../logic/dailygoals.js'
+import { awardWeeklyShieldIfDue } from '../logic/gamification.js'
+import { bridgeStreakGap } from '../logic/streak-bridge.js'
 
 /**
  * App shell: the active tab's panel plus the bottom tab bar.
@@ -101,6 +103,20 @@ export default function AppShell() {
   /* Which sub-screen the active tab has opened, or null. Cleared on every tab
      change, so the tab bar always returns to the tab's own root. */
   const [subScreen, setSubScreen] = useState(null)
+
+  /**
+   * What shield protection did on this open, or null.
+   *
+   * HELD BY THE SHELL, NOT BY LEARN, because the bridge runs before Learn
+   * exists — see the mount effect. Learn renders it as a line; the shell just
+   * carries it. It survives tab switches, which is deliberate: a student who
+   * lands on Practice first and reaches Learn a minute later must still be told
+   * that shields were spent on their behalf.
+   *
+   * Cleared only by closing the app. The next open cannot re-report it, because
+   * the days it covered now read as protected and the gap search finds nothing.
+   */
+  const [streakBridge, setStreakBridge] = useState(null)
   const [dataState, setDataState] = useState('loading') // 'loading' | 'ready' | 'error'
   const [dataError, setDataError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
@@ -268,6 +284,46 @@ export default function AppShell() {
       } catch (err) {
         console.warn('Failed to sync completed-day records:', err)
       }
+
+      /* THE WEEKLY GRANT, MOVED HERE FROM LearnScreen's mount effect.
+         .
+         IT HAS TO SETTLE BEFORE THE BRIDGE, which is the whole reason it moved.
+         A student returning after one missed day, holding nothing but due a
+         weekly shield, was granted that shield AFTER the bridge had already
+         decided it could not afford the gap — so the streak broke and the
+         shield arrived a moment too late to have saved it. Granting first means
+         the bridge spends what the student is owed on the day they are owed it.
+         .
+         IT ALSO RUNS IN EXACTLY ONE PLACE NOW. Leaving the Learn call in place
+         would not have double-granted — awardWeeklyShieldIfDue stamps
+         lastEarned and its own interval test refuses the second call — but two
+         callers of a privileged mutation is a hazard resting on that guard
+         never being loosened, and the guard is not the point. One caller. */
+      try {
+        awardWeeklyShieldIfDue()
+      } catch (err) {
+        console.warn('Failed to check the weekly shield grant:', err)
+      }
+
+      /* SHIELD SPENDING, AND IT HAS TO BE HERE — not in LearnScreen's effect.
+
+         This effect body runs before `dataState` becomes 'ready', and Learn
+         does not mount until it is. Learn then reads getStreak() in a lazy
+         useState initialiser, i.e. during its FIRST RENDER. An effect there
+         runs after that render, so bridging from it would paint the broken
+         streak and correct it a frame later — a flicker from 0 to 46 on the one
+         screen whose job is to reassure. Bridging here means the first number
+         Learn ever renders is already the true one.
+
+         AFTER syncCompletedDays, because the gap search reads completedDays and
+         that call is what lifts history into it. Before cleanupHistory only for
+         readability — the bridge never touches history. */
+      try {
+        setStreakBridge(bridgeStreakGap())
+      } catch (err) {
+        console.warn('Failed to check streak protection:', err)
+      }
+
       try {
         DailyGoalsManager.cleanupHistory()
       } catch (err) {
@@ -516,7 +572,12 @@ export default function AppShell() {
             /* Only the launch screens read these; Progress ignores them, and
                More reads onOpen alone. Passing them unconditionally keeps
                SCREENS a plain lookup rather than a table of prop shapes. */
-            <ActiveScreen onStartQuiz={handleStartQuiz} launch={quiz} onOpen={setSubScreen} />
+            <ActiveScreen
+              onStartQuiz={handleStartQuiz}
+              launch={quiz}
+              onOpen={setSubScreen}
+              streakBridge={streakBridge}
+            />
           ))}
       </main>
 

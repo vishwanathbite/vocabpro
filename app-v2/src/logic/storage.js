@@ -116,7 +116,17 @@ const getDefaultState = () => ({
     shields: 0,
     lastUsed: null,
     lastEarned: null,
-    totalUsed: 0
+    totalUsed: 0,
+
+    /* THE DAYS A SHIELD PAID FOR, as unpadded IST keys — the same keyspace
+       dailyGoals.completedDays uses, because getStreak reads the two together
+       and a day is unbroken if it appears in either.
+       .
+       NEVER TRIMMED, and deliberately NOT a flag on the history day it covers:
+       history is trimmed to 30 days by cleanupHistory and again by the quota
+       path, so a flag there would delete the record of a spend and silently
+       un-protect a day the student actually paid a shield for. */
+    protectedDays: []
   },
 
   // User profiles (for multi-user support)

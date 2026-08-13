@@ -788,6 +788,32 @@ const recordModePlayed = (stats, mode) => {
  * Allows users to protect their streak with shields
  * Uses centralized StorageManager for persistence
  */
+/**
+ * THE SHIELD CEILING. One constant, no second copy.
+ *
+ * RAISED FROM 3 TO 52 with automatic spending. At 3 the cap was a ceiling on a
+ * currency nothing could spend, so it only ever throttled a number on a badge.
+ * Now that a shield is spent per missed day and a gap must be covered
+ * completely, the cap is what decides how long an absence a committed student
+ * can survive — and 3 would break a year-long streak over a four-day illness.
+ * 52 is one year of weekly grants: it can never be reached by a student who
+ * spends any, and it bounds the stored array.
+ *
+ * TWO READERS, WHICH IS WHY IT IS A CONSTANT: awardWeeklyShieldIfDue's ceiling
+ * test, and the Learn sheet copy that states the cap to the student. The same
+ * number in a condition and in prose is how the streak-milestone lists drifted.
+ */
+const MAX_SHIELDS = 52;
+
+/**
+ * How often a shield is granted. Was a bare `7 * 24 * 60 * 60 * 1000` inline.
+ *
+ * Named for the same reason as the cap: the Learn copy says "every week", and a
+ * reader changing one should see the other. Behaviour is unchanged — the
+ * comparison against it is still strict, so exactly seven days does not qualify.
+ */
+const SHIELD_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+
 /* `storageKey: 'vocabProStreakProtection'` STOOD HERE and is deleted — the
    fourth of its kind, after BookmarksManager's and the three in settings.js. All
    were labelled "Legacy key for reference" and read by nothing: every access
@@ -815,15 +841,29 @@ const StreakProtection = {
     shields: 0,
     lastUsed: null,
     lastEarned: null,
-    totalUsed: 0
+    totalUsed: 0,
+    /* The days a shield paid for — see storage.js, where the same field is
+       declared and the reasoning lives. */
+    protectedDays: []
   },
 
   /**
-   * Load streak protection data from centralized storage
+   * Load streak protection data from centralized storage.
+   *
+   * protectedDays is COPIED, for the same reason dailyGoals.completedDays is:
+   * it defaults to a shared module-level array, and spendShieldsForGap pushes
+   * onto whatever this returns. Without the copy, the first spend on a store
+   * with no streakProtection section would append to defaultData.protectedDays
+   * and leak those days into every later load that fell back to defaults.
    */
   loadData: () => {
     const state = StorageManager.loadState();
-    return { ...StreakProtection.defaultData, ...state.streakProtection };
+    const data = { ...StreakProtection.defaultData, ...state.streakProtection };
+
+    return {
+      ...data,
+      protectedDays: Array.isArray(data.protectedDays) ? [...data.protectedDays] : []
+    };
   },
 
   /**
@@ -855,84 +895,84 @@ const StreakProtection = {
   },
 
   /**
-   * Use a shield to protect streak
-   * @returns {boolean} - True if shield was used successfully
+   * The days a shield has paid for. A pure read.
+   *
+   * @returns {Array<string>} Unpadded IST keys; a copy, safe to hold
    */
-  useShield: () => {
-    const data = StreakProtection.loadData();
+  getProtectedDays: () => StreakProtection.loadData().protectedDays,
 
-    if (data.shields > 0) {
-      data.shields -= 1;
-      data.lastUsed = new Date().toISOString();
-      data.totalUsed += 1;
-      StreakProtection.saveData(data);
-      return true;
-    }
+  /* useShield AND checkStreak WERE HERE, AND ARE REPLACED BY spendShieldsForGap
+     BELOW rather than wired up. Both were written for a one-day design and
+     could not express this one:
 
-    return false;
-  },
+       - checkStreak tested only `lastPlayed === today || yesterday`, so it
+         ASSUMED A GAP OF EXACTLY ONE DAY. It had no notion of gap length, and
+         all-or-nothing across a five-day gap is a statement about length.
+         It also built device-local toDateString() keys, unrelated to the IST
+         goals keyspace the streak actually uses, and returned `canProtect` for
+         a caller to act on rather than deciding anything itself.
+       - useShield spent exactly one shield per call. Bridging a five-day gap
+         through it would be five separate loads and saves, and a failure
+         midway would leave the student charged for days that were never
+         recorded as protected — the partial spend this design forbids.
+
+     addShields was deleted before them, in the step 14 follow-up: zero callers
+     in either tree and a ceiling of 5 that nothing else enforced. */
 
   /**
-   * Add shields (e.g., as a reward)
-   * @param {number} count - Number of shields to add
-   */
-  /* addShields WAS HERE, DELETED IN THE STEP 14 FOLLOW-UP. awardWeeklyShieldIfDue
-     is the single sanctioned shield granter and stops at 3; this had zero callers
-     in either tree and capped at 5, a ceiling nothing else in the app enforces. */
-
-  /**
-   * Check if streak should be reset or protected
+   * Spend shields to cover a run of missed days. ALL OR NOTHING.
    *
-   * UNCHANGED in Phase 5 step 2, but its behaviour shifted underneath it: the
-   * getShields call on the "streak is safe" branch below used to transitively
-   * award and persist a weekly shield. Now that getShields is a pure read,
-   * checkStreak no longer grants anything. Nothing observes this today —
-   * checkStreak has zero callers in the live tree and in app-v2, like
-   * useShield. Left as-is deliberately; wiring it up is a component-rebuild
-   * decision.
+   * THE WHOLE POINT IS THAT A PARTIAL BRIDGE SAVES NOTHING. Three shields
+   * against a five-day gap would leave two days uncovered, the streak would
+   * break anyway, and the student would have paid three shields for it. So the
+   * count is checked first and either every day is covered or none is.
    *
-   * @param {Object} stats - User stats
-   * @param {string} lastPlayedDate - Last played date ISO string
-   * @returns {Object} - {protected: boolean, shieldsRemaining: number}
+   * ATOMIC. Every field — the decremented count, the new protected days,
+   * lastUsed and totalUsed — is assembled on the loaded copy and written by a
+   * SINGLE saveData. There is no interleaving point at which the shields are
+   * gone but the days are unrecorded.
+   *
+   * IDEMPOTENT IN PRACTICE, not by a flag: once these days are recorded as
+   * protected, the caller's gap search finds them covered and computes a gap of
+   * zero, so a second run spends nothing.
+   *
+   * @param {Array<string>} missedDays Unpadded IST keys, the days to cover
+   * @param {string} [nowISO] Injected clock, following the module convention
+   * @returns {{spent: number, shields: number, covered: Array<string>}}
+   *   `spent` is 0 when nothing was covered, for any reason.
    */
-  checkStreak: (stats, lastPlayedDate) => {
-    if (!lastPlayedDate) return { protected: false, shieldsRemaining: 0 };
-
-    const lastPlayed = new Date(lastPlayedDate);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    // Check if last played was today or yesterday
-    const lastPlayedDay = lastPlayed.toDateString();
-    const todayStr = today.toDateString();
-    const yesterdayStr = yesterday.toDateString();
-
-    if (lastPlayedDay === todayStr || lastPlayedDay === yesterdayStr) {
-      // Streak is safe
-      return { protected: false, shieldsRemaining: StreakProtection.getShields() };
-    }
-
-    // Streak at risk - check if we can use a shield
+  spendShieldsForGap: (missedDays, nowISO = new Date().toISOString()) => {
     const data = StreakProtection.loadData();
-    if (data.shields > 0) {
-      // Check if already used a shield today
-      if (data.lastUsed) {
-        const lastUsedDate = new Date(data.lastUsed).toDateString();
-        if (lastUsedDate === todayStr) {
-          // Already used a shield today
-          return { protected: true, shieldsRemaining: data.shields };
-        }
-      }
+    const days = Array.isArray(missedDays) ? missedDays : [];
 
-      return {
-        protected: false,
-        shieldsRemaining: data.shields,
-        canProtect: true
-      };
+    // Nothing missed is the ordinary case for a student who opens the app
+    // daily, and it must cost nothing. Checked before the shield count so an
+    // empty gap never touches storage.
+    if (days.length === 0) {
+      return { spent: 0, shields: data.shields, covered: [] };
     }
 
-    return { protected: false, shieldsRemaining: 0, canProtect: false };
+    // THE ALL-OR-NOTHING TEST. Short by one is short.
+    if (data.shields < days.length) {
+      return { spent: 0, shields: data.shields, covered: [] };
+    }
+
+    const alreadyProtected = new Set(data.protectedDays);
+    const covered = days.filter((day) => !alreadyProtected.has(day));
+
+    // Every day already paid for: no second charge for the same day.
+    if (covered.length === 0) {
+      return { spent: 0, shields: data.shields, covered: [] };
+    }
+
+    data.shields -= covered.length;
+    data.protectedDays = [...data.protectedDays, ...covered];
+    data.lastUsed = nowISO;
+    data.totalUsed += covered.length;
+
+    StreakProtection.saveData(data);
+
+    return { spent: covered.length, shields: data.shields, covered };
   }
 };
 
@@ -966,11 +1006,10 @@ const StreakProtection = {
  * lastEarned means the next weekly award is due immediately rather than in
  * seven days.
  *
- * The ceiling of 3 below is now the ONLY shield ceiling in the app. It used to
- * be deliberately out of step with addShields' cap of 5 — a granted reward could
- * reach 5 and was never trimmed back — but addShields had no caller in either
- * tree, so the 5 was unreachable and the disagreement was theoretical. That
- * method is deleted; this is the single sanctioned granter and 3 is the cap.
+ * THE CEILING IS MAX_SHIELDS, and it is a shared constant rather than a literal
+ * because there is now a second reader: the UI copy that tells the student what
+ * the cap is. A number written in prose and again in a condition is exactly how
+ * the streak-milestone lists drifted earlier in this phase.
  *
  * @param {string} [nowISO] - Current time as an ISO string; defaults to now.
  *   Injected rather than read from the global clock so the weekly boundary is
@@ -982,15 +1021,15 @@ const StreakProtection = {
 const awardWeeklyShieldIfDue = (nowISO = new Date().toISOString()) => {
   const data = StreakProtection.loadData();
 
-  // Award a new shield weekly (if they have less than 3).
+  // Award a new shield weekly, up to MAX_SHIELDS.
   // Comparison semantics preserved verbatim from the old getShields: strict
-  // greater-than on the elapsed millisecond gap, so exactly 7 days does not
-  // qualify, and a strict `< 3` test against the PRE-increment count.
+  // greater-than on the elapsed millisecond gap, so exactly one interval does
+  // not qualify, and a strict `<` test against the PRE-increment count.
   const now = new Date(nowISO);
   const lastEarned = data.lastEarned ? new Date(data.lastEarned) : null;
 
-  if (!lastEarned || (now - lastEarned) > 7 * 24 * 60 * 60 * 1000) {
-    if (data.shields < 3) {
+  if (!lastEarned || (now - lastEarned) > SHIELD_INTERVAL_MS) {
+    if (data.shields < MAX_SHIELDS) {
       data.shields += 1;
       data.lastEarned = now.toISOString();
       StreakProtection.saveData(data);
@@ -1074,6 +1113,8 @@ const StatsManager = {
 export {
   LEVEL_CONFIG,
   POINTS_CONFIG,
+  MAX_SHIELDS,
+  SHIELD_INTERVAL_MS,
   getLevelInfo,
   getLevelProgress,
   BADGES,

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
 import { CARD, ROW } from '../components/chrome.js'
 import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager, DAILY_GOAL_PRESET_LIST } from '../logic/dailygoals.js'
-import { StatsManager, StreakProtection, awardWeeklyShieldIfDue } from '../logic/gamification.js'
+import { StatsManager, StreakProtection, MAX_SHIELDS } from '../logic/gamification.js'
 import { DailyChallengeManager, DAILY_CHALLENGE_QUESTIONS } from '../logic/daily-challenge.js'
 import { pluralise, plural, formatDayCount } from '../logic/format.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
@@ -41,6 +41,45 @@ const GOAL_PRESETS = DAILY_GOAL_PRESET_LIST
    day. A greeting is the opposite: it describes the reader's own time of day,
    so a student in London at 08:00 should read "Good morning" even though it is
    already afternoon in IST. */
+/* WHAT THE STUDENT IS TOLD WHEN SHIELDS ACT. Both lines are PENDING APPROVAL.
+   .
+   EVERY SPEND IS VISIBLE, which is the rule these exist to keep: a currency
+   spent silently on the student's behalf is indistinguishable from a bug, and
+   the shield system's whole discoverability problem is that nobody knew it was
+   there. So the app says what it did, in plain words, with the numbers.
+   .
+   NOT A MOMENT, and the queue was considered. buildMoments/MomentOverlay is
+   per-answer session machinery: it is owned by the session hooks, it renders a
+   full-screen overlay, and its load-bearing property is that `next` refuses to
+   advance while one is pending — a guarantee with no meaning outside a quiz.
+   This fires at app open, on a tab panel, with no session anywhere. Reusing it
+   would mean mounting the queue on Learn and blocking the screen with a
+   full-screen interruption before the student has done anything. A line on the
+   card is the right weight for news the student did not ask for.
+   .
+   THE FAILURE LINE NAMES NO NUMBER, on purpose. bridgeStreakGap stops searching
+   once the gap is unaffordable, so it knows the gap was longer than the shields
+   held and nothing more — printing its lower bound as if it were the gap would
+   tell a student who was away three weeks that they missed four days. */
+const bridgeCopy = (bridge) => {
+  if (!bridge || bridge.spent === 0) return null
+
+  if (bridge.status === 'bridged') {
+    return `Streak saved. ${plural(bridge.spent, 'shield')} covered the ${
+      bridge.missed === 1 ? 'day' : `${bridge.missed} days`
+    } you missed.`
+  }
+
+  return null
+}
+
+const brokeCopy = (bridge) => {
+  if (!bridge || bridge.status !== 'exceeded') return null
+  return bridge.shields > 0
+    ? `Your streak ended. You were away longer than your ${plural(bridge.shields, 'shield')} could cover.`
+    : 'Your streak ended. You had no shields to cover the days you missed.'
+}
+
 const greetingFor = (hour) => {
   if (hour < 12) return 'Good morning'
   if (hour < 17) return 'Good afternoon'
@@ -74,7 +113,7 @@ const readGoalPresetId = () => {
  *   bug.
  * @param {Object|null} launch Shell's quiz state, for the notice under the row.
  */
-export default function LearnScreen({ onStartQuiz, launch }) {
+export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
   const [sheet, setSheet] = useState(null) // 'streak' | 'goal' | 'word' | null
 
   /* Every read below is pure as of Phase 5a/5b — none of them writes. Lazy
@@ -86,7 +125,11 @@ export default function LearnScreen({ onStartQuiz, launch }) {
   const [greeting] = useState(() => greetingFor(new Date().getHours()))
 
   const [streak] = useState(() => DailyGoalsManager.getStreak())
-  const [shields, setShields] = useState(() => StreakProtection.getShields())
+  /* No setter any more. The weekly grant and any shield spending both complete
+     in AppShell's mount effect before this screen exists, so the count read here
+     is already final — and it is now read AFTER the grant rather than before,
+     which removes the 0-to-1 bump the old effect caused on first paint. */
+  const [shields] = useState(() => StreakProtection.getShields())
 
   const [challengeDone] = useState(() => DailyChallengeManager.isCompletedToday())
   /* Held, not called twice: getTodayResult reads storage and returns null when
@@ -115,14 +158,10 @@ export default function LearnScreen({ onStartQuiz, launch }) {
      useMemo so a sheet opening does not re-run it. */
   const wotd = useMemo(() => getWordOfTheDay(), [])
 
-  /* THE ONLY WRITE ON THIS SCREEN, and the reason it is in an effect:
-     awardWeeklyShieldIfDue persists. It is internally guarded — a second call
-     inside the seven-day window returns {awarded: false} and saves nothing — so
-     StrictMode's double-invoked mount effect grants one shield, not two. */
-  useEffect(() => {
-    const { awarded, shields: updated } = awardWeeklyShieldIfDue()
-    if (awarded) setShields(updated)
-  }, [])
+  /* THIS SCREEN NOW WRITES NOTHING. Its awardWeeklyShieldIfDue effect moved to
+     AppShell's mount effect, ahead of the streak bridge — see the note there.
+     Every value above is a lazy read, so Learn is purely a reader of state
+     settled before it mounted. */
 
   const currentPreset = GOAL_PRESETS.find((p) => p.id === goalPresetId)
 
@@ -167,6 +206,28 @@ export default function LearnScreen({ onStartQuiz, launch }) {
           </span>
         </button>
       </header>
+
+      {/* --- SHIELD REPORT ---------------------------------------------
+          Directly under the header that shows the two counts it explains, so
+          the sentence and the numbers it refers to are read together. Rendered
+          only when something actually happened — no line on an ordinary open.
+
+          role="status" rather than "alert": this is news, not a problem to act
+          on, and it is already on screen when the student arrives. */}
+      {bridgeCopy(streakBridge) && (
+        <p
+          role="status"
+          className={`${CARD} px-4 py-3 text-sm text-sky-200`}
+        >
+          {bridgeCopy(streakBridge)}
+        </p>
+      )}
+
+      {brokeCopy(streakBridge) && (
+        <p role="status" className={`${CARD} px-4 py-3 text-sm text-slate-300`}>
+          {brokeCopy(streakBridge)}
+        </p>
+      )}
 
       {/* --- 2 + 3. PRIMARY CARD AND CONTINUE --------------------------
           Exactly one purple fill in either state.
@@ -347,7 +408,7 @@ export default function LearnScreen({ onStartQuiz, launch }) {
             </p>
             <p>
               Shields are spent automatically to cover a missed day. You start with one and earn
-              another every week, up to three.
+              another every week, up to {MAX_SHIELDS}.
             </p>
             <p className="mt-2">
               A shield is only used if it can save your streak completely. Miss three days holding

@@ -8,6 +8,10 @@
 // sniffed off the global `window`, so it is always defined.
 import { StorageManager } from './storage.js';
 import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
+/* One direction only: gamification.js imports storage.js and format.js, never
+   this module, so there is no cycle. The streak is the one thing that needs
+   both halves — the days earned and the days paid for. */
+import { StreakProtection } from './gamification.js';
 
 // ===========================
 // DAILY GOALS CONFIGURATION
@@ -461,16 +465,30 @@ const DailyGoalsManager = {
   getStreak: (instant = Date.now()) => {
     const data = DailyGoalsManager.loadData();
 
-    /* A Set once per call rather than `.includes` per day: the walk is O(streak)
+    /* Sets once per call rather than `.includes` per day: the walk is O(streak)
        and this makes each step O(1) instead of O(recorded days). */
     const completed = new Set(data.completedDays);
+
+    /* A DAY IS UNBROKEN IF IT WAS EARNED **OR** PAID FOR. This is where a spent
+       shield becomes real: bridgeStreakGap records the days it covered under
+       streakProtection.protectedDays, and from here they are indistinguishable
+       from days the student completed. Both sets use the same unpadded IST
+       keyspace, which is why they can be tested against one key. */
+    const protectedDays = new Set(StreakProtection.getProtectedDays());
+    const isCovered = (key) => completed.has(key) || protectedDays.has(key);
+
     const nowMs = epochMsOf(instant);
     let streak = 0;
 
-    for (let i = 0; i <= completed.size; i++) {
+    /* The bound grows with both sets for the same reason it was completed.size
+       before: a streak cannot be longer than the number of days on record, and
+       a protected day is a day on record. Still exact, still terminating. */
+    const maxDays = completed.size + protectedDays.size;
+
+    for (let i = 0; i <= maxDays; i++) {
       const dateKey = DailyGoalsManager.getTodayKey(nowMs - i * DAY_MS);
 
-      if (completed.has(dateKey)) {
+      if (isCovered(dateKey)) {
         streak++;
       } else if (i > 0) {
         // Don't break on today if not completed yet
