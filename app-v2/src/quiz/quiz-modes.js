@@ -22,9 +22,16 @@
  * are the difficulty set and the mixed marker, taken from the modules that own
  * them rather than restated here — see DIFFICULTIES.
  *
- * DELIBERATELY ABSENT: daily, bookmarks, idiom, idiom-reverse, match. The daily
- * challenge builds its own questions in daily-challenge.js; the other four are
- * cut or unbuilt. A mode absent from this table cannot be started.
+ * DELIBERATELY ABSENT: daily, idiom, idiom-reverse, match. The daily challenge
+ * builds its own questions in daily-challenge.js; the other three are cut. A
+ * mode absent from this table cannot be started.
+ *
+ * BOOKMARKS JOINED THE TABLE with the Bookmarks screen. It qualifies on the
+ * table's own terms — its questions come from generateQuestions like every
+ * other row's, so it needs no launcher of its own — and joining is what gives
+ * it startQuiz's await of all three vocabulary levels for free, which is the
+ * fix for the one-option defect. It is the first row whose `group` is not one
+ * of the three MODE_GROUPS headings; see the note there.
  *
  * FLASHCARDS JOINED THE TABLE IN STEP 14, and brought `scored` with them. They
  * were held out while the table meant "startable AND scored", because they are
@@ -230,6 +237,33 @@ export const QUIZ_MODES = {
     scored: false,
     datasets: [DATASET.VOCAB]
   },
+  /**
+   * Saved words, practised.
+   *
+   * NOT ON THE PRACTICE TAB, and that is what `group: 'Saved'` does — MODE_GROUPS
+   * renders only the three headings it lists, so a row outside them is startable
+   * without being a tile. Deliberate: a Practice tile for bookmarks would be
+   * dead for every student who has saved nothing, and unlike Smart Review it has
+   * no count to show there. Its launch point is the Bookmarks screen, where the
+   * words being practised are on screen next to the button.
+   *
+   * `datasets: [VOCAB]` with `takesDifficulty: false` resolves in loadersFor to
+   * ALL THREE levels — the same expression Mixed and Smart Review get. That is
+   * the whole fix for the one-option defect: a bookmark's item comes from its own
+   * embedded wordData and needs nothing loaded, but the DISTRACTORS for a
+   * vocabulary bookmark are drawn from the corpus, and an unloaded corpus yielded
+   * a single option that was also the answer. Acronym and one-word bookmarks
+   * carry their options on the item and never needed this.
+   */
+  bookmarks: {
+    id: 'bookmarks',
+    name: 'Saved Words',
+    description: 'Practise the words you have bookmarked',
+    group: 'Saved',
+    takesDifficulty: false,
+    scored: true,
+    datasets: [DATASET.VOCAB]
+  },
   review: {
     id: 'review',
     name: 'Smart Review',
@@ -287,8 +321,13 @@ export const questionTextFor = (mode, question) => {
 
   const text = question.question
 
-  if (mode === 'review') {
-    // Shape, not mode. wordData is the stored item the question was built from.
+  /* SHAPE, NOT MODE, for the two modes that serve a mix of kinds. Both draw
+     from saved identifiers rather than a difficulty pool, so one session can
+     hold a vocabulary word, an acronym and a one-word substitute — they share
+     buildQuestionFromItem for exactly that reason, and wording either by its
+     mode would ask "What does X stand for?" of a vocabulary word. */
+  if (mode === 'review' || mode === 'bookmarks') {
+    // wordData is the stored item the question was built from.
     if (question.wordData?.acronym) return `What does ${text} stand for?`
     if (question.wordData?.phrase) return `One word for: ${text}`
     return text
@@ -317,8 +356,14 @@ export const questionTextFor = (mode, question) => {
  * The modes grouped for the Practice tab, in display order.
  *
  * Derived from QUIZ_MODES rather than listed again, so a mode cannot appear in
- * one and not the other. Flashcards are not in QUIZ_MODES — they are not a
- * scored mode — so the Practice tab appends its own inert entry for them.
+ * one and not the other.
+ *
+ * THE HEADING LIST IS ALSO A FILTER, and as of the Bookmarks screen it filters
+ * something out. A mode whose `group` is not one of these three is startable but
+ * has no tile here — today that is Saved Words, which launches from the
+ * Bookmarks screen instead. "Everything in QUIZ_MODES appears on Practice" was
+ * true until now and is no longer; if a row goes missing from this tab, its
+ * group is the first thing to check.
  */
 export const MODE_GROUPS = ['Words', 'Expressions', 'Study'].map((heading) => ({
   heading,

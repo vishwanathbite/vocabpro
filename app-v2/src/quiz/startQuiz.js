@@ -34,6 +34,7 @@ import {
 import { loadVocabularyLevel, loadAcronyms, loadOneWord } from '../data/loader.js'
 import { generateQuestions } from '../logic/quiz-generation.js'
 import { StatsManager } from '../logic/gamification.js'
+import { BookmarksManager } from '../logic/bookmarks.js'
 
 /**
  * What the student is told, per launch outcome. THE SINGLE SOURCE — both
@@ -82,7 +83,14 @@ export const LAUNCH_MESSAGE = {
      other daily challenge. Approved. */
   'challenge-short': 'Could not load today’s challenge. Check your connection and try again.',
   'nothing-to-review':
-    'Nothing to review yet — take any quiz, and the words you get wrong will collect here, ready to master.'
+    'Nothing to review yet — take any quiz, and the words you get wrong will collect here, ready to master.',
+  /* The bookmarks equivalent of 'nothing-to-review', and written the same way:
+     an empty list is a state, not a fault, so it says what to do rather than
+     what went wrong. Normally unreachable — the Bookmarks screen only offers
+     Practise when it has words — so this covers the list emptying under a
+     screen that read its count on mount. Pending approval. */
+  'no-bookmarks':
+    'No saved words yet — tap the bookmark on any word to save it here.'
 }
 
 /**
@@ -138,6 +146,14 @@ const loadersFor = (spec, level) =>
  *     'empty'             - the data is there and has nothing to serve
  *     'nothing-to-review' - the review pool is empty, which is a success state
  *                           for the student, not a failure of the app
+ *     'no-bookmarks'      - nothing has been saved yet; also not a failure
+ *
+ * A bookmark list holding ONLY idiom-shaped entries — possible only from a js/
+ * save, since app-v2 cannot create one — passes the count check above and then
+ * builds no questions, because buildQuestionFromItem serves three shapes and
+ * idiom is not one of them. That surfaces as 'empty', which is accurate: the
+ * data is there and has nothing servable in it. Such a bookmark is removable
+ * from the Bookmarks screen, which is the route out.
  */
 export async function startQuiz({ mode, difficulty } = {}) {
   if (!isStartableMode(mode)) {
@@ -175,6 +191,15 @@ export async function startQuiz({ mode, difficulty } = {}) {
   // that is not about data availability at all.
   if (mode === 'review' && StatsManager.loadStats().reviewPool.length === 0) {
     return { ok: false, mode, reason: 'nothing-to-review' }
+  }
+
+  /* THE SAME CHECK, FOR THE SAME REASON. An empty bookmark list is knowable
+     from storage alone, and a student should not wait on three vocabulary
+     chunks to be told they have saved nothing. Distinguished from 'empty'
+     because that line offers another mode, and the answer here is to go and
+     save a word rather than to practise something else. */
+  if (mode === 'bookmarks' && BookmarksManager.getCount() === 0) {
+    return { ok: false, mode, reason: 'no-bookmarks' }
   }
 
   try {

@@ -5,6 +5,7 @@ import { KeyboardShortcuts } from '../logic/settings.js'
 import { SoundManager } from '../logic/sound.js'
 import { speakWord } from '../logic/speech.js'
 import MomentOverlay from '../quiz/MomentOverlay.jsx'
+import BookmarkToggle from '../quiz/BookmarkToggle.jsx'
 import { modeTitle, questionTextFor } from '../quiz/quiz-modes.js'
 
 /**
@@ -262,6 +263,13 @@ export default function QuizScreen({
   const progress = ((currentIndex + 1) / total) * 100
   const rows = detailRows(currentQuestion.wordData)
 
+  /* Identity for the bookmark control's remount. The index alone would not do:
+     Smart Review and Saved Words can serve the same word in two sessions, and a
+     stale saved-state would be seeded from the previous mount. wordIdOf's own
+     expression is not needed here — the question already carries `word`, and the
+     index disambiguates the acronym and one-word shapes, which do not. */
+  const questionKey = `${currentIndex}:${currentQuestion.word ?? ''}`
+
   return (
     <div className="min-h-screen bg-navy">
       {/* --- HEADER ---------------------------------------------------------
@@ -443,6 +451,31 @@ export default function QuizScreen({
                   </div>
                 ))}
               </dl>
+            )}
+
+            {/* --- SAVE THE WORD -----------------------------------------
+                AFTER THE ANSWER, never before it. The options are the only
+                thing to do while a question is open, and a second control
+                beside them would compete with them; once the result is showing
+                the student is reading rather than deciding, which is the moment
+                "keep this one" means something.
+
+                Keyed by the question so it remounts per word — its saved state
+                is seeded once per mount from storage.
+
+                Inside the result panel, which already carries role="status"
+                aria-live="polite". The button is not announced as part of that
+                region's updates because it is interactive content with its own
+                accessible name; it sits here for layout, beside the word's own
+                fields. */}
+            {currentQuestion.wordData && (
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <BookmarkToggle
+                  key={questionKey}
+                  wordData={currentQuestion.wordData}
+                  mode={currentQuestion.sourceMode ?? mode}
+                />
+              </div>
             )}
 
             {/* --- SMART REVIEW MARKS -----------------------------------

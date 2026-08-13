@@ -498,10 +498,19 @@ export function generateQuestions(quizMode, quizDifficulty) {
         return [];
       }
 
-      // Fifth and last site of the three-level flatten, now the same helper.
-      // Not in this commit's scope — bookmarks mode has no launch point — but
-      // leaving it open-coded would have kept a copy alive for the next reader
-      // to follow.
+      /* Fifth and last site of the three-level flatten, now the same helper.
+         .
+         THIS POOL IS NOW GUARANTEED LOADED, and that is what fixed the
+         one-option defect. `bookmarks` is a row in QUIZ_MODES with
+         `datasets: [VOCAB]` and no difficulty, so startQuiz resolves it through
+         loadersFor to all three levels and awaits them before calling this.
+         Before that, poolFor(MIXED) could be empty at this line, and the
+         vocabulary arm of buildQuestionFromItem would then produce
+         `shuffleArray([definition])` — one option, which was also the answer.
+         .
+         The pool is for DISTRACTORS ONLY. A bookmark carries its whole item in
+         `wordData`, so unlike Smart Review nothing here has to resolve an id
+         against a loaded database. */
       const allWords = poolFor(MIXED);
 
       // Same three shapes Smart Review serves, so both go through one builder.

@@ -6,10 +6,9 @@ import { ChevronRight } from '../components/icons.jsx'
 /**
  * More tab — five entries: Bookmarks, Search, Settings, About, Literary Rides.
  *
- * THREE ROWS ARE INERT. The Bookmarks, Search and Settings screens do not exist
- * yet, so those carry no onClick, exactly as Practice's tiles and Learn's Start
- * button. Two entries work today because neither needs a new screen: About opens
- * a sheet, and Literary Rides is a real outbound link.
+ * TWO ROWS ARE INERT. Search and Settings do not exist yet, so those carry no
+ * onClick. Bookmarks joined the working ones when its screen landed; About opens
+ * a sheet and Literary Rides is a real outbound link, neither needing a screen.
  *
  * SETTINGS IS A ROW, NOT A PANEL. No toggles live here — every setting in
  * settings.js is currently unread by any screen, so putting switches on this tab
@@ -24,15 +23,28 @@ import { ChevronRight } from '../components/icons.jsx'
 /* Nothing on More is purple. There is no primary action here to earn it. ROW is
    the shared neutral row, moved to components/chrome.js in step 7b. */
 
-/* The three that lead to screens not yet built. About is rendered separately
-   below because it is the one row with a working handler. */
-const INERT_ROWS = [
-  { id: 'bookmarks', name: 'Bookmarks', description: 'The words you have saved to revise later' },
-  { id: 'search', name: 'Search', description: "Look up any word in the app's vocabulary" },
-  { id: 'settings', name: 'Settings', description: 'Sound, daily goal and display options' },
+/* The rows that lead to their own screens. `open` names the sub-screen the shell
+   should show, or null while it does not exist yet — Search and Settings are
+   still unbuilt, so those two carry no handler, exactly as Bookmarks did until
+   its screen landed. A row that looks wired and does nothing reads as a bug. */
+const ROWS = [
+  {
+    id: 'bookmarks',
+    name: 'Bookmarks',
+    description: 'The words you have saved to revise later',
+    open: 'bookmarks',
+  },
+  { id: 'search', name: 'Search', description: "Look up any word in the app's vocabulary", open: null },
+  { id: 'settings', name: 'Settings', description: 'Sound, daily goal and display options', open: null },
 ]
 
-export default function MoreScreen() {
+/**
+ * @param {Function} [onOpen] Shell's sub-screen opener, called with a row's
+ *   `open` id. More took NO props until the Bookmarks screen; it is still the
+ *   only screen that needs this one, so it is optional and the rows degrade to
+ *   inert without it rather than throwing.
+ */
+export default function MoreScreen({ onOpen }) {
   const [sheet, setSheet] = useState(null) // 'about' | null
 
   return (
@@ -41,11 +53,12 @@ export default function MoreScreen() {
           precedent that the top line is not a page title. */}
       <h1 className="sr-only">More</h1>
 
-      {INERT_ROWS.map((row) => (
+      {ROWS.map((row) => (
         <button
           key={row.id}
           type="button"
           aria-label={`${row.name}. ${row.description}.`}
+          onClick={row.open && onOpen ? () => onOpen(row.open) : undefined}
           className={ROW}
         >
           <span className="font-medium text-white">{row.name}</span>

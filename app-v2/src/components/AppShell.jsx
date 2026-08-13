@@ -4,6 +4,7 @@ import LearnScreen from '../screens/LearnScreen.jsx'
 import PracticeScreen from '../screens/PracticeScreen.jsx'
 import ProgressScreen from '../screens/ProgressScreen.jsx'
 import MoreScreen from '../screens/MoreScreen.jsx'
+import BookmarksScreen from '../screens/BookmarksScreen.jsx'
 import QuizSession from '../quiz/QuizSession.jsx'
 import ResultsScreen from '../quiz/ResultsScreen.jsx'
 import FlashcardSession from '../quiz/FlashcardSession.jsx'
@@ -74,8 +75,25 @@ const warmRemainingVocabulary = () => {
   )
 }
 
+/**
+ * Sub-screens: a screen reached FROM a tab rather than by tab.
+ *
+ * NOT A SESSION STATE, and deliberately not modelled like one. `quiz`, `flash`
+ * and `daily` replace the shell and take the tab bar with them, because a
+ * session has something to lose and a stray tap on Progress would discard it.
+ * Bookmarks has nothing to lose — it browses stored data — so it renders INSIDE
+ * the shell, keeping the tab bar, and switching tabs simply leaves it.
+ */
+const SUB_SCREENS = {
+  bookmarks: BookmarksScreen,
+}
+
 export default function AppShell() {
   const [activeTab, setActiveTab] = useState('learn')
+
+  /* Which sub-screen the active tab has opened, or null. Cleared on every tab
+     change, so the tab bar always returns to the tab's own root. */
+  const [subScreen, setSubScreen] = useState(null)
   const [dataState, setDataState] = useState('loading') // 'loading' | 'ready' | 'error'
   const [dataError, setDataError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
@@ -277,6 +295,7 @@ export default function AppShell() {
   }, [retryCount])
 
   const ActiveScreen = SCREENS[activeTab]
+  const SubScreen = subScreen ? SUB_SCREENS[subScreen] : null
 
   /**
    * A running quiz REPLACES the shell — it is not drawn over it.
@@ -460,13 +479,36 @@ export default function AppShell() {
           </div>
         )}
 
-        {/* Only the two launch screens read these; Progress and More ignore
-            the extra props. Passing them unconditionally keeps SCREENS a plain
-            lookup rather than a table of per-screen prop shapes. */}
-        {dataState === 'ready' && <ActiveScreen onStartQuiz={handleStartQuiz} launch={quiz} />}
+        {/* A SUB-SCREEN REPLACES THE TAB PANEL, not the shell — the tab bar
+            below stays, so leaving is either its own back button or any tab.
+            It is gated on `dataState === 'ready'` with the tab panels rather
+            than rendered above them, so the loading and error states still own
+            the screen while they apply. Bookmarks would in fact render fine
+            with nothing loaded, since every entry embeds its own word data,
+            but sitting outside the gate would make it the one screen that
+            paints over a failed boot. */}
+        {dataState === 'ready' &&
+          (SubScreen ? (
+            <SubScreen
+              onBack={() => setSubScreen(null)}
+              onStartQuiz={handleStartQuiz}
+              launch={quiz}
+            />
+          ) : (
+            /* Only the launch screens read these; Progress ignores them, and
+               More reads onOpen alone. Passing them unconditionally keeps
+               SCREENS a plain lookup rather than a table of prop shapes. */
+            <ActiveScreen onStartQuiz={handleStartQuiz} launch={quiz} onOpen={setSubScreen} />
+          ))}
       </main>
 
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setSubScreen(null)
+          setActiveTab(tab)
+        }}
+      />
     </div>
   )
 }

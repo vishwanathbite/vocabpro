@@ -7,6 +7,9 @@
 // ESM port of js/bookmarks.js. StorageManager is now imported rather than
 // sniffed off the global `window`, so it is always defined.
 import { StorageManager } from './storage.js';
+/* helpers.js is a leaf — it imports nothing — so this adds no cycle. Same
+   reasoning quiz-summary.js records at its own import of this function. */
+import { wordIdOf } from './helpers.js';
 
 // ===========================
 // BOOKMARKS MANAGER
@@ -16,9 +19,13 @@ import { StorageManager } from './storage.js';
  * Bookmarks Manager - handles all bookmark operations
  * Uses centralized StorageManager for persistence
  */
+/* `storageKey: 'vocabProBookmarks'` STOOD HERE and is deleted. It was labelled
+   "Legacy key for reference" and was read by nothing — not by this module, which
+   routes every access through StorageManager into `state.bookmarks` of the
+   unified blob, and not by anything else in the repo. A key that names a store
+   nothing writes to is a false lead for the next reader looking for where
+   bookmarks live. */
 const BookmarksManager = {
-  storageKey: 'vocabProBookmarks', // Legacy key for reference
-
   /**
    * Load all bookmarks from centralized storage
    * @returns {Array} - Array of bookmarked word objects
@@ -56,7 +63,9 @@ const BookmarksManager = {
    */
   addBookmark: (wordData, mode = 'vocab') => {
     const bookmarks = BookmarksManager.loadBookmarks();
-    const wordId = wordData.word || wordData.acronym || wordData.phrase;
+    /* THE SHARED RESOLVER, replacing an inline three-arm copy. See the note on
+       toggleBookmark below for what changes. */
+    const wordId = wordIdOf(wordData);
 
     if (BookmarksManager.isBookmarked(wordId)) {
       return false;
@@ -100,7 +109,29 @@ const BookmarksManager = {
    * @returns {boolean} - True if now bookmarked, false if removed
    */
   toggleBookmark: (wordData, mode = 'vocab') => {
-    const wordId = wordData.word || wordData.acronym || wordData.phrase;
+    /* THE SHARED RESOLVER. This and addBookmark each carried their own
+       `wordData.word || wordData.acronym || wordData.phrase` — a three-arm copy
+       of wordIdOf with the fourth arm missing, and the sixth and seventh
+       hand-written instances of the app's identity expression.
+       .
+       TWO BEHAVIOUR CHANGES, both widening what resolves, neither reachable
+       from anything app-v2 can produce:
+       .
+         1. `.idiom` is now an arm. js/ ships idioms and shares STORAGE_KEY, so
+            a bookmark saved there can be idiom-shaped; against the old
+            expression it resolved to `undefined`, which made isBookmarked
+            compare undefined and removeBookmark filter nothing — the bookmark
+            could be neither recognised nor deleted. It can now be removed,
+            which is the point: idioms are cut, and a student must be able to
+            clear one out after cutover rather than being stuck with it.
+         2. wordIdOf unwraps `.wordData`, so a caller that passes a QUESTION
+            rather than a stored item now resolves its acronym and phrase arms
+            instead of silently returning undefined for them.
+       .
+       Nothing narrows: for every flat vocabulary/acronym/one-word item this app
+       creates, `source === stored` and the first three arms are evaluated in
+       the same order to the same result. */
+    const wordId = wordIdOf(wordData);
 
     if (BookmarksManager.isBookmarked(wordId)) {
       BookmarksManager.removeBookmark(wordId);
@@ -165,8 +196,17 @@ const BookmarksManager = {
   getForPractice: (limit = 10) => {
     const bookmarks = BookmarksManager.loadBookmarks();
 
-    // Sort by least reviewed first
-    return bookmarks
+    /* COPIED BEFORE SORTING. `.sort` mutates in place, and loadBookmarks returns
+       `state.bookmarks` — a live reference into StorageManager's memoryState —
+       so this reordered the stored array as a side effect of a read, and the
+       Bookmarks screen would list words in a different order after a practice
+       session. Same aliasing class as the updateStats and loadData bugs closed
+       earlier in Phase 5.
+       .
+       Fixed here rather than deferred because THIS COMMIT is what makes the
+       function reachable: bookmarks mode had no launch point until now, so the
+       defect was latent and is live the moment the button below it works. */
+    return [...bookmarks]
       .sort((a, b) => a.reviewCount - b.reviewCount)
       .slice(0, limit)
       .map(b => b.wordData);

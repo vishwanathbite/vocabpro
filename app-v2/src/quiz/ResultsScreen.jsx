@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { CARD } from '../components/chrome.js'
 import { plural } from '../logic/format.js'
 import { DAILY_MODE } from './quiz-modes.js'
+import BookmarkToggle from './BookmarkToggle.jsx'
 import {
   ANSWER_LABEL,
   BADGES_HEADING,
@@ -92,6 +93,21 @@ function WrongRow({ entry }) {
           </div>
         )}
       </dl>
+
+      {/* PER MISSED WORD, which is the other moment js/ offers a bookmark and
+          the more considered one: the student is looking at a list of what they
+          got wrong, deciding which to come back to. The row is already keyed by
+          wordId, so the toggle remounts with it and seeds its state per word. */}
+      {/* No `mode` passed. The wrong-answer entries carry wordId, wordData,
+          picked and correct — not the source mode — and the stored mode is only
+          a label: practice rebuilds every bookmark from wordData through
+          buildQuestionFromItem, which dispatches on shape. Passing a guess would
+          record something the app then ignores. */}
+      {wordData && (
+        <div className="mt-2">
+          <BookmarkToggle wordData={wordData} />
+        </div>
+      )}
     </li>
   )
 }
