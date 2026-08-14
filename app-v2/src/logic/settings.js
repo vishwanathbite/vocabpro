@@ -507,7 +507,13 @@ const OnboardingManager = {
     {
       id: 'welcome',
       title: 'Welcome to VocabPro!',
-      description: 'Master 5,900+ vocabulary items for competitive exams like UPSC, SSC, Banking & more.',
+      /* 4,800+, not 5,900+. The old figure counted the 1,116 idioms, which
+         app-v2 does not ship — idioms.js was never ported. The corpus is 4,809:
+         4,009 vocabulary words, 300 acronyms, 500 one-word substitutes. THE ONLY
+         SITE stating a corpus size in app-v2; if a second one ever appears, both
+         should read one exported constant, since the target is 10,000 within the
+         year and this string will be edited again. */
+      description: 'Master 4,800+ vocabulary items for competitive exams like UPSC, SSC, Banking & more.',
       icon: '📚',
       highlight: null
     },

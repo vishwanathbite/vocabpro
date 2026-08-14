@@ -33,9 +33,15 @@
  *      observed none since 1945, so a day is always exactly 24 hours and the
  *      one-day and thirty-day steps are flat millisecond subtractions.
  *
- *      Still outstanding, tracked separately: DailyGoalsManager.getTodayKey and
- *      getWordOfTheDay build their own unpadded local-time keys, so the app as a
- *      whole still holds more than one notion of "today".
+ *      The app now holds ONE notion of "today" and two spellings of it.
+ *      getWordOfTheDay seeds from toISTDateKey directly, and
+ *      DailyGoalsManager.getTodayKey also derives from it — it takes the padded
+ *      key and strips the zero-padding, so the goals keyspace is IST like
+ *      everything else and differs only in FORMAT ("2026-7-5" rather than
+ *      "2026-07-05"). That format is kept on purpose so a cached js/ shell
+ *      sharing STORAGE_KEY can still find its history, and it is why every
+ *      comparison against a goals key pads it first. Due to go at the Phase 6
+ *      cutover.
  *
  *   2. completeChallenge mutates the loadData cache in place. When
  *      state.dailyChallenge exists, loadData returns a live reference into

@@ -95,7 +95,17 @@ const LEVEL_CONFIG = [
  * @returns {Object} - Level configuration object
  */
 const getLevelInfo = (totalPoints) => {
-  return LEVEL_CONFIG.find(l => totalPoints >= l.minPoints && totalPoints <= l.maxPoints) || LEVEL_CONFIG[0];
+  /* A COPY, not the table entry itself. The match is unchanged — same predicate,
+     same fallback to LEVEL_CONFIG[0] — but returning the element handed every
+     caller a live reference into a module constant, so a single stray write
+     would have corrupted the ladder for the whole session and for every later
+     reader. No caller mutates it today and none compares it by identity: the
+     readers touch .level, .name and .minPoints, getLevelProgress matches on
+     `l.level === currentLevelInfo.level`, and ProgressScreen on
+     `entry.level === level.level`. Copying is therefore invisible to all of
+     them. Shallow is sufficient — every field is a primitive. */
+  const match = LEVEL_CONFIG.find(l => totalPoints >= l.minPoints && totalPoints <= l.maxPoints) || LEVEL_CONFIG[0];
+  return { ...match };
 };
 
 /**
@@ -186,6 +196,23 @@ const ACCURACY_THRESHOLDS = [
   { ratio: 0.90, minAnswered: 1000 }
 ];
 
+/* `category` IS METADATA, AND NOTHING READS IT YET.
+ *
+ * The six values are not a new taxonomy — they are the grouping that already
+ * existed twice: as the `// Mastery Badges` style section comments below, and as
+ * ProgressScreen's BADGE_GROUPS, which reconstructs the same six by matching id
+ * prefixes and files anything unmatched under Special. That screen's own comment
+ * asks for this field, since a prefix convention nothing enforces can misfile a
+ * future badge silently.
+ *
+ * ProgressScreen is deliberately NOT switched over here: this change is metadata
+ * only, and rendering must be identical. The field makes the switch a later
+ * three-line edit rather than a redesign.
+ *
+ * mastery / streaks / points / activity / accuracy / special. Only one badge is
+ * special — all_modes, which has no threshold family and is the one ProgressScreen
+ * already lands in its fallback bucket.
+ */
 const BADGES = [
   // Mastery Badges
   //
@@ -193,11 +220,11 @@ const BADGES = [
   // plus 300 acronyms and 500 one-word substitutes, which became masterable when
   // quiz-scoring started passing wordId in step 8. The top five thresholds sit
   // under that ceiling except the last, deliberately.
-  { id: 'first_word', name: 'First Steps', description: 'Answer your first question correctly', icon: '🎯', condition: (stats) => stats.correctAnswers >= 1 },
-  { id: 'word_master_10', name: 'Word Collector', description: `Master ${formatNumber(MASTERY_THRESHOLDS[0])} words`, icon: '📖', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[0] },
-  { id: 'word_master_50', name: 'Vocabulary Builder', description: `Master ${formatNumber(MASTERY_THRESHOLDS[1])} words`, icon: '📚', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[1] },
-  { id: 'word_master_100', name: 'Word Wizard', description: `Master ${formatNumber(MASTERY_THRESHOLDS[2])} words`, icon: '🧙', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[2] },
-  { id: 'word_master_250', name: 'Lexicon Legend', description: `Master ${formatNumber(MASTERY_THRESHOLDS[3])} words`, icon: '👑', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[3] },
+  { id: 'first_word', category: 'mastery', name: 'First Steps', description: 'Answer your first question correctly', icon: '🎯', condition: (stats) => stats.correctAnswers >= 1 },
+  { id: 'word_master_10', category: 'mastery', name: 'Word Collector', description: `Master ${formatNumber(MASTERY_THRESHOLDS[0])} words`, icon: '📖', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[0] },
+  { id: 'word_master_50', category: 'mastery', name: 'Vocabulary Builder', description: `Master ${formatNumber(MASTERY_THRESHOLDS[1])} words`, icon: '📚', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[1] },
+  { id: 'word_master_100', category: 'mastery', name: 'Word Wizard', description: `Master ${formatNumber(MASTERY_THRESHOLDS[2])} words`, icon: '🧙', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[2] },
+  { id: 'word_master_250', category: 'mastery', name: 'Lexicon Legend', description: `Master ${formatNumber(MASTERY_THRESHOLDS[3])} words`, icon: '👑', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[3] },
 
   // UNEARNABLE TODAY, AND THAT IS THE POINT. DO NOT RETIRE IT.
   //
@@ -211,13 +238,13 @@ const BADGES = [
   // amount of content would ever have made them earnable. This one is different
   // in kind: its counter works, its condition is sound, and only the corpus size
   // stands between it and a real award. Check the corpus before touching it.
-  { id: 'word_master_500', name: 'Vocabulary Virtuoso', description: `Master ${formatNumber(MASTERY_THRESHOLDS[4])} words`, icon: '💎', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[4] },
+  { id: 'word_master_500', category: 'mastery', name: 'Vocabulary Virtuoso', description: `Master ${formatNumber(MASTERY_THRESHOLDS[4])} words`, icon: '💎', condition: (stats) => stats.masteredWords >= MASTERY_THRESHOLDS[4] },
 
   // Streak Badges — maxStreak is consecutive correct answers, unbounded.
-  { id: 'streak_5', name: 'On Fire', description: `Get ${formatNumber(STREAK_MILESTONES[0])} correct answers in a row`, icon: '🔥', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[0] },
-  { id: 'streak_10', name: 'Hot Streak', description: `Get ${formatNumber(STREAK_MILESTONES[1])} correct answers in a row`, icon: '🌟', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[1] },
-  { id: 'streak_20', name: 'Unstoppable', description: `Get ${formatNumber(STREAK_MILESTONES[2])} correct answers in a row`, icon: '⚡', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[2] },
-  { id: 'streak_50', name: 'Phenomenal', description: `Get ${formatNumber(STREAK_MILESTONES[3])} correct answers in a row`, icon: '💫', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[3] },
+  { id: 'streak_5', category: 'streaks', name: 'On Fire', description: `Get ${formatNumber(STREAK_MILESTONES[0])} correct answers in a row`, icon: '🔥', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[0] },
+  { id: 'streak_10', category: 'streaks', name: 'Hot Streak', description: `Get ${formatNumber(STREAK_MILESTONES[1])} correct answers in a row`, icon: '🌟', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[1] },
+  { id: 'streak_20', category: 'streaks', name: 'Unstoppable', description: `Get ${formatNumber(STREAK_MILESTONES[2])} correct answers in a row`, icon: '⚡', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[2] },
+  { id: 'streak_50', category: 'streaks', name: 'Phenomenal', description: `Get ${formatNumber(STREAK_MILESTONES[3])} correct answers in a row`, icon: '💫', condition: (stats) => stats.maxStreak >= STREAK_MILESTONES[3] },
 
   // Points Badges — totalPoints is unbounded.
   //
@@ -227,28 +254,28 @@ const BADGES = [
   // Earning either should coincide exactly with the level-up it names. Changing
   // one without the other silently breaks that pairing, and nothing else would
   // catch it — the two tables have no other connection.
-  { id: 'points_100', name: 'Century', description: `Earn ${formatNumber(POINTS_THRESHOLDS[0])} points`, icon: '💯', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[0] },
-  { id: 'points_500', name: 'Half Thousand', description: `Earn ${formatNumber(POINTS_THRESHOLDS[1])} points`, icon: '🎊', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[1] },
-  { id: 'points_1000', name: 'Millennium', description: `Earn ${formatNumber(POINTS_THRESHOLDS[2])} points`, icon: '🏆', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[2] },
-  { id: 'points_2500', name: 'Elite Scorer', description: `Earn ${formatNumber(POINTS_THRESHOLDS[3])} points`, icon: '🥇', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[3] },
-  { id: 'points_5000', name: 'Grand Master', description: `Earn ${formatNumber(POINTS_THRESHOLDS[4])} points`, icon: '👑', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[4] },
+  { id: 'points_100', category: 'points', name: 'Century', description: `Earn ${formatNumber(POINTS_THRESHOLDS[0])} points`, icon: '💯', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[0] },
+  { id: 'points_500', category: 'points', name: 'Half Thousand', description: `Earn ${formatNumber(POINTS_THRESHOLDS[1])} points`, icon: '🎊', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[1] },
+  { id: 'points_1000', category: 'points', name: 'Millennium', description: `Earn ${formatNumber(POINTS_THRESHOLDS[2])} points`, icon: '🏆', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[2] },
+  { id: 'points_2500', category: 'points', name: 'Elite Scorer', description: `Earn ${formatNumber(POINTS_THRESHOLDS[3])} points`, icon: '🥇', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[3] },
+  { id: 'points_5000', category: 'points', name: 'Grand Master', description: `Earn ${formatNumber(POINTS_THRESHOLDS[4])} points`, icon: '👑', condition: (stats) => stats.totalPoints >= POINTS_THRESHOLDS[4] },
 
   // Activity Badges — totalAnswered counts QUESTIONS, incremented once per
   // answered question in updateStats. Not quizzes. Unbounded.
-  { id: 'questions_50', name: 'Curious Mind', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[0])} questions`, icon: '🤔', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[0] },
-  { id: 'questions_100', name: 'Dedicated Learner', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[1])} questions`, icon: '📝', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[1] },
-  { id: 'questions_250', name: 'Quiz Master', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[2])} questions`, icon: '🎓', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[2] },
-  { id: 'questions_500', name: 'Knowledge Seeker', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[3])} questions`, icon: '🔍', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[3] },
-  { id: 'questions_1000', name: 'Eternal Student', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[4])} questions`, icon: '📚', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[4] },
+  { id: 'questions_50', category: 'activity', name: 'Curious Mind', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[0])} questions`, icon: '🤔', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[0] },
+  { id: 'questions_100', category: 'activity', name: 'Dedicated Learner', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[1])} questions`, icon: '📝', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[1] },
+  { id: 'questions_250', category: 'activity', name: 'Quiz Master', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[2])} questions`, icon: '🎓', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[2] },
+  { id: 'questions_500', category: 'activity', name: 'Knowledge Seeker', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[3])} questions`, icon: '🔍', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[3] },
+  { id: 'questions_1000', category: 'activity', name: 'Eternal Student', description: `Answer ${formatNumber(ACTIVITY_THRESHOLDS[4])} questions`, icon: '📚', condition: (stats) => stats.totalAnswered >= ACTIVITY_THRESHOLDS[4] },
 
   // Accuracy Badges
   //
   // "Reach", not "Maintain". Badges are permanent once earned (getEarnedBadges
   // unions in the stored ids), so a student whose accuracy later falls keeps
   // these — "Maintain" described a rule the app does not enforce.
-  { id: 'accuracy_50', name: 'Good Start', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[0].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[0].minAnswered)} questions)`, icon: '✅', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[0].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[0].ratio },
-  { id: 'accuracy_75', name: 'Sharp Mind', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[1].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[1].minAnswered)} questions)`, icon: '🎯', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[1].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[1].ratio },
-  { id: 'accuracy_90', name: 'Perfection', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[2].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[2].minAnswered)} questions)`, icon: '⭐', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[2].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[2].ratio },
+  { id: 'accuracy_50', category: 'accuracy', name: 'Good Start', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[0].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[0].minAnswered)} questions)`, icon: '✅', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[0].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[0].ratio },
+  { id: 'accuracy_75', category: 'accuracy', name: 'Sharp Mind', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[1].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[1].minAnswered)} questions)`, icon: '🎯', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[1].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[1].ratio },
+  { id: 'accuracy_90', category: 'accuracy', name: 'Perfection', description: `Reach ${Math.round(ACCURACY_THRESHOLDS[2].ratio * 100)}% accuracy (min ${formatNumber(ACCURACY_THRESHOLDS[2].minAnswered)} questions)`, icon: '⭐', condition: (stats) => stats.totalAnswered >= ACCURACY_THRESHOLDS[2].minAnswered && (stats.correctAnswers / stats.totalAnswered) >= ACCURACY_THRESHOLDS[2].ratio },
 
   // Special Badges
   // SEVEN matches the Practice tab exactly: vocab, synonym, antonym, oneword,
@@ -266,7 +293,7 @@ const BADGES = [
   // lose it. Their stored earnedBadges retains the id, and step 7c's sticky
   // union in getEarnedBadges re-admits any recorded id whose condition no longer
   // holds. Verified by demonstration, not assumed.
-  { id: 'all_modes', name: 'Jack of All Trades', description: 'Try all seven quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 7 }
+  { id: 'all_modes', category: 'special', name: 'Jack of All Trades', description: 'Try all seven quiz modes', icon: '🎭', condition: (stats) => stats.modesPlayed >= 7 }
 ];
 
 /**
