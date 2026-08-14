@@ -25,6 +25,31 @@ import { wordIdOf } from './helpers.js';
    unified blob, and not by anything else in the repo. A key that names a store
    nothing writes to is a false lead for the next reader looking for where
    bookmarks live. */
+/**
+ * The id of a STORED bookmark record, derived rather than read back.
+ *
+ * WHY THE STORED `id` IS NOT TRUSTED. js/ computes a bookmark's id with its own
+ * three-arm expression, `word || acronym || phrase`, which has no idiom arm
+ * (js/bookmarks.js:62). An idiom has neither of the three, so the id comes out
+ * undefined and JSON.stringify DROPS THE KEY — a js/-written idiom bookmark
+ * reaches this app with no `id` property at all. Every such record then answered
+ * to the same `undefined`, so one delete removed all of them at once and React
+ * saw duplicate keys.
+ *
+ * Deriving fixes that without touching a byte of the student's data, and it keeps
+ * working for records js/ writes AFTER cutover — which a one-shot migration
+ * could not. Both ends of every comparison are now the same function:
+ * BookmarkToggle and useQuizSession already resolve their side with wordIdOf.
+ *
+ * wordIdOf unwraps `.wordData`, so this is also correct for a js/ record whose
+ * wordData is a QUESTION rather than a stored item (js/components.js:1481 passes
+ * whatever is in scope).
+ *
+ * @param {Object} bookmark A stored bookmark record
+ * @returns {string|undefined} Its identity, or undefined if the record has none
+ */
+const storedIdOf = (bookmark) => wordIdOf(bookmark?.wordData);
+
 const BookmarksManager = {
   /**
    * Load all bookmarks from centralized storage
@@ -51,8 +76,13 @@ const BookmarksManager = {
    * @returns {boolean}
    */
   isBookmarked: (wordId) => {
+    /* A falsy id matches nothing. Without this, an unidentifiable record — whose
+       derived id is also undefined — would answer yes to `isBookmarked(undefined)`
+       and make an unrelated word look saved. */
+    if (!wordId) return false;
+
     const bookmarks = BookmarksManager.loadBookmarks();
-    return bookmarks.some(b => b.id === wordId);
+    return bookmarks.some(b => storedIdOf(b) === wordId);
   },
 
   /**
@@ -92,14 +122,45 @@ const BookmarksManager = {
    * @returns {boolean} - True if removed
    */
   removeBookmark: (wordId) => {
+    /* REFUSES A FALSY ID, and this guard is the whole point of the change. The
+       filter below keeps records whose id differs from the argument; with
+       `undefined` passed in, every record that derives no id differed from
+       nothing and the single delete swept the entire unidentifiable cohort.
+       A row with no id is removed by position instead — see removeBookmarkAt. */
+    if (!wordId) return false;
+
     const bookmarks = BookmarksManager.loadBookmarks();
-    const filtered = bookmarks.filter(b => b.id !== wordId);
+    const filtered = bookmarks.filter(b => storedIdOf(b) !== wordId);
 
     if (filtered.length < bookmarks.length) {
       BookmarksManager.saveBookmarks(filtered);
       return true;
     }
     return false;
+  },
+
+  /**
+   * Remove exactly one bookmark by its position in the stored list.
+   *
+   * FOR THE RECORDS THAT HAVE NO IDENTITY. A bookmark whose wordData is missing,
+   * empty, or a shape this app does not know derives no id, so removeBookmark
+   * cannot address it — and must not try, since every such record would match.
+   * Position is the only handle that names one row and no other. The screen
+   * renders the stored array in order, so its index is the stored index.
+   *
+   * @param {number} index Position in the stored array
+   * @returns {boolean} True if a record was removed
+   */
+  removeBookmarkAt: (index) => {
+    const bookmarks = BookmarksManager.loadBookmarks();
+
+    if (!Number.isInteger(index) || index < 0 || index >= bookmarks.length) {
+      return false;
+    }
+
+    const filtered = bookmarks.filter((_, i) => i !== index);
+    BookmarksManager.saveBookmarks(filtered);
+    return true;
   },
 
   /**
@@ -173,8 +234,10 @@ const BookmarksManager = {
    * @param {string} wordId - Word identifier
    */
   markReviewed: (wordId) => {
+    if (!wordId) return;
+
     const bookmarks = BookmarksManager.loadBookmarks();
-    const index = bookmarks.findIndex(b => b.id === wordId);
+    const index = bookmarks.findIndex(b => storedIdOf(b) === wordId);
 
     if (index !== -1) {
       /* `|| 0` because a bookmark can arrive without the field: importBookmarks
@@ -194,8 +257,10 @@ const BookmarksManager = {
    * @param {string} notes - Notes text
    */
   updateNotes: (wordId, notes) => {
+    if (!wordId) return;
+
     const bookmarks = BookmarksManager.loadBookmarks();
-    const index = bookmarks.findIndex(b => b.id === wordId);
+    const index = bookmarks.findIndex(b => storedIdOf(b) === wordId);
 
     if (index !== -1) {
       bookmarks[index].notes = notes;
@@ -262,9 +327,21 @@ const BookmarksManager = {
       if (!Array.isArray(imported)) return 0;
 
       const existing = BookmarksManager.loadBookmarks();
-      const existingIds = new Set(existing.map(b => b.id));
+      /* DERIVED ON BOTH SIDES. Comparing stored ids would have let an idiom
+         record — which carries no id at all — import again on every run, since
+         `undefined` is absent from a Set built from records that also have no
+         id... and worse, would have collapsed every id-less incoming record
+         against a single `undefined` once one was present. Deriving makes the
+         two sides the same function, as everywhere else in this module.
+         An incoming record with no derivable identity is let through: it cannot
+         be matched against anything, and dropping it would silently discard a
+         row the student is restoring from their own backup. */
+      const existingIds = new Set(existing.map(storedIdOf).filter(Boolean));
 
-      const newBookmarks = imported.filter(b => !existingIds.has(b.id));
+      const newBookmarks = imported.filter(b => {
+        const id = storedIdOf(b);
+        return !id || !existingIds.has(id);
+      });
       BookmarksManager.saveBookmarks([...existing, ...newBookmarks]);
 
       return newBookmarks.length;

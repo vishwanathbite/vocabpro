@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CARD } from '../components/chrome.js'
 import { ArrowLeft, Trash } from '../components/icons.jsx'
 import { BookmarksManager } from '../logic/bookmarks.js'
+import { wordIdOf } from '../logic/helpers.js'
 import { pluralise } from '../logic/format.js'
 import LaunchNotice from '../quiz/LaunchNotice.jsx'
 
@@ -52,8 +53,14 @@ const describe = (wordData) => {
 export default function BookmarksScreen({ onBack, onStartQuiz, launch }) {
   const [bookmarks, setBookmarks] = useState(() => BookmarksManager.getBookmarks())
 
-  const remove = (id) => {
-    BookmarksManager.removeBookmark(id)
+  /* REMOVES EXACTLY ONE ROW, WHETHER OR NOT IT HAS AN IDENTITY.
+     A js/-written idiom bookmark reaches this screen with no id — see the note
+     on storedIdOf in bookmarks.js — and removing by id used to sweep every such
+     record at once. Identified rows still go by id, which is stable if the list
+     reorders; the rest go by position, which is the only handle they have. */
+  const remove = (id, index) => {
+    if (id) BookmarksManager.removeBookmark(id)
+    else BookmarksManager.removeBookmarkAt(index)
     setBookmarks(BookmarksManager.getBookmarks())
   }
 
@@ -106,16 +113,22 @@ export default function BookmarksScreen({ onBack, onStartQuiz, launch }) {
           </div>
 
           <ul className="flex flex-col gap-2">
-            {bookmarks.map((b) => {
+            {bookmarks.map((b, i) => {
               const { title, body, kind } = describe(b.wordData)
+              /* DERIVED, not read from the record. The stored id is missing
+                 entirely on anything js/ saved as an idiom. */
+              const id = wordIdOf(b.wordData)
               return (
-                <li key={b.id} className={`${CARD} flex items-start gap-3 px-4 py-3`}>
+                /* `id ?? index` — a keyless idiom cohort all keyed `undefined`
+                   made React treat them as one row. Index is a weak key, but it
+                   is only reached by records that have nothing better. */
+                <li key={id ?? `row:${i}`} className={`${CARD} flex items-start gap-3 px-4 py-3`}>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-white">
-                      {/* Falls back to the stored id. An entry whose wordData is
+                      {/* Falls back to the derived id. An entry whose wordData is
                           missing or a shape this app does not know still names
                           itself and can still be removed. */}
-                      {title ?? b.id}
+                      {title ?? id}
                       {kind && (
                         <span className="ml-2 align-middle text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
                           {kind}
@@ -127,8 +140,8 @@ export default function BookmarksScreen({ onBack, onStartQuiz, launch }) {
 
                   <button
                     type="button"
-                    onClick={() => remove(b.id)}
-                    aria-label={`Remove ${title ?? b.id} from saved words`}
+                    onClick={() => remove(id, i)}
+                    aria-label={`Remove ${title ?? id ?? 'this entry'} from saved words`}
                     className="min-touch -mr-2 flex shrink-0 items-center rounded-lg px-2 text-slate-400 transition-colors hover:text-red-300"
                   >
                     <Trash width="18" height="18" />
