@@ -12,6 +12,10 @@
 // format.js imports nothing, so this adds no cycle.
 import { StorageManager } from './storage.js';
 import { formatNumber } from './format.js';
+/* The stats shape, which storage.js declares its `stats` section from too. It
+   lives in its own leaf because this module imports storage.js, so storage.js
+   could not import initializeStats back. */
+import { createDefaultStats } from './stats-shape.js';
 
 // ===========================
 // LEVEL SYSTEM
@@ -475,46 +479,18 @@ const calculatePoints = (difficulty, streak = 0, mode = null) => {
 
 /**
  * Initialize user statistics object
+ *
+ * THE SHAPE MOVED, THE FUNCTION DID NOT. The field list now lives in
+ * stats-shape.js, which storage.js's `stats` default section reads as well —
+ * the two used to be field-for-field copies that a comment on each side asked
+ * the reader to keep in step. This name is kept because it is the exported one
+ * and has callers; it is now a one-line delegation.
+ *
+ * Still a fresh object with fresh arrays per call — the factory guarantees it.
+ *
  * @returns {Object} - Initial stats structure
  */
-const initializeStats = () => {
-  return {
-    totalPoints: 0,
-    correctAnswers: 0,
-    totalAnswered: 0,
-    currentStreak: 0,
-    maxStreak: 0,
-    masteredWords: 0,
-    learningWords: 0,
-    strugglingWords: 0,
-    masteredWordsList: [],
-    learningWordsList: [],
-    strugglingWordsList: [],
-
-    // Smart Review queue: every word answered wrong, until it is answered
-    // correctly twice with no wrong in between. Replaces the SM-2 scheduler.
-    //
-    // SECOND COPY, unavoidable today: storage.js:128-152 holds a field-for-field
-    // duplicate of this whole object as its `stats` default section, and cannot
-    // import it — gamification.js already imports storage.js, so the dependency
-    // only runs one way. The two must be edited together; storage.js:139 carries
-    // the matching note.
-    reviewPool: [],
-
-    referrals: 0,
-    modesPlayed: 0,
-    modesPlayedList: [],
-    level: 1,
-    earnedBadges: [],
-    lastPlayedDate: null,
-    totalSessionTime: 0,
-    averageAccuracy: 0,
-    idiomsQuizzesCompleted: 0,
-    idiomsPerfectScore: 0,
-    idiomsDifficultiesCompleted: 0,
-    idiomsDifficultiesList: []
-  };
-};
+const initializeStats = () => createDefaultStats();
 
 /**
  * Every array field on the stats shape. THE SINGLE SOURCE.

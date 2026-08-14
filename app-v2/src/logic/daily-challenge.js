@@ -69,7 +69,7 @@
  * ---------------------------------------------------------------------------
  */
 
-import { StorageManager } from './storage.js';
+import { StorageManager, createDefaultDailyChallenge } from './storage.js';
 import { POINTS_CONFIG } from './gamification.js';
 import { generateSmartDistractors } from './helpers.js';
 import { seededRandom, seededShuffle, seededSample } from './seeded-random.js';
@@ -152,7 +152,12 @@ const DailyChallengeManager = {
 
   loadData() {
     const state = StorageManager.loadState();
-    return state.dailyChallenge || { lastCompletedDate: null, streak: 0, bestStreak: 0, history: {} };
+    /* The fallback shape is storage.js's, not a second copy of it. Still a
+       fresh object per call — see defect 3 in the header: this literal is not
+       attached to state, so anything written to it is lost unless saveData
+       follows, and sharing one object between callers would turn that into a
+       leak between them. */
+    return state.dailyChallenge || createDefaultDailyChallenge();
   },
 
   saveData(data) {

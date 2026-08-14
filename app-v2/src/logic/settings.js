@@ -9,7 +9,7 @@
 // SettingsManager <-> SoundManager cycle: this is a circular import with
 // sound.js, but it is load-safe because every reference on both sides is
 // runtime-only (inside methods), never dereferenced at module top level.
-import { StorageManager, MAX_QUIZ_HISTORY } from './storage.js';
+import { StorageManager, MAX_QUIZ_HISTORY, createDefaultSettings } from './storage.js';
 import { SoundManager } from './sound.js';
 import { DailyGoalsManager } from './dailygoals.js';
 
@@ -30,35 +30,24 @@ import { DailyGoalsManager } from './dailygoals.js';
    still live in storage.js's migrateLegacyData, which is the one place that has
    any business knowing them. */
 const SettingsManager = {
-  /**
-   * Default settings
-   */
-  defaults: {
-    soundEnabled: true,
-    speechEnabled: true,
-    darkMode: true, // App is always dark mode by design
+  /* Default settings. DECLARED IN storage.js and read from there — this was a
+     field-for-field copy of that section's eleven settings. Still its own
+     object, built by the factory at module load, so neither this nor a default
+     state can reach the other's copy.
 
-    // DERIVED, NOT STORED. This is a display shadow of dailyGoals.goalPreset,
-    // which is the value actually enforced — DailyGoalsManager.getGoal reads
-    // only that one (dailygoals.js:168), so a settings copy that drifted would
-    // show the user a goal the app was not applying. getSettings below always
-    // overwrites this key from the real source, and set() below redirects
-    // writes to it. The default here is kept only so the key still resolves if
-    // the goals section is somehow unreadable.
-    //
-    // js/ still writes BOTH copies (js/screens.js:1357-1359) and reads the
-    // settings one back (js/screens.js:1529). It is untouched and stays
-    // self-consistent; this end just stops trusting its own copy.
-    dailyGoalPreset: 'regular',
+     ON dailyGoalPreset, which the removed copy documented here:
+     DERIVED, NOT STORED. It is a display shadow of dailyGoals.goalPreset,
+     which is the value actually enforced — DailyGoalsManager.getGoal reads
+     only that one (dailygoals.js:168), so a settings copy that drifted would
+     show the user a goal the app was not applying. getSettings below always
+     overwrites this key from the real source, and set() below redirects
+     writes to it. The default is kept only so the key still resolves if the
+     goals section is somehow unreadable.
 
-    showWordOfDay: true,
-    showDailyGoals: true,
-    autoPlayPronunciation: false,
-    hapticFeedback: true,
-    notificationsEnabled: false,
-    keyboardShortcutsEnabled: true,
-    fontSize: 'medium' // 'small', 'medium', 'large'
-  },
+     js/ still writes BOTH copies (js/screens.js:1357-1359) and reads the
+     settings one back (js/screens.js:1529). It is untouched and stays
+     self-consistent; this end just stops trusting its own copy. */
+  defaults: createDefaultSettings(),
 
   /**
    * Get all settings from centralized storage

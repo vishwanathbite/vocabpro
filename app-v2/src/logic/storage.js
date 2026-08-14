@@ -14,6 +14,9 @@
  */
 
 import { toISTDateKey, padDateKey, HISTORY_RETENTION_MS } from './ist-date.js';
+/* Also a leaf. The stats shape lives there because gamification.js declares the
+   same object and imports THIS module, so neither of those two could own it. */
+import { createDefaultStats } from './stats-shape.js';
 
 // Current schema version - increment when schema changes
 const STORAGE_VERSION = 1;
@@ -64,6 +67,57 @@ let saveTimeout = null;
 const DEBOUNCE_MS = 300;
 
 /**
+ * A fresh default settings object. THE ONE DECLARATION of the eleven settings.
+ *
+ * SettingsManager.defaults in settings.js declared the same eleven keys and
+ * values. That module already imports this one, so the copy is closed by having
+ * it call this — this module cannot import settings.js back, which is why the
+ * declaration lives at this end rather than the other.
+ *
+ * A factory rather than a shared object even though every value is a primitive:
+ * getDefaultState hands its result into a state object that callers mutate, and
+ * SettingsManager.defaults is a long-lived property. One object serving both
+ * would put a mutation of either within reach of the other. Only where the keys
+ * are declared changes; the values are untouched.
+ *
+ * @returns {Object} Default settings
+ */
+const createDefaultSettings = () => ({
+  soundEnabled: true,
+  speechEnabled: true,
+  darkMode: true, // App is always dark mode by design
+  dailyGoalPreset: 'regular',
+  showWordOfDay: true,
+  showDailyGoals: true,
+  autoPlayPronunciation: false,
+  hapticFeedback: true,
+  notificationsEnabled: false,
+  keyboardShortcutsEnabled: true,
+  fontSize: 'medium' // 'small', 'medium', 'large'
+});
+
+/**
+ * A fresh default daily-challenge section. THE ONE DECLARATION.
+ *
+ * DailyChallengeManager.loadData declared the same four fields inline as its
+ * `||` fallback for a store with no section yet. Same reasoning as the settings
+ * above: daily-challenge.js imports this module, so this end owns the shape.
+ *
+ * A factory because of `history`. It is a nested object, and a shared literal
+ * would give every fallback caller the same map — a challenge recorded against
+ * one would appear in the next, which is precisely the aliasing class already
+ * fixed in dailyGoals.history.
+ *
+ * @returns {Object} Default daily-challenge state
+ */
+const createDefaultDailyChallenge = () => ({
+  lastCompletedDate: null,
+  streak: 0,
+  bestStreak: 0,
+  history: {}
+});
+
+/**
  * Get default state structure
  * @returns {Object} Default state with all required fields
  */
@@ -72,20 +126,8 @@ const getDefaultState = () => ({
   updatedAt: new Date().toISOString(),
   createdAt: new Date().toISOString(),
 
-  // Settings
-  settings: {
-    soundEnabled: true,
-    speechEnabled: true,
-    darkMode: true,
-    dailyGoalPreset: 'regular',
-    showWordOfDay: true,
-    showDailyGoals: true,
-    autoPlayPronunciation: false,
-    hapticFeedback: true,
-    notificationsEnabled: false,
-    keyboardShortcutsEnabled: true,
-    fontSize: 'medium'
-  },
+  // Settings — declared once, above.
+  settings: createDefaultSettings(),
 
   // Spaced Repetition System data
   srs: {},
@@ -184,47 +226,13 @@ const getDefaultState = () => ({
     difficultyByMode: {}
   },
 
-  // Daily Challenge
-  dailyChallenge: {
-    lastCompletedDate: null,
-    streak: 0,
-    bestStreak: 0,
-    history: {}
-  },
+  // Daily Challenge — declared once, above.
+  dailyChallenge: createDefaultDailyChallenge(),
 
-  // Gamification stats (per-user, but stored here for single-user mode)
-  stats: {
-    totalPoints: 0,
-    correctAnswers: 0,
-    totalAnswered: 0,
-    currentStreak: 0,
-    maxStreak: 0,
-    masteredWords: 0,
-    learningWords: 0,
-    strugglingWords: 0,
-    masteredWordsList: [],
-    learningWordsList: [],
-    strugglingWordsList: [],
-
-    // Smart Review queue. SECOND COPY of gamification.js:initializeStats — this
-    // whole section duplicates it field for field, and the two must be edited
-    // together. gamification.js imports this module, so the duplication cannot
-    // be closed by importing initializeStats here without a cycle.
-    reviewPool: [],
-
-    referrals: 0,
-    modesPlayed: 0,
-    modesPlayedList: [],
-    level: 1,
-    earnedBadges: [],
-    lastPlayedDate: null,
-    totalSessionTime: 0,
-    averageAccuracy: 0,
-    idiomsQuizzesCompleted: 0,
-    idiomsPerfectScore: 0,
-    idiomsDifficultiesCompleted: 0,
-    idiomsDifficultiesList: []
-  }
+  // Gamification stats (per-user, but stored here for single-user mode).
+  // Declared in stats-shape.js, which gamification.js reads for initializeStats
+  // — the section and the initializer can no longer disagree.
+  stats: createDefaultStats()
 });
 
 /**
@@ -1126,5 +1134,7 @@ export const StorageManager = {
 export { getDefaultState, exportStateToJSON, importStateFromJSON };
 // The history cap, for QuizHistoryManager — the writer that enforces it.
 export { MAX_QUIZ_HISTORY };
+// Default-shape factories, for the modules that used to declare their own copy.
+export { createDefaultSettings, createDefaultDailyChallenge };
 export { loadState as loadAppState };
 export { saveState as saveAppState };
