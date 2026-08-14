@@ -73,7 +73,7 @@ import { StorageManager } from './storage.js';
 import { POINTS_CONFIG } from './gamification.js';
 import { generateSmartDistractors } from './helpers.js';
 import { seededRandom, seededShuffle, seededSample } from './seeded-random.js';
-import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
+import { toISTDateKey, epochMsOf, DAY_MS, HISTORY_RETENTION_MS } from './ist-date.js';
 
 /**
  * THE SHAPE OF A DAILY CHALLENGE. One row per difficulty, in draw order.
@@ -268,8 +268,9 @@ const DailyChallengeManager = {
     data.bestStreak = Math.max(data.bestStreak || 0, newStreak);
     data.history[today] = { score, total, points };
 
-    // Cleanup: keep only last 30 days
-    const cutoffStr = toISTDateKey(nowMs - 30 * DAY_MS);
+    // Cleanup: keep only the retention window, the same one the goals cleanup
+    // and the quota-recovery trim use.
+    const cutoffStr = toISTDateKey(nowMs - HISTORY_RETENTION_MS);
     for (const dateKey of Object.keys(data.history)) {
       if (dateKey < cutoffStr) {
         delete data.history[dateKey];

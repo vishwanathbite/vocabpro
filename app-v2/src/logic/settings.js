@@ -9,7 +9,7 @@
 // SettingsManager <-> SoundManager cycle: this is a circular import with
 // sound.js, but it is load-safe because every reference on both sides is
 // runtime-only (inside methods), never dereferenced at module top level.
-import { StorageManager } from './storage.js';
+import { StorageManager, MAX_QUIZ_HISTORY } from './storage.js';
 import { SoundManager } from './sound.js';
 import { DailyGoalsManager } from './dailygoals.js';
 
@@ -259,7 +259,11 @@ const QuizPreferences = {
  */
 const QuizHistoryManager = {
   // Dead STORAGE_KEY deleted — see the note on SettingsManager above.
-  MAX_HISTORY: 50, // Keep last 50 quizzes
+  /* Keep last N quizzes. The number lives in storage.js, which is also where
+     the quota-recovery trim reads it — that branch used to restate a bare 20
+     and shed 30 entries this writer had kept. Exposed as a property still, so
+     the call sites below and any future reader see one value. */
+  MAX_HISTORY: MAX_QUIZ_HISTORY,
 
   /**
    * Get all quiz history from centralized storage

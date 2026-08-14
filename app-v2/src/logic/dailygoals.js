@@ -7,7 +7,7 @@
 // ESM port of js/dailygoals.js. StorageManager is now imported rather than
 // sniffed off the global `window`, so it is always defined.
 import { StorageManager } from './storage.js';
-import { toISTDateKey, epochMsOf, DAY_MS } from './ist-date.js';
+import { toISTDateKey, epochMsOf, DAY_MS, HISTORY_RETENTION_MS, padDateKey } from './ist-date.js';
 /* One direction only: gamification.js imports storage.js and format.js, never
    this module, so there is no cycle. The streak is the one thing that needs
    both halves — the days earned and the days paid for. */
@@ -608,14 +608,13 @@ const DailyGoalsManager = {
    */
   cleanupHistory: (instant = Date.now()) => {
     const data = DailyGoalsManager.loadData();
-    const cutoffKey = toISTDateKey(epochMsOf(instant) - 30 * DAY_MS);
+    const cutoffKey = toISTDateKey(epochMsOf(instant) - HISTORY_RETENTION_MS);
 
     Object.keys(data.history).forEach(key => {
-      const [year, month, day] = key.split('-').map(Number);
-      if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+      const paddedKey = padDateKey(key);
+      if (paddedKey === null) {
         return; // Unparseable key from a corrupt blob: leave it alone.
       }
-      const paddedKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       if (paddedKey < cutoffKey) {
         delete data.history[key];
       }

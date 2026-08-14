@@ -7,7 +7,13 @@
  * - Safe error recovery
  * - Export/import backup functionality
  * - Debounced saves to prevent excessive writes
+ *
+ * ist-date.js is a leaf — it imports nothing — so depending on it here keeps
+ * this module importable by everything else, which is the property the whole
+ * dependency graph rests on.
  */
+
+import { toISTDateKey, padDateKey, HISTORY_RETENTION_MS } from './ist-date.js';
 
 // Current schema version - increment when schema changes
 const STORAGE_VERSION = 1;
@@ -36,6 +42,21 @@ const LEGACY_KEYS = [
 // whose exhaustion causes truncated writes in the first place.
 const CORRUPT_BACKUP_PREFIX = STORAGE_KEY + '_CORRUPT_';
 const MAX_CORRUPT_BACKUPS = 3;
+
+/**
+ * How many quiz-history entries are kept. THE SINGLE SOURCE.
+ *
+ * QuizHistoryManager.addQuiz is the writer and enforces this on every save;
+ * the quota-recovery branch below is the only other place that touches the
+ * length, and it used to restate a bare 20 — so a quota failure silently threw
+ * away 30 entries the writer had deliberately kept, and the two numbers could
+ * drift apart without anything noticing.
+ *
+ * It lives here rather than in settings.js because settings.js imports this
+ * module and not the other way round; this module imports nothing but the date
+ * leaf, so it is the one end both sides can reach.
+ */
+const MAX_QUIZ_HISTORY = 50;
 
 // In-memory fallback when localStorage is unavailable
 let memoryState = null;
@@ -799,26 +820,72 @@ const saveStateImmediate = (state) => {
     return true;
   } catch (error) {
     if (error.name === 'QuotaExceededError' || error.code === 22) {
-      // Try to free up space by trimming quiz history
+      /* SHED ONTO A CANDIDATE, ADOPT ONLY IF THE RETRY LANDS.
+       *
+       * `state` IS memoryState by this point — it was assigned above — so
+       * trimming it in place made the shedding permanent in memory even when
+       * the retry threw. The user lost history and gained nothing, because
+       * nothing had been written. The trims are computed into a candidate
+       * object instead and copied back onto `state` only after localStorage
+       * has accepted them, so memory and disk still agree.
+       *
+       * What is shed, the order it is shed in, the single retry and the return
+       * values are all unchanged.
+       */
       try {
-        if (state.quizHistory && state.quizHistory.length > 20) {
-          state.quizHistory = state.quizHistory.slice(0, 20);
-        }
-        // Also trim daily goals history older than 30 days
+        // Try to free up space by trimming quiz history
+        const trimmedHistory =
+          state.quizHistory && state.quizHistory.length > MAX_QUIZ_HISTORY
+            ? state.quizHistory.slice(0, MAX_QUIZ_HISTORY)
+            : null;
+
+        /* Also trim daily goals history beyond the retention window.
+         *
+         * ON THE IST RULE, like the other two trimmers. This built a
+         * device-local midnight from each key and compared it against a local
+         * cutoff, so on a device behind IST it deleted a day the goals cleanup
+         * keeps. Both sides are now padded IST keys compared as strings, which
+         * is exactly what DailyGoalsManager.cleanupHistory does.
+         *
+         * That trimmer is not called here on purpose: it lives in dailygoals.js,
+         * which imports this module, and it does its own load and SAVE — a
+         * persisting call is the last thing this branch can afford in the
+         * middle of a failed write. The cutoff is re-derived from the shared
+         * constants instead.
+         */
+        let trimmedGoalsHistory = null;
         if (state.dailyGoals && state.dailyGoals.history) {
-          const cutoffDate = new Date();
-          cutoffDate.setDate(cutoffDate.getDate() - 30);
+          const cutoffKey = toISTDateKey(Date.now() - HISTORY_RETENTION_MS);
           const newHistory = {};
           for (const key in state.dailyGoals.history) {
-            const [year, month, day] = key.split('-').map(Number);
-            const date = new Date(year, month - 1, day);
-            if (date >= cutoffDate) {
+            const paddedKey = padDateKey(key);
+            // Unparseable key from a corrupt blob: kept, as cleanupHistory keeps it.
+            if (paddedKey === null || paddedKey >= cutoffKey) {
               newHistory[key] = state.dailyGoals.history[key];
             }
           }
-          state.dailyGoals.history = newHistory;
+          trimmedGoalsHistory = newHistory;
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+        const candidate = { ...state };
+        if (trimmedHistory !== null) {
+          candidate.quizHistory = trimmedHistory;
+        }
+        if (trimmedGoalsHistory !== null) {
+          candidate.dailyGoals = { ...state.dailyGoals, history: trimmedGoalsHistory };
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(candidate));
+
+        // Written. Now — and only now — the in-memory state adopts the same
+        // shedding, so a later read does not report history that is no longer
+        // on disk.
+        if (trimmedHistory !== null) {
+          state.quizHistory = trimmedHistory;
+        }
+        if (trimmedGoalsHistory !== null) {
+          state.dailyGoals.history = trimmedGoalsHistory;
+        }
         return true;
       } catch (retryError) {
         console.error('Storage: Quota exceeded, using memory only');
@@ -1057,5 +1124,7 @@ export const StorageManager = {
 // Convenience named exports — same names the former window globals used.
 // (window.loadAppState/saveAppState were aliases for loadState/saveState.)
 export { getDefaultState, exportStateToJSON, importStateFromJSON };
+// The history cap, for QuizHistoryManager — the writer that enforces it.
+export { MAX_QUIZ_HISTORY };
 export { loadState as loadAppState };
 export { saveState as saveAppState };

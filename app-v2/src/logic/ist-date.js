@@ -65,3 +65,44 @@ export const epochMsOf = (instant) => {
  */
 export const toISTDateKey = (instant = Date.now()) =>
   new Date(epochMsOf(instant) + IST_OFFSET_MS).toISOString().split('T')[0];
+
+/**
+ * How long dated history is kept. THE SINGLE SOURCE for the retention window.
+ *
+ * It was written three times — the daily-challenge prune, the daily-goals
+ * cleanup, and the quota-recovery trim in storage.js — and the third disagreed
+ * with the other two about more than the number: it built a device-local
+ * midnight, so a device behind IST dropped a day the other two kept. One
+ * constant, and one comparison rule: pad both sides and compare the strings.
+ *
+ * Expressed in days as well as milliseconds because the two callers want
+ * different things — the cutoff arithmetic wants ms, and a message or a label
+ * wants the day count without dividing it back out.
+ */
+export const HISTORY_RETENTION_DAYS = 30;
+export const HISTORY_RETENTION_MS = HISTORY_RETENTION_DAYS * DAY_MS;
+
+/**
+ * Normalise a day key to the padded form so string comparison is meaningful.
+ *
+ * The goals keyspace stores UNPADDED keys (DailyGoalsManager.getTodayKey strips
+ * the padding for the js/ shell's benefit), and lexicographic ordering on those
+ * is nonsense — "2026-7-5" sorts after "2026-12-31". Both readers that compare
+ * a goals key against a cutoff need this, and only one of them can import
+ * dailygoals.js, so the normaliser lives here with the boundary it serves.
+ *
+ * Returns null for anything that does not parse as three numbers, which is the
+ * caller's signal to leave the entry alone rather than guess at a date for it.
+ *
+ * @param {string} key A day key, padded or unpadded
+ * @returns {string|null} Padded YYYY-MM-DD, or null if unparseable
+ */
+export const padDateKey = (key) => {
+  const [year, month, day] = String(key).split('-').map(Number);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return null;
+  }
+
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+};
