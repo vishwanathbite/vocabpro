@@ -290,8 +290,8 @@ const BADGES = [
  * It also fixes the return order to BADGES order, which is the display order.
  *
  * THE STICKINESS LIVES HERE, NOT IN updateStats, deliberately. Four call sites
- * recompute the earned set — updateStats, match-scoring.js:104,
- * daily-challenge-scoring.js:93 and ProgressScreen's render — and putting it in
+ * recompute the earned set — updateStats, recordModePlayed,
+ * daily-challenge-scoring.js and ProgressScreen's render — and putting it in
  * updateStats would have fixed one of the four while the render path kept
  * revoking on every mount.
  *
@@ -322,7 +322,7 @@ const getEarnedBadges = (stats) => {
  * earlier session.
  *
  * previousBadges is an array of ID STRINGS at every call site
- * (quiz-scoring.js:60 and match-scoring.js:107, both fed from
+ * (quiz-scoring.js and daily-challenge-scoring.js, both fed from
  * `previousBadgesNext: newStats.earnedBadges`), which is what the `.includes`
  * below compares against. Passing badge OBJECTS would silently match nothing and
  * re-announce everything.
@@ -519,12 +519,12 @@ const initializeStats = () => {
 /**
  * Every array field on the stats shape. THE SINGLE SOURCE.
  *
- * Four modules de-alias stats before touching it — this one, match-scoring.js,
- * quiz-summary.js and daily-challenge-scoring.js — and each carried its own copy
- * of this list. When reviewPool was added in step 8 it went into one of the four,
- * so the other three silently stopped covering a field and would have aliased
- * the caller's pool. Nothing caught it because none of the three has a caller
- * yet. They now import this.
+ * Three modules de-alias stats before touching it — this one, quiz-summary.js
+ * and daily-challenge-scoring.js — and each carried its own copy of this list.
+ * When reviewPool was added in step 8 it went into one of them, so the others
+ * silently stopped covering a field and would have aliased the caller's pool.
+ * Nothing caught it because the copies were not read side by side. They now
+ * import this.
  *
  * Adding a field to the stats shape means adding it here, and nowhere else.
  */

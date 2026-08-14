@@ -2,10 +2,10 @@
  * Flashcard session state.
  *
  * A FORK OF useQuizSession, NOT A MODE OF IT, and the import list is the point.
- * This module imports NONE of quiz-scoring.js, quiz-summary.js,
- * match-scoring.js or daily-challenge-scoring.js — the four modules that reach
- * updateStats — so there is no path from a flashcard to the scoring core at
- * all. Not a path that is closed; a path that does not exist.
+ * This module imports NONE of quiz-scoring.js, quiz-summary.js or
+ * daily-challenge-scoring.js — the three modules that reach updateStats — so
+ * there is no path from a flashcard to the scoring core at all. Not a path that
+ * is closed; a path that does not exist.
  *
  * The alternative was a `scored` flag threaded through useQuizSession, guarding
  * saveStats, updateProgress and addQuiz at each site. That is worse for one

@@ -12,8 +12,8 @@
  *   - QuizHistoryManager.addQuiz (persists) — use `historyEntry`
  *   - stopSpeech() (Web Speech API)
  *
- * The handler reads no clock, so unlike scoreAnswer/completeMatchGame this
- * function needs no injected time. (QuizHistoryManager.addQuiz stamps its own
+ * The handler reads no clock, so unlike scoreAnswer this function needs no
+ * injected time. (QuizHistoryManager.addQuiz stamps its own
  * id/date internally, but that happens in the wrapper.)
  *
  * ALIASING — THIS EXTRACTION RETIRES A BUG RATHER THAN PRESERVING IT.
