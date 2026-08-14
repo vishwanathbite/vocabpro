@@ -55,6 +55,9 @@ import {
   getNewBadges,
   STATS_ARRAY_FIELDS
 } from './gamification.js';
+/* helpers.js is a leaf — it imports nothing — so this adds no cycle. Same
+   reasoning quiz-summary.js records at its own import of this function. */
+import { wordIdOf } from './helpers.js';
 
 /**
  * Compute the result of a completed daily challenge.
@@ -128,17 +131,24 @@ export function completeDailyChallenge({
     previousBadgesNext: newStats.earnedBadges,
 
     // Exact payload the wrapper hands to QuizHistoryManager.addQuiz
-    // (app.js:1601-1608). difficulty is hard-coded 'mixed', score carries the
-    // computed `points` rather than a per-answer session score, and the words
-    // list maps q.word with NO fallback chain — unlike quiz-summary.js, which
-    // falls back through wordData.acronym/phrase/idiom. It does filter(Boolean).
+    // (app.js:1601-1608). difficulty is hard-coded 'mixed' and score carries the
+    // computed `points` rather than a per-answer session score.
+    //
+    // words goes through wordIdOf, the same resolver quiz-summary.js uses, so
+    // both writers into quizHistory follow ONE rule. DEFENSIVE ONLY, and
+    // verified rather than assumed: every question generateQuestions can build
+    // is vocabulary-shaped and bails on `!word.word`, so `q.word` is always a
+    // non-empty string and wordIdOf short-circuits on that same first arm —
+    // identical output today. The change is what keeps them identical if the
+    // challenge ever serves an acronym or one-word item, whose id lives on
+    // wordData and which the old bare `q.word` would have dropped.
     historyEntry: {
       mode: 'daily',
       difficulty: 'mixed',
       questionsTotal: totalQ,
       questionsCorrect: correctCount,
       score: points,
-      words: dailyChallengeQuestions.map(q => q.word).filter(Boolean)
+      words: dailyChallengeQuestions.map(wordIdOf).filter(Boolean)
     },
 
     // Exact payload for setDailyChallengeResult (app.js:1611). Note `score`

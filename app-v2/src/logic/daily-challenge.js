@@ -487,14 +487,16 @@ const DailyChallengeManager = {
       correctCount += 1;
       points += POINTS_CONFIG[list[i]?.difficulty] ?? POINTS_CONFIG.daily;
     }
-    // Perfect score bonus
+    // Perfect score bonus — priced in POINTS_CONFIG, like the questions.
     if (correctCount === totalQuestions) {
-      points += 50;
+      points += POINTS_CONFIG.dailyBonus.perfect;
     }
     /* Streak bonus. Guarded rather than trusted: `streak` is now required, and
        an omitted one would make `Math.min(undefined * 10, 100)` NaN and poison
        the whole total silently. A missing streak pays no streak bonus. */
-    points += Number.isFinite(streak) ? Math.min(streak * 10, 100) : 0;
+    points += Number.isFinite(streak)
+      ? Math.min(streak * POINTS_CONFIG.dailyBonus.perStreakDay, POINTS_CONFIG.dailyBonus.streakCap)
+      : 0;
     return points;
   }
 };

@@ -428,7 +428,31 @@ const POINTS_CONFIG = {
   hard: 20,
   acronym: 12,
   oneword: 12,
-  daily: 10
+  daily: 10,
+
+  /* THE DAILY CHALLENGE'S SESSION BONUSES, which are not per-question prices.
+   *
+   * NESTED, and that is the point. The flat keys above are a lookup namespace —
+   * `POINTS_CONFIG[difficulty]` and `POINTS_CONFIG[sourceMode]` index straight
+   * into them — so a bonus sitting alongside them as `perfectBonus: 50` would
+   * be a difficulty nobody declared, reachable by a stray string. One nested
+   * key keeps the flat namespace exactly as wide as it was.
+   *
+   * These were bare literals inside calculateDailyPoints: 50 for a clean sweep,
+   * 10 per streak day, capped at 100. Same numbers, now beside the prices they
+   * are added to, so a retune is one table rather than a table and a function
+   * body.
+   *
+   * NOT RELATED to the `Math.min(streak, 10)` ceiling in calculatePoints, which
+   * is a per-answer cap on a different streak (consecutive correct answers, not
+   * consecutive days) and merely happens to be the same number. It stays where
+   * it is.
+   */
+  dailyBonus: {
+    perfect: 50,
+    perStreakDay: 10,
+    streakCap: 100
+  }
 };
 
 /**
@@ -466,7 +490,12 @@ const REVIEW_POINTS_MULTIPLIER = 1.5;
  * @returns {number} - Total points awarded
  */
 const calculatePoints = (difficulty, streak = 0, mode = null) => {
-  const basePoints = POINTS_CONFIG[difficulty] || 10;
+  /* `?? POINTS_CONFIG.daily`, matching calculateDailyPoints. This was
+     `|| 10` — the same value spelled as a literal, and a literal that could not
+     follow a retune of the table. The two operators are equivalent across every
+     reachable input because no price in POINTS_CONFIG is falsy; `??` is the one
+     that stays correct if a zero-priced key is ever added. */
+  const basePoints = POINTS_CONFIG[difficulty] ?? POINTS_CONFIG.daily;
   const streakBonus = Math.min(streak, 10); // Max 10 bonus points from streak
   const total = basePoints + streakBonus;
 
