@@ -1060,6 +1060,37 @@ const awardWeeklyShieldIfDue = (nowISO = new Date().toISOString()) => {
   const now = new Date(nowISO);
   const lastEarned = data.lastEarned ? new Date(data.lastEarned) : null;
 
+  /* AN UNSTAMPED CLOCK WITH SHIELDS ALREADY IN HAND MEANS SOMEONE ELSE GRANTED
+   * THEM. Start the clock, award nothing.
+   *
+   * js/ shares STORAGE_KEY and seeds its welcome shield in the DEFAULTS
+   * (js/gamification.js:379, `shields: 1`) rather than granting it here, so it
+   * never stamps lastEarned. Such a state reaching this function satisfies the
+   * `!lastEarned` arm below and collects a second shield on first mount — the
+   * same double-grant app-v2 removed internally by defaulting to 0.
+   *
+   * NOT A MIGRATION, and deliberately knows nothing about where the state came
+   * from. It reads a contradiction that only one thing can produce — shields
+   * held with no record of when they were earned — and resolves it the
+   * conservative way. It therefore also covers a state js/ writes AFTER cutover,
+   * which a one-shot migration could not reach.
+   *
+   * THE STAMP IS THE WHOLE POINT and cannot be skipped. Declining without
+   * writing would leave lastEarned null, this branch would re-decide identically
+   * on every mount, and the student would never receive another shield. Writing
+   * it here starts the seven-day cadence from first open — one write, in this
+   * function's ordinary course, self-healing on the next mount if the save fails.
+   *
+   * shields === 0 with a null lastEarned still grants below: that is either a
+   * genuine fresh install or a student who has legitimately spent down to none,
+   * and both should receive one.
+   */
+  if (!lastEarned && data.shields > 0) {
+    data.lastEarned = now.toISOString();
+    StreakProtection.saveData(data);
+    return { awarded: false, shields: data.shields };
+  }
+
   if (!lastEarned || (now - lastEarned) > SHIELD_INTERVAL_MS) {
     if (data.shields < MAX_SHIELDS) {
       data.shields += 1;
