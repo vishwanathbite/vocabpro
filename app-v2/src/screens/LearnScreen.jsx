@@ -297,7 +297,31 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
           items. Nothing moves horizontally and no card changes size. */}
       {!challengeDone ? (
         <section className="flex flex-col gap-2">
-          <section className="rounded-xl bg-primary p-4">
+          {/* THE ONE GRADIENT ON THIS SCREEN, and the reason it is here rather
+              than anywhere else: a flat slab of primary has no near edge and no
+              far one, so the card that should feel like the front-most object
+              sits as inert as the readouts below it. Two stops of the existing
+              brand pair give it a front and a back without introducing a colour.
+
+              160deg — VIOLET AT THE TOP, INDIGO AT THE BOTTOM, tilted a few
+              degrees off vertical so the light reads as coming from above and
+              slightly left, the same direction every surface in the app is lit
+              from by implication. Straight 180deg would have read as a bar
+              rather than a lit plane; a diagonal to the corner would have put
+              the lightest value beside the eyebrow and the darkest under the
+              Start button's right end only, which is a wash rather than depth.
+
+              IT DEEPENS TOWARD THE BUTTON, which is the useful direction. White
+              on the violet end is 5.7:1; on the indigo end it is 4.8:1, and the
+              Start button sits in the lower third where the mix is indigo-heavy
+              — so the button's surround is the DARKEST part of the card and the
+              white reads hardest exactly where it is tapped.
+
+              NO GLOW, GLOSS, BEVEL OR SHIMMER. One linear pass, two stops, no
+              second layer, nothing animated. Navy is deliberately not a third
+              stop: it is the page background, and reaching it at the far corner
+              would dissolve the card's own edge into the screen behind it. */}
+          <section className="rounded-xl bg-[linear-gradient(160deg,var(--color-primary)_0%,var(--color-indigo)_100%)] p-4">
             <p className="text-xs font-semibold tracking-wider text-white/70 uppercase">
               Today&rsquo;s challenge
             </p>
