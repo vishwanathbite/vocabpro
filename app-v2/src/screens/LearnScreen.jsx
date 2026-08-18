@@ -216,19 +216,38 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
               nothing new is introduced — a held streak and a held shield simply
               get the treatment the system already gives to "this one counts".
 
-              ZERO IS DORMANT, NOT BROKEN. No fill, no colour, muted slate at
-              the same size: the shape of the thing is there, waiting, rather
-              than absent or alarmed. Flat fills only — no gradient, glow or
-              shadow. */}
+              ZERO IS AN EMPTY VESSEL, NOT AN ABSENCE. "No fill, no colour"
+              went too far: beside a shield carrying both a chip and its token,
+              a grey glyph and a grey 0 read as broken rather than waiting, and
+              that is the first thing a new student sees.
+
+              A HAIRLINE WHERE THE FILL WOULD BE. The chip's shape is drawn in
+              gold at the ladder's /40 border step and left unfilled, and the
+              glyph sits at /40 to match — the outline of the thing that is
+              coming, in the colour it will arrive in. The number stays muted
+              slate, because the number is the claim and there is nothing yet to
+              claim.
+
+              THE LIT STATE IS STILL PLAINLY STRONGER: a solid /10 fill against
+              an empty one, and solid gold on both glyph and number against a
+              /40 ghost and a slate figure. Filled versus outlined is the
+              distinction, and it survives a glance.
+
+              OUTLINE, NOT BORDER, so the box is identical in both states and
+              against the untouched shield beside it — a border would add a
+              pixel on each side and leave the two chips different sizes. Flat
+              fills only — no gradient, glow, shadow or animation. */}
           <span
             className={`flex items-center gap-1.5 rounded-lg px-2 py-1 ${
-              streak > 0 ? 'bg-earned/10' : ''
+              streak > 0
+                ? 'bg-earned/10'
+                : 'outline outline-1 -outline-offset-1 outline-earned/40'
             }`}
           >
             <Flame
               width="20"
               height="20"
-              className={streak > 0 ? 'text-earned' : 'text-slate-500'}
+              className={streak > 0 ? 'text-earned' : 'text-earned/40'}
             />
             <span
               className={`text-lg font-semibold tabular-nums ${
