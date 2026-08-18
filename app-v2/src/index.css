@@ -1,0 +1,224 @@
+/**
+ * Tailwind entry + VocabPro design system.
+ *
+ * Tailwind v4 (CSS-first). There is no tailwind.config.js and no
+ * postcss.config.js — the @tailwindcss/vite plugin in vite.config.js does the
+ * work, and all configuration lives in the @theme block below.
+ */
+
+@import "tailwindcss";
+@import "./styles/global.css";
+
+@theme {
+  /* -------------------------------------------------------------------------
+     BRAND COLOURS
+     Additive: declaring --color-* here extends the palette, it does not
+     replace it. Tailwind's full default palette (green-500, amber-400, …)
+     remains available for correct-answer greens and celebratory accents.
+     ------------------------------------------------------------------------- */
+  --color-primary: #7C3AED;
+  --color-indigo: #4F46E5;
+  --color-navy: #0F172A;
+
+  /* -------------------------------------------------------------------------
+     MEANING COLOURS — saturation is information.
+
+     The app is quiet by default: surfaces are navy, text is slate, borders are
+     white at 10%. These four are the only vivid colours in it, and each one
+     means exactly one thing, so a student learns them without being told:
+
+       correct    a right answer
+       incorrect  a wrong one
+       earned     a streak day kept
+       shield     a shield held or spent
+
+     ROSE, NOT RED, for incorrect. Being wrong is the ordinary case in a
+     learning app — a student meets it several times a session — and red-500
+     reads as a system error, the colour of a failed payment. Rose carries the
+     same "not this one" without the alarm.
+
+     THE ALPHA LADDER IS 10 / 20 / 40 / 70, and nothing else. Each step has one
+     role, so a reader can tell what a value means without hunting for the
+     component:
+
+       /10   tinted fill behind a marked row or panel
+       /20   the same fill on hover, and the small icon badge inside a row
+       /40   a resting border
+       /70   an emphasis border — the option that IS the answer
+
+     Text and icons take the token SOLID. These four hues are light enough on
+     navy to carry themselves, so the old habit of reaching for a -200 or -300
+     tint to stay legible is unnecessary.
+
+     Before this, the same hues appeared at /60, /50, /40, /20, /10 and
+     /[0.07] with no rule — six steps, four of them used once.
+     ------------------------------------------------------------------------- */
+  --color-correct: #34D399;
+  --color-incorrect: #FB7185;
+  --color-earned: #F5B93F;
+  --color-shield: #4CC9F0;
+
+  /* -------------------------------------------------------------------------
+     FONTS
+     Font FILES are not present yet — self-hosting is a separate decision and
+     no CDN request is made anywhere. These register the families so the
+     utilities exist; each stack falls back to a system font until the files
+     land.
+     ------------------------------------------------------------------------- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  --font-playfair: "Playfair Display", ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
+
+  /* -------------------------------------------------------------------------
+     EYEBROW TEXT SIZE
+     The small uppercase label above a card or section — "WORD OF THE DAY",
+     "QUIZ COMPLETE!", the difficulty tags on a search result. It was written as
+     the arbitrary value `text-[10px]` at eleven sites, which Tailwind compiles
+     to a literal 10px and which therefore could NOT scale with the font-size
+     setting: every other label would have grown while these eleven stayed put.
+
+     A named token rather than a jump to text-xs (0.75rem/12px), which would
+     have changed the design at the default size. This is the same 10px, now
+     addressable and scalable.
+     ------------------------------------------------------------------------- */
+  --text-eyebrow: 0.625rem;
+  --text-eyebrow--line-height: 1.4;
+
+  /* -------------------------------------------------------------------------
+     BREAKPOINT
+     Tailwind's defaults start at sm:640px. xs:475px is added for the narrow
+     phone tier (legacy js/screens.js:452 relies on xs:flex).
+     ------------------------------------------------------------------------- */
+  --breakpoint-xs: 475px;
+
+  /* -------------------------------------------------------------------------
+     MAX CONTENT WIDTH
+     Design brief: ~1200px centred on desktop. Use as `max-w-content`.
+     The legacy 960px cap is deliberately not carried over.
+     ------------------------------------------------------------------------- */
+  --container-content: 1200px;
+
+  /* -------------------------------------------------------------------------
+     ANIMATIONS
+     Wire the four salvaged keyframes to real utilities. The @keyframes
+     themselves live in styles/global.css, transcribed verbatim.
+     ------------------------------------------------------------------------- */
+  --animate-slide-in: slide-in 0.3s ease-out forwards;
+  --animate-fade-in: fade-in 0.3s ease-out forwards;
+  --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+
+  /* -------------------------------------------------------------------------
+     SPACING — intentionally not overridden.
+     Tailwind v4 generates spacing from --spacing (0.25rem / 4px), so every
+     8-point step already exists: 2=8px, 4=16px, 6=24px, 8=32px, 12=48px,
+     16=64px. A custom 8pt scale would be redundant.
+     ------------------------------------------------------------------------- */
+}
+
+/* ===========================================================================
+   FONT SIZE SETTING
+
+   THE WHOLE MECHANISM, and it is CSS rather than JavaScript. Tailwind v4
+   compiles `text-sm` to `font-size: var(--text-sm)`, so redefining those theme
+   vars downstream of @theme rescales every text utility in the app at once —
+   107 named usages plus the eleven eyebrows — without a single component
+   knowing the setting exists.
+
+   ONE SCALE FACTOR, NOT THREE COPIES OF THE SCALE. The alternative was a
+   :root[data-font-size="…"] block per level restating all eight sizes, i.e.
+   twenty-four numbers to keep in proportion by hand. Here each level sets one
+   number and the ratios between the sizes are stated once and cannot drift.
+
+   TEXT ONLY, DELIBERATELY. Tailwind v4 also derives its SPACING scale from a
+   rem base, so scaling the root font-size instead would have moved every
+   padding, gap and margin with it — a layout change rather than a legibility
+   one, and one that would push the tab bar and cards around at "large". The
+   48px min-touch floor is in px and is unaffected either way.
+
+   The attribute is stamped on <html> by logic/appearance.js before React
+   renders, so there is no flash of default-size text on load.
+   =========================================================================== */
+
+:root {
+  --font-scale: 1;
+}
+
+/* Higher specificity than @theme's bare :root, so these win wherever the
+   attribute is present. An absent or unrecognised attribute simply leaves the
+   scale at 1, which is `medium`. */
+:root[data-font-size='small'] {
+  --font-scale: 0.9;
+}
+
+:root[data-font-size='large'] {
+  --font-scale: 1.15;
+}
+
+/* The base ladder, restated once as calc() against the scale. These override
+   @theme's static values by source order — this block comes after it.
+
+   Line heights are NOT restated: Tailwind v4 expresses --text-*--line-height
+   as unitless ratios, so they follow the font-size automatically. */
+:root {
+  --text-eyebrow: calc(0.625rem * var(--font-scale));
+  --text-xs: calc(0.75rem * var(--font-scale));
+  --text-sm: calc(0.875rem * var(--font-scale));
+  --text-base: calc(1rem * var(--font-scale));
+  --text-lg: calc(1.125rem * var(--font-scale));
+  --text-xl: calc(1.25rem * var(--font-scale));
+  --text-2xl: calc(1.5rem * var(--font-scale));
+  --text-3xl: calc(1.875rem * var(--font-scale));
+}
+
+/* ===========================================================================
+   CUSTOM UTILITIES
+
+   Of the six utilities specified, only four need defining. Verified against
+   the emitted CSS of a production build (see report):
+
+     perspective-1000   custom  — core only ships NAMED perspective values
+                                  (perspective-dramatic/near/normal/…), so a
+                                  numeric 1000px variant does not exist.
+     hide-scrollbar     custom
+     safe-area-bottom   custom
+     min-touch          custom
+
+     backface-hidden    CORE in v4 — no custom definition.
+     rotate-y-180       CORE in v4 — no custom definition. Core's version is
+                                  composable: it sets --tw-rotate-y and merges
+                                  with the rotate-x and skew utilities through
+                                  a shared transform chain. An override that hard-set
+                                  `transform: rotateY(180deg)` would silently
+                                  break that composition, so it was removed.
+
+   line-clamp-1 is likewise core and is not defined here.
+   =========================================================================== */
+
+/* Flashcard 3D flip — the only part of the flip that core does not cover */
+@utility perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Horizontal scrollers */
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Bottom tab bar clearance on notched devices */
+@utility safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Minimum accessible tap target */
+@utility min-touch {
+  min-height: 48px;
+  min-width: 48px;
+}
