@@ -55,7 +55,8 @@ import { epochMsOf, DAY_MS } from './ist-date.js';
  *   getStreak/awardWeeklyShieldIfDue convention, so the day boundary is testable
  * @returns {{status: string, spent: number, missed: number, shields: number, covered: Array<string>}}
  *   status is one of:
- *     'none'     nothing was missed, or nothing needed paying for. Say nothing.
+ *     'none'     nothing was missed, nothing needed paying for, or there was no
+ *                streak to lose in the first place. Say nothing.
  *     'bridged'  `spent` shields covered `missed` days. Both are exact.
  *     'exceeded' the gap was longer than the shields held. `missed` is a LOWER
  *                BOUND, not the true length — see the return site.
@@ -68,12 +69,34 @@ export function bridgeStreakGap(instant = Date.now()) {
   const protectedDays = new Set(StreakProtection.getProtectedDays());
   const isCovered = (key) => completed.has(key) || protectedDays.has(key);
 
+  /* DID A STREAK EVER EXIST? The walk below cannot answer this: it starts at
+     yesterday and stops as soon as the gap becomes unaffordable, so "no covered
+     day within the window" is equally the shape of a student who was away three
+     weeks and of one who has never completed a day at all. Both spend nothing,
+     which is why the walk alone was enough while nothing read the status — but
+     'exceeded' is also what tells the student their streak ended, and saying
+     that to someone who never had one is simply false.
+
+     TODAY IS EXCLUDED, and that is the half that matters. A student who
+     completes their goal on their first ever day holds a live one-day streak
+     and has ended nothing; counting today's key as evidence would tell them it
+     broke on the day they started.
+
+     MEMBERSHIP, NOT ORDERING. getTodayKey emits unpadded keys ("2026-8-5"), so
+     these cannot be compared lexicographically to find "before today" — but
+     they do not need to be. Any recorded key that is not today's is a day
+     already past, so a single inequality test over the two sets already loaded
+     answers the question exactly, with no extra reads. */
+  const todayKey = DailyGoalsManager.getTodayKey(nowMs);
+  const hasCoveredDayBeforeToday =
+    [...completed, ...protectedDays].some((key) => key !== todayKey);
+
   /* NOTHING TO PROTECT is a real case, not an edge one: a student who has never
      completed a day has no streak, and bridging back from today would invent
      one out of days they never earned. The search below cannot distinguish
-     "never started" from "long gap" on its own, so it is the absence of a
-     covered day within the window that decides — and both answers are "spend
-     nothing", which is why one test covers them. */
+     "never started" from "long gap" on its own, so the two are separated below
+     by hasCoveredDayBeforeToday. Both still spend nothing; they differ only in
+     what the student is told. */
   const missedDays = [];
 
   /* A student holding nothing still runs one iteration, which is what reports
@@ -116,5 +139,15 @@ export function bridgeStreakGap(instant = Date.now()) {
      exactly how long they were away, which is worse than not naming it. Walking
      further to find the real figure would change no decision and would cost a
      scan of the whole keyspace, so the copy is written to need only the bound. */
+  /* NEVER STARTED IS NOT A LAPSE. Nothing was covered inside the window and
+     nothing is covered outside it either, so there is no streak behind this gap
+     to have ended. Reported as 'none' — the status for "say nothing" — with
+     missed 0, because days that were never part of a streak were not missed
+     from one. Nothing is spent on either path, so this changes what the student
+     is told and not what they are charged. */
+  if (!hasCoveredDayBeforeToday) {
+    return { status: 'none', spent: 0, missed: 0, shields, covered: [] };
+  }
+
   return { status: 'exceeded', spent: 0, missed: missedDays.length, shields, covered: [] };
 }
