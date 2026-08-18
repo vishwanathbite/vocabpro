@@ -203,27 +203,58 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
           type="button"
           onClick={() => setSheet('streak')}
           aria-label={`${streak} day streak, ${plural(shields, 'shield')}. View details.`}
-          className="min-touch -mr-2 flex items-center gap-3 rounded-lg px-2 text-slate-400 transition-colors hover:text-slate-200"
+          className="min-touch -mr-2 flex items-center gap-2 rounded-lg px-1 transition-opacity hover:opacity-80"
         >
-          {/* Icons are 17px so they read as objects rather than punctuation;
-              the numbers stay at 14px. Flat fills only — no gradient, glow or
-              shadow. Colour carries meaning: it appears only when the value is
-              above zero, and drops to muted slate when it is not. */}
-          <span className="flex items-center gap-1.5">
+          {/* THE STUDENT'S STANDING, sized like it. These were a 17px glyph
+              and a 14px number — smaller than the tab bar labels underneath
+              them, which made the two facts a student checks first read as a
+              footnote. The number now leads at 18px semibold in its own colour
+              and the glyph follows at 20px.
+
+              LIVE VALUES SIT IN A TINTED CHIP, dormant ones do not. The tint is
+              the ladder's /10 fill step, the same one a marked quiz row uses, so
+              nothing new is introduced — a held streak and a held shield simply
+              get the treatment the system already gives to "this one counts".
+
+              ZERO IS DORMANT, NOT BROKEN. No fill, no colour, muted slate at
+              the same size: the shape of the thing is there, waiting, rather
+              than absent or alarmed. Flat fills only — no gradient, glow or
+              shadow. */}
+          <span
+            className={`flex items-center gap-1.5 rounded-lg px-2 py-1 ${
+              streak > 0 ? 'bg-earned/10' : ''
+            }`}
+          >
             <Flame
-              width="17"
-              height="17"
+              width="20"
+              height="20"
               className={streak > 0 ? 'text-earned' : 'text-slate-500'}
             />
-            <span className="text-sm font-medium tabular-nums">{streak}</span>
+            <span
+              className={`text-lg font-semibold tabular-nums ${
+                streak > 0 ? 'text-earned' : 'text-slate-500'
+              }`}
+            >
+              {streak}
+            </span>
           </span>
-          <span className="flex items-center gap-1.5">
+          <span
+            className={`flex items-center gap-1.5 rounded-lg px-2 py-1 ${
+              shields > 0 ? 'bg-shield/10' : ''
+            }`}
+          >
             <Shield
-              width="17"
-              height="17"
+              width="20"
+              height="20"
               className={shields > 0 ? 'text-shield' : 'text-slate-500'}
             />
-            <span className="text-sm font-medium tabular-nums">{shields}</span>
+            <span
+              className={`text-lg font-semibold tabular-nums ${
+                shields > 0 ? 'text-shield' : 'text-slate-500'
+              }`}
+            >
+              {shields}
+            </span>
           </span>
         </button>
       </header>
@@ -258,8 +289,14 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
           Start is LIVE as of this step. Continue is still inert — it has no
           agreed destination.
           --------------------------------------------------------------- */}
+      {/* THE PRIMARY ZONE, GROUPED. Every child of this screen sat at the
+          same gap-4, so five cards of equal weight gave the eye nowhere to
+          rest. The challenge and the row under it are one decision — "the thing
+          to do now" — so they are tightened to gap-2 inside a wrapper, and the
+          gap-4 that remains between wrappers now separates zones rather than
+          items. Nothing moves horizontally and no card changes size. */}
       {!challengeDone ? (
-        <>
+        <section className="flex flex-col gap-2">
           <section className="rounded-xl bg-primary p-4">
             <p className="text-xs font-semibold tracking-wider text-white/70 uppercase">
               Today&rsquo;s challenge
@@ -293,9 +330,9 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
             <span className="font-medium text-white">Continue practising</span>
             <ChevronRight width="18" height="18" className="text-slate-400" />
           </button>
-        </>
+        </section>
       ) : (
-        <>
+        <section className="flex flex-col gap-2">
           <div className={`${CARD} flex items-center gap-2.5 px-4 py-3`}>
             <Check width="16" height="16" className="shrink-0 text-correct" />
             <span className="text-sm text-slate-300">Today&rsquo;s challenge done</span>
@@ -317,7 +354,7 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
             <span className="font-semibold text-white">Continue practising</span>
             <ChevronRight width="18" height="18" className="text-white/80" />
           </button>
-        </>
+        </section>
       )}
 
       {/* --- 3b. POINTS AND MASTERY -------------------------------------
@@ -335,35 +372,45 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
           NOT TAPPABLE. Both figures have a home on Progress, one tab away, and a
           tile that navigates would need the tab switcher this screen does not
           have. Plain text keeps them a readout, which is what they are. */}
+      {/* BORDERLESS ON PURPOSE, and that is the rhythm rule for the whole
+          screen: a border means the thing is tappable, a bare fill means it is
+          a readout, and a rule means it is editorial. These two are the only
+          readouts here, so they lose CARD's hairline and keep its fill — they
+          recede as surfaces while their numbers come forward.
+
+          THE NUMBER LEADS AT 24px, the label follows at eyebrow size in the
+          dimmer slate-500, and the sub-line matches the label rather than the
+          number. Before this the label and the value were nearly the same
+          weight, which is what made a growing figure read as inert. */}
       <section className="grid grid-cols-2 gap-2">
-        <div className={`${CARD} px-4 py-3`}>
-          <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
+        <div className="rounded-xl bg-white/[0.03] px-4 py-3">
+          <p className="text-eyebrow font-semibold tracking-wider text-slate-500 uppercase">
             Points
           </p>
-          <p className="mt-1 text-xl font-semibold text-white tabular-nums">
+          <p className="mt-1 text-2xl leading-tight font-semibold text-white tabular-nums">
             {formatNumber(stats.totalPoints)}
           </p>
           {/* At max level getLevelProgress reports 0 to next and nextLevel ===
               currentLevel, so the distance line would read "0 to next level" on
               a student who has no next level. Same wording Progress uses. */}
-          <p className="mt-0.5 text-xs text-slate-400 tabular-nums">
+          <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
             {levelProgress.isMaxLevel
               ? 'Highest level'
               : `${formatNumber(levelProgress.pointsToNext)} to next level`}
           </p>
         </div>
 
-        <div className={`${CARD} px-4 py-3`}>
-          <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
+        <div className="rounded-xl bg-white/[0.03] px-4 py-3">
+          <p className="text-eyebrow font-semibold tracking-wider text-slate-500 uppercase">
             Mastered
           </p>
-          <p className="mt-1 text-xl font-semibold text-white tabular-nums">
+          <p className="mt-1 text-2xl leading-tight font-semibold text-white tabular-nums">
             {formatNumber(stats.masteredWords)}
           </p>
           {/* js/ put "N need practice" here. Left out: strugglingWords is the
               same pool Smart Review already offers to fix, and naming it twice
               on one screen makes it a nag rather than a route. */}
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500">
             {pluralise(stats.masteredWords, 'word')}
           </p>
         </div>
@@ -430,13 +477,28 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
           Hidden entirely when getWordOfTheDay returns null. An empty editorial
           card is worse than no card: it is the one piece of real content on the
           screen, and a blank Playfair heading reads as a bug. */}
+      {/* NOT A CARD ANY MORE. It was the fifth grey rectangle in a column of
+          grey rectangles, indistinguishable from "Continue practising" despite
+          being the one piece of editorial content on the screen. The box is
+          gone and a hairline rule takes its place: the word now sits on the
+          page in Playfair rather than inside a container, which is what makes
+          it read as something written rather than something clickable.
+
+          DISTINCT BY FORM, NOT BY COLOUR. A tint or an accent border would have
+          had to borrow one of the four meaning tokens — and a word of the day
+          is not correct, incorrect, earned or a shield — or spend a second
+          purple on a screen whose purple belongs to the challenge. Typography
+          and a rule cost neither.
+
+          NO TALLER. The border and its padding come off (px-4 py-3 -> pt-3),
+          which pays for the rule above it; the serif stays at 2xl. */}
       {wotd && (
         <button
           type="button"
           onClick={() => setSheet('word')}
-          className={`${CARD} min-touch mt-1 w-full px-4 py-3 text-left transition-colors hover:bg-white/[0.06]`}
+          className="min-touch w-full border-t border-white/10 px-1 pt-3 text-left transition-opacity hover:opacity-80"
         >
-          <span className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
+          <span className="text-eyebrow font-semibold tracking-wider text-slate-500 uppercase">
             Word of the day
           </span>
           <span className="mt-1 block font-playfair text-2xl leading-tight font-bold text-white">
