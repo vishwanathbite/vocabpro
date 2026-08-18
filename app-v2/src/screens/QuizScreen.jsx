@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
 import { ArrowLeft, Check, Volume2, X } from '../components/icons.jsx'
 import { detailRows } from '../logic/item-details.js'
+import DetailList from '../components/DetailList.jsx'
 import { KeyboardShortcuts } from '../logic/settings.js'
 import { SoundManager } from '../logic/sound.js'
 import { speakWord } from '../logic/speech.js'
@@ -408,16 +409,7 @@ export default function QuizScreen({
               </div>
             </div>
 
-            {rows.length > 0 && (
-              <dl className="mt-4 space-y-1.5 border-t border-white/10 pt-4 text-sm">
-                {rows.map(([label, value]) => (
-                  <div key={label} className="flex gap-2">
-                    <dt className="shrink-0 font-semibold text-white">{label}:</dt>
-                    <dd className="text-slate-300">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
+            <DetailList rows={rows} />
 
             {/* --- SAVE THE WORD -----------------------------------------
                 AFTER THE ANSWER, never before it. The options are the only

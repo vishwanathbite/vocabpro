@@ -3,6 +3,7 @@ import { CARD } from '../components/chrome.js'
 import { ArrowLeft, Search, X } from '../components/icons.jsx'
 import { loadAllData } from '../data/loader.js'
 import { detailRows } from '../logic/item-details.js'
+import DetailList from '../components/DetailList.jsx'
 import { MIN_QUERY_LENGTH, buildCorpus, searchCorpus } from '../logic/search.js'
 import BookmarkToggle from '../quiz/BookmarkToggle.jsx'
 
@@ -219,16 +220,10 @@ export default function SearchScreen({ onBack }) {
                       {/* The item's remaining fields — example, mnemonic, usage,
                           category, explanation. Matched on none of them; shown
                           because this is where a student came to read. */}
-                      {rows.length > 0 && (
-                        <dl className="mt-3 space-y-1.5 border-t border-white/10 pt-3 text-sm">
-                          {rows.map(([label, value]) => (
-                            <div key={label} className="flex gap-2">
-                              <dt className="shrink-0 font-semibold text-white">{label}:</dt>
-                              <dd className="text-slate-300">{value}</dd>
-                            </div>
-                          ))}
-                        </dl>
-                      )}
+                      <DetailList
+                        rows={rows}
+                        className="mt-3 border-t border-white/10 pt-3"
+                      />
 
                       {/* THE SECOND BOOKMARK SURFACE, which js/ also offers from
                           search. `item` is the ORIGINAL stored object — search

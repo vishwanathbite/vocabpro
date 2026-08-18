@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 import BottomSheet from '../components/BottomSheet.jsx'
 import { CARD, ROW } from '../components/chrome.js'
-import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
+import { Flame, Shield, ChevronRight, Check, Volume2 } from '../components/icons.jsx'
+import DetailList from '../components/DetailList.jsx'
+import BookmarkToggle from '../quiz/BookmarkToggle.jsx'
+import { detailRows } from '../logic/item-details.js'
+import { speakWord } from '../logic/speech.js'
 import { DailyGoalsManager, DAILY_GOAL_PRESET_LIST } from '../logic/dailygoals.js'
 import {
   StatsManager,
@@ -529,18 +533,54 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
         </div>
       </BottomSheet>
 
+      {/* THE TILE STAYS TWO LINES AND THE SHEET CARRIES THE REST. js/ put
+          phonetics, example, mnemonic, synonyms and antonyms behind a "Learn
+          More" expander on the card itself; the same content lives here
+          instead, because this sheet already scrolls (max-h-[85vh], overflow
+          body) and the Learn screen has no vertical room to spend — the tile
+          is the one card already losing its last pixels to the tab bar.
+
+          THE DETAIL ROWS ARE THE SHARED ONES, not a WOTD-shaped copy. Word,
+          Pronunciation, Definition, Exam, Example, Synonyms, Antonyms,
+          Mnemonic and Usage all come from detailRows, so this sheet, the quiz
+          answer panel and a search result now teach the same word the same
+          way and cannot drift.
+
+          NO SHARE CONTROL. shareContent is ported and works, but with no
+          share sheet it silently writes to the clipboard, and app-v2 has no
+          toast — the button would appear to do nothing on every desktop
+          browser. It goes in when there is somewhere to say "copied". */}
       {wotd && (
         <BottomSheet isOpen={sheet === 'word'} onClose={() => setSheet(null)} title="Word of the day">
           <div className="space-y-3">
             <p className="font-playfair text-3xl leading-tight font-bold text-white">
               {wotd.word.word}
             </p>
-            <p className="text-sm text-slate-300">{wotd.word.definition}</p>
-            {wotd.word.example && (
-              <p className="border-t border-white/10 pt-3 text-sm text-slate-400 italic">
-                {wotd.word.example}
-              </p>
-            )}
+
+            {/* Both controls above the detail list, on one row: they act on the
+                word in the heading, and after nine rows of detail they would be
+                a scroll away from the thing they belong to. Same components and
+                the same call shape as the quiz answer panel — speakWord reads
+                the speechEnabled setting itself and every existing call site
+                ignores its return, and BookmarkToggle takes the stored item, so
+                a word saved here is indistinguishable from one saved mid-quiz.
+                'vocab' is honest as the mode label: getWordOfTheDay selects only
+                from the three vocabulary levels. */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => speakWord(wotd.word.word)}
+                aria-label={`Listen to the pronunciation of ${wotd.word.word}`}
+                className="min-touch -ml-2 flex items-center gap-2 rounded-lg px-2 text-sm font-medium text-slate-400 transition-colors hover:text-slate-200"
+              >
+                <Volume2 width="18" height="18" />
+                <span>Pronounce</span>
+              </button>
+
+              <BookmarkToggle wordData={wotd.word} mode="vocab" />
+            </div>
+
+            <DetailList rows={detailRows(wotd.word)} className="border-t border-white/10 pt-3" />
           </div>
         </BottomSheet>
       )}

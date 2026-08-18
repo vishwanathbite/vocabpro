@@ -24,9 +24,42 @@
  * no idioms. An idiom reaching here falls through to the vocabulary arm and
  * yields an empty list rather than a mislabelled one.
  *
+ * ROW ORDER, for the vocabulary arm. Word, Pronunciation, Definition, Exam,
+ * Example, Synonyms, Antonyms, Mnemonic, Usage.
+ *
+ * Pronunciation sits second because it belongs to the word rather than to the
+ * teaching — a student reads the headword and immediately wants to know how to
+ * say it, and js/ placed it the same way, directly under the heading.
+ *
+ * Exam is FOURTH, not last. It is the row that answers "why should I learn
+ * this", and for a student revising for SSC or UPSC it is the most motivating
+ * line on the card; below six teaching rows it would be read by nobody. It sits
+ * after Definition so the word is understood before it is justified, and above
+ * Example so it cannot fall off the first screenful of the answer panel.
+ *
+ * The teaching rows keep js/'s order among themselves — Example, Synonyms,
+ * Antonyms, Mnemonic — and Usage stays last as the narrowest note.
+ *
+ * ARRAYS ARE JOINED WITH ", " AND NOT TRUNCATED. js/ sliced synonyms and
+ * antonyms to three (js/screens.js:206-211) because they sat on a small home
+ * card; both surfaces here scroll, so the cap would only hide data the student
+ * asked to see. Dropping it also avoids restating the 3 — the corpus carries
+ * three to five of each, so the slice was invisible on some words and lossy on
+ * others.
+ *
+ * JOINED BEFORE FILTERING, which is what keeps the empty-value guard working:
+ * `[]` is truthy and would have passed the filter as a row with no value, while
+ * `[].join(', ')` is the empty string and is dropped like any other blank. All
+ * ten fields are populated across all 4,009 words today; the filter is for a
+ * corrupt store or a future record, not for the data as it ships.
+ *
  * @param {Object} wordData A stored vocabulary word, acronym or one-word item
  * @returns {Array<[string, string]>} Label/value pairs, empty values dropped
  */
+/* One join for every list field, so the separator is stated once. Non-arrays
+   pass through untouched, which lets the table below mix scalars and lists. */
+const joinValues = (value) => (Array.isArray(value) ? value.join(', ') : value);
+
 export const detailRows = (wordData) => {
   if (!wordData) return [];
 
@@ -48,8 +81,12 @@ export const detailRows = (wordData) => {
 
   return [
     ['Word', wordData.word],
+    ['Pronunciation', wordData.pronunciation],
     ['Definition', wordData.definition],
+    ['Exam', joinValues(wordData.exam)],
     ['Example', wordData.example],
+    ['Synonyms', joinValues(wordData.synonyms)],
+    ['Antonyms', joinValues(wordData.antonyms)],
     ['Mnemonic', wordData.mnemonic],
     ['Usage', wordData.usage]
   ].filter(([, value]) => value);
