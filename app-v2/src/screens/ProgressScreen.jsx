@@ -328,8 +328,23 @@ export default function ProgressScreen() {
                       Current
                     </span>
                   )}
-                  <span className={`tabular-nums ${reached ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {formatNumber(entry.minPoints)} XP
+                  {/* "from", PER ROW rather than as a column header. This
+                      column is each level's ENTRY THRESHOLD, and beside the row
+                      marked Current a bare "0 XP" read as the student's own
+                      score — flatly contradicting the card above, which says
+                      what they actually have. A header at the top of the card
+                      would label the column once and then be four or five rows
+                      away from whichever row is Current, so the ambiguity would
+                      return for everyone past level 1; a per-row qualifier
+                      cannot drift out of view. It also makes the visible text
+                      match the aria-label, which has said "from N XP" all
+                      along, so sighted and spoken readings finally agree.
+
+                      The word is inside the same span as the figure so it
+                      inherits the reached/locked colour, and outside the
+                      tabular-nums span, which exists to align digits. */}
+                  <span className={reached ? 'text-slate-400' : 'text-slate-500'}>
+                    from <span className="tabular-nums">{formatNumber(entry.minPoints)} XP</span>
                   </span>
                 </span>
               </p>
