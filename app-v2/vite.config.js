@@ -123,6 +123,51 @@ export default defineConfig(({ mode }) => {
           /* App shell, CSS, self-hosted fonts, icons and all five vocabulary
              chunks. Workbox precaches as one batch — see the note below. */
           globPatterns: ['**/*.{html,js,css,woff2,png,svg}'],
+
+          /* ================= CUTOVER ONLY — REVERT IN DEPLOY 2 =============
+             DELETE skipWaiting, clientsClaim and importScripts below, and
+             delete public/sw-legacy-purge.js, once a real device confirms the
+             legacy worker is gone. Everything else in this block stays.
+
+             WHY FORCE ACTIVATION ONCE. app-v2's worker lands at the same script
+             URL and scope as the legacy one, so it arrives as an update to that
+             registration — but an update WAITS while any client the old worker
+             controls is still open. In a TWA that means until the student fully
+             exits, which for an offline student is an unbounded time on the old
+             app. skipWaiting activates it on install instead; clientsClaim hands
+             the open page over rather than leaving it on a worker that is no
+             longer there.
+
+             THIS DOES NOT RELOAD ANYONE, which is why registerType stays
+             'prompt'. The reload students fear comes from autoUpdate's injected
+             registration listening for controllerchange and calling
+             location.reload — prompt's registration has no such listener, and
+             the plugin only forces these two flags on when registerType IS
+             'autoUpdate' (vite-plugin-pwa dist/index.js:874-877), so setting
+             them here does not smuggle that behaviour in. A student mid-quiz
+             keeps their session; the worker under them simply changes.
+
+             ONE CAVEAT WORTH KNOWING: clientsClaim hands a still-running LEGACY
+             page to a worker with no routes for legacy URLs. Online that falls
+             through to the network harmlessly. Offline it breaks that one
+             session until the next reload — which is strictly better than the
+             same student staying on the old build indefinitely.
+             ================================================================ */
+          skipWaiting: true,
+          clientsClaim: true,
+
+          /* Workbox's own housekeeping: retires precaches written by earlier
+             Workbox versions. It does NOT touch vocabpro-v*, which is a foreign
+             cache name — that is what the imported script is for. */
+          cleanupOutdatedCaches: true,
+
+          /* THE ONLY EXTENSION POINT generateSW OFFERS. It writes the worker
+             from a template and accepts no arbitrary activate handler, so
+             custom code arrives via importScripts, emitted at the top of sw.js.
+             The path is relative to the worker's own URL, so it follows
+             DEPLOY_BASE without being restated. No move to injectManifest is
+             needed or made. */
+          importScripts: ['sw-legacy-purge.js'],
         },
       }),
     ],
