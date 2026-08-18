@@ -164,7 +164,7 @@ export default function FlashcardScreen({
             <div className="flex items-center gap-3">
               <span
                 aria-label={`${known} cards known`}
-                className="flex items-center gap-1.5 text-sm font-semibold text-emerald-300 tabular-nums"
+                className="flex items-center gap-1.5 text-sm font-semibold text-correct tabular-nums"
               >
                 <Check width="16" height="16" aria-hidden="true" />
                 {known}
@@ -308,7 +308,7 @@ export default function FlashcardScreen({
             type="button"
             onClick={() => onRate(true)}
             aria-label="Got it — mark card as known"
-            className="min-touch flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-400/50 bg-emerald-400/10 px-4 font-semibold text-emerald-200 transition-colors hover:bg-emerald-400/20"
+            className="min-touch flex flex-1 items-center justify-center gap-2 rounded-xl border border-correct/40 bg-correct/10 px-4 font-semibold text-correct transition-colors hover:bg-correct/20"
           >
             <Check width="20" height="20" aria-hidden="true" />
             <span>Got It!</span>

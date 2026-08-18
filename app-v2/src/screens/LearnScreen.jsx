@@ -213,7 +213,7 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
             <Flame
               width="17"
               height="17"
-              className={streak > 0 ? 'text-amber-400' : 'text-slate-500'}
+              className={streak > 0 ? 'text-earned' : 'text-slate-500'}
             />
             <span className="text-sm font-medium tabular-nums">{streak}</span>
           </span>
@@ -221,7 +221,7 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
             <Shield
               width="17"
               height="17"
-              className={shields > 0 ? 'text-sky-400' : 'text-slate-500'}
+              className={shields > 0 ? 'text-shield' : 'text-slate-500'}
             />
             <span className="text-sm font-medium tabular-nums">{shields}</span>
           </span>
@@ -238,7 +238,7 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
       {bridgeCopy(streakBridge) && (
         <p
           role="status"
-          className={`${CARD} px-4 py-3 text-sm text-sky-200`}
+          className={`${CARD} px-4 py-3 text-sm text-shield`}
         >
           {bridgeCopy(streakBridge)}
         </p>
@@ -297,7 +297,7 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
       ) : (
         <>
           <div className={`${CARD} flex items-center gap-2.5 px-4 py-3`}>
-            <Check width="16" height="16" className="shrink-0 text-emerald-400" />
+            <Check width="16" height="16" className="shrink-0 text-correct" />
             <span className="text-sm text-slate-300">Today&rsquo;s challenge done</span>
             {/* isCompletedToday and getTodayResult read two different fields —
                 lastCompletedDate and history[today] — so a pruned or partially

@@ -54,7 +54,7 @@ import { createDefaultStats } from './stats-shape.js';
  * derived from a running total, not an award; making it sticky would mean storing
  * a high-water mark, which is a schema change for no one's benefit today.
  *
- * Names, ids, colours and badge emoji are unchanged.
+ * Names, ids and badge emoji are unchanged.
  */
 /*
  * RESCALED AGAIN in step 10, from a 100,000 top to 300,000.
@@ -69,6 +69,18 @@ import { createDefaultStats } from './stats-shape.js';
  * ladder consumed by one year of ordinary use, and nothing above Level 6
  * distinguishing a 70% student from a 90% one.
  *
+ * THE `color` FIELD IS GONE. Each row carried a Tailwind class — bg-gray-500
+ * up to a yellow-to-orange gradient for Legend — and nothing in app-v2 ever
+ * read one: ProgressScreen states in its own comment why it declines them, and
+ * that palette fights the app's chrome and would have put a second purple on a
+ * screen whose one purple is the progress bar. Removed rather than retargeted
+ * to the new meaning colours, because a level is not one of the four meanings —
+ * those are earned, correct, incorrect and shield, and a level is none of them.
+ * js/ keeps its own LEVEL_CONFIG with its own colours and is unaffected.
+ *
+ * `badge` stays: it is unread here too, but it is content rather than styling,
+ * and the ladder may yet show it.
+ *
  * EACH maxPoints IS EXACTLY THE NEXT minPoints MINUS ONE. getLevelInfo does a
  * bounded find and falls back to LEVEL_CONFIG[0] on a miss, so a gap of a single
  * point would report that score as Level 1 — a Legend shown as a Beginner. Every
@@ -77,16 +89,16 @@ import { createDefaultStats } from './stats-shape.js';
  * Names, ids, colours and badge emoji are unchanged.
  */
 const LEVEL_CONFIG = [
-  { level: 1, name: 'Beginner', minPoints: 0, maxPoints: 499, color: 'bg-gray-500', badge: '🌱' },
-  { level: 2, name: 'Novice', minPoints: 500, maxPoints: 1499, color: 'bg-blue-500', badge: '📚' },
-  { level: 3, name: 'Learner', minPoints: 1500, maxPoints: 3999, color: 'bg-green-500', badge: '🎓' },
-  { level: 4, name: 'Explorer', minPoints: 4000, maxPoints: 9999, color: 'bg-yellow-500', badge: '🔍' },
-  { level: 5, name: 'Achiever', minPoints: 10000, maxPoints: 24999, color: 'bg-orange-500', badge: '🏆' },
-  { level: 6, name: 'Expert', minPoints: 25000, maxPoints: 49999, color: 'bg-red-500', badge: '⭐' },
-  { level: 7, name: 'Master', minPoints: 50000, maxPoints: 99999, color: 'bg-purple-500', badge: '👑' },
-  { level: 8, name: 'Virtuoso', minPoints: 100000, maxPoints: 179999, color: 'bg-pink-500', badge: '💎' },
-  { level: 9, name: 'Champion', minPoints: 180000, maxPoints: 299999, color: 'bg-indigo-500', badge: '🏅' },
-  { level: 10, name: 'Legend', minPoints: 300000, maxPoints: Infinity, color: 'bg-gradient-to-r from-yellow-400 to-orange-500', badge: '🔥' }
+  { level: 1, name: 'Beginner', minPoints: 0, maxPoints: 499, badge: '🌱' },
+  { level: 2, name: 'Novice', minPoints: 500, maxPoints: 1499, badge: '📚' },
+  { level: 3, name: 'Learner', minPoints: 1500, maxPoints: 3999, badge: '🎓' },
+  { level: 4, name: 'Explorer', minPoints: 4000, maxPoints: 9999, badge: '🔍' },
+  { level: 5, name: 'Achiever', minPoints: 10000, maxPoints: 24999, badge: '🏆' },
+  { level: 6, name: 'Expert', minPoints: 25000, maxPoints: 49999, badge: '⭐' },
+  { level: 7, name: 'Master', minPoints: 50000, maxPoints: 99999, badge: '👑' },
+  { level: 8, name: 'Virtuoso', minPoints: 100000, maxPoints: 179999, badge: '💎' },
+  { level: 9, name: 'Champion', minPoints: 180000, maxPoints: 299999, badge: '🏅' },
+  { level: 10, name: 'Legend', minPoints: 300000, maxPoints: Infinity, badge: '🔥' }
 ];
 
 /**

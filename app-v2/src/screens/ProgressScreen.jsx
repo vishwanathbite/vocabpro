@@ -216,7 +216,7 @@ export default function ProgressScreen() {
                 <Shield
                   width="17"
                   height="17"
-                  className={shields > 0 ? 'text-sky-400' : 'text-slate-500'}
+                  className={shields > 0 ? 'text-shield' : 'text-slate-500'}
                 />
                 <span className="text-xl font-semibold text-white tabular-nums">{shields}</span>
               </p>

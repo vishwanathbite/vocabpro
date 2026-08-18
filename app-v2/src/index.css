@@ -21,6 +21,44 @@
   --color-navy: #0F172A;
 
   /* -------------------------------------------------------------------------
+     MEANING COLOURS — saturation is information.
+
+     The app is quiet by default: surfaces are navy, text is slate, borders are
+     white at 10%. These four are the only vivid colours in it, and each one
+     means exactly one thing, so a student learns them without being told:
+
+       correct    a right answer
+       incorrect  a wrong one
+       earned     a streak day kept
+       shield     a shield held or spent
+
+     ROSE, NOT RED, for incorrect. Being wrong is the ordinary case in a
+     learning app — a student meets it several times a session — and red-500
+     reads as a system error, the colour of a failed payment. Rose carries the
+     same "not this one" without the alarm.
+
+     THE ALPHA LADDER IS 10 / 20 / 40 / 70, and nothing else. Each step has one
+     role, so a reader can tell what a value means without hunting for the
+     component:
+
+       /10   tinted fill behind a marked row or panel
+       /20   the same fill on hover, and the small icon badge inside a row
+       /40   a resting border
+       /70   an emphasis border — the option that IS the answer
+
+     Text and icons take the token SOLID. These four hues are light enough on
+     navy to carry themselves, so the old habit of reaching for a -200 or -300
+     tint to stay legible is unnecessary.
+
+     Before this, the same hues appeared at /60, /50, /40, /20, /10 and
+     /[0.07] with no rule — six steps, four of them used once.
+     ------------------------------------------------------------------------- */
+  --color-correct: #34D399;
+  --color-incorrect: #FB7185;
+  --color-earned: #F5B93F;
+  --color-shield: #4CC9F0;
+
+  /* -------------------------------------------------------------------------
      FONTS
      Font FILES are not present yet — self-hosting is a separate decision and
      no CDN request is made anywhere. These register the families so the

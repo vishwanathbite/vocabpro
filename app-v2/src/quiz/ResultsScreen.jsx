@@ -84,7 +84,7 @@ function WrongRow({ entry }) {
         )}
         <div className="flex gap-2">
           <dt className="shrink-0 text-slate-400">{ANSWER_LABEL}:</dt>
-          <dd className="text-emerald-200">{correct}</dd>
+          <dd className="text-correct">{correct}</dd>
         </div>
         {showDefinition && (
           <div className="flex gap-2">

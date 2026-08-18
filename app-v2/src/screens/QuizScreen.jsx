@@ -326,7 +326,7 @@ export default function QuizScreen({
             the correct and wrong tones must REPLACE those two utilities rather
             than sit alongside them, and Tailwind v4 resolves conflicts by
             stylesheet order, not by class-attribute order — so `${CARD}
-            border-emerald-400/60` is not reliably emerald. Each state
+            border-correct/70` is not reliably the correct tone. Each state
             therefore names its own complete pair. If CARD's values change,
             these three lines have to change with them. */}
         <ul className="mt-6 flex flex-col gap-2" aria-label="Answer options">
@@ -340,8 +340,8 @@ export default function QuizScreen({
             const markWrong = showResult && isPicked && !isTheAnswer
 
             let tone = 'border-white/10 bg-white/[0.03] text-white'
-            if (markCorrect) tone = 'border-emerald-400/60 bg-emerald-400/10 text-white'
-            else if (markWrong) tone = 'border-red-400/60 bg-red-400/10 text-white'
+            if (markCorrect) tone = 'border-correct/70 bg-correct/10 text-white'
+            else if (markWrong) tone = 'border-incorrect/70 bg-incorrect/10 text-white'
             else if (showResult) tone = 'border-white/10 bg-white/[0.03] text-slate-400'
 
             return (
@@ -358,9 +358,9 @@ export default function QuizScreen({
                     aria-hidden="true"
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${
                       markCorrect
-                        ? 'bg-emerald-400/20 text-emerald-300'
+                        ? 'bg-correct/20 text-correct'
                         : markWrong
-                          ? 'bg-red-400/20 text-red-300'
+                          ? 'bg-incorrect/20 text-incorrect'
                           : 'bg-white/10 text-slate-400'
                     }`}
                   >
@@ -370,9 +370,9 @@ export default function QuizScreen({
                   <span className="flex-1 text-sm leading-snug">{option}</span>
 
                   {markCorrect && (
-                    <Check width="18" height="18" className="shrink-0 text-emerald-400" />
+                    <Check width="18" height="18" className="shrink-0 text-correct" />
                   )}
-                  {markWrong && <X width="18" height="18" className="shrink-0 text-red-400" />}
+                  {markWrong && <X width="18" height="18" className="shrink-0 text-incorrect" />}
                 </button>
               </li>
             )
@@ -385,25 +385,25 @@ export default function QuizScreen({
             role="status"
             aria-live="polite"
             className={`mt-6 rounded-xl border p-4 ${
-              isCorrect ? 'border-emerald-400/40 bg-emerald-400/[0.07]' : 'border-red-400/40 bg-red-400/[0.07]'
+              isCorrect ? 'border-correct/40 bg-correct/10' : 'border-incorrect/40 bg-incorrect/10'
             }`}
           >
             <div className="flex items-start gap-3">
               <span
                 aria-hidden="true"
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                  isCorrect ? 'bg-emerald-400/20' : 'bg-red-400/20'
+                  isCorrect ? 'bg-correct/20' : 'bg-incorrect/20'
                 }`}
               >
                 {isCorrect ? (
-                  <Check width="18" height="18" className="text-emerald-400" />
+                  <Check width="18" height="18" className="text-correct" />
                 ) : (
-                  <X width="18" height="18" className="text-red-400" />
+                  <X width="18" height="18" className="text-incorrect" />
                 )}
               </span>
               <div>
                 <p className="font-semibold text-white">{isCorrect ? 'Correct!' : 'Incorrect'}</p>
-                <p className={`text-sm ${isCorrect ? 'text-emerald-200' : 'text-red-200'}`}>
+                <p className={`text-sm ${isCorrect ? 'text-correct' : 'text-incorrect'}`}>
                   {isCorrect ? 'Great job! Keep it up!' : "Don't worry, learn from it!"}
                 </p>
               </div>
@@ -455,7 +455,7 @@ export default function QuizScreen({
                 The chain is written so that a future third state cannot show
                 two marks at once by accident. */}
             {poolExit ? (
-              <p className="mt-4 border-t border-white/10 pt-3 text-sm text-emerald-200">
+              <p className="mt-4 border-t border-white/10 pt-3 text-sm text-correct">
                 <span className="font-semibold text-white">Mastered.</span> {poolExit} leaves Smart
                 Review.
               </p>
