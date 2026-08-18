@@ -42,6 +42,7 @@
  */
 
 import { VOCAB_LEVELS, MIXED } from '../data/loader.js'
+import { POINTS_CONFIG } from '../logic/gamification.js'
 
 export { MIXED }
 
@@ -96,6 +97,24 @@ export const DEFAULT_DIFFICULTY = MIXED
 const LEVEL_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }
 
 /**
+ * What each level pays, READ FROM THE TABLE THAT CHARGES IT.
+ *
+ * js/ printed "10 points per question" under each level as three literals
+ * (js/components.js:1060-1082) and app-v2 printed nothing, so a student could
+ * not tell why they would choose Hard. Restating 10/15/20 here would have made
+ * a fourth copy of prices that POINTS_CONFIG already owns and calculatePoints
+ * already spends, so these are indexed out of it — a retune of the table moves
+ * the picker with it.
+ *
+ * "PER CORRECT ANSWER", not js/'s "per question": nothing is paid for a wrong
+ * one. It is the BASE price and deliberately does not mention the streak bonus
+ * calculatePoints adds on top — that bonus is the same at every level, so it
+ * cannot inform this choice, and naming it here would turn a comparison into a
+ * scoring lecture.
+ */
+const LEVEL_POINTS = VOCAB_LEVELS.map((level) => POINTS_CONFIG[level])
+
+/**
  * The rows the difficulty picker offers, in display order.
  *
  * MIXED IS FIRST because it is the default and the broadest — a student who
@@ -106,17 +125,26 @@ const LEVEL_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }
  * subtitle under each would mean either restating word counts — which live in
  * the data files and would be a fourth place to keep them correct — or writing
  * three lines that say nothing the label does not.
+ *
+ * MIXED QUOTES A RANGE, and that is the literal truth rather than a hedge: the
+ * points key resolves to the WORD'S OWN difficulty before the session's, so a
+ * Mixed quiz pays each question at its own level's price. One flat figure would
+ * be wrong for two thirds of them.
  */
 export const DIFFICULTY_OPTIONS = [
   {
     id: MIXED,
     name: 'Mixed',
-    description: 'Draws from all three levels'
+    description: 'Draws from all three levels',
+    points: `${Math.min(...LEVEL_POINTS)}–${Math.max(
+      ...LEVEL_POINTS
+    )} points per correct answer, by word level`
   },
   ...VOCAB_LEVELS.map((level) => ({
     id: level,
     name: LEVEL_LABELS[level] ?? level,
-    description: null
+    description: null,
+    points: `${POINTS_CONFIG[level]} points per correct answer`
   }))
 ]
 

@@ -509,10 +509,14 @@ const OnboardingManager = {
       title: 'Welcome to VocabPro!',
       /* 4,800+, not 5,900+. The old figure counted the 1,116 idioms, which
          app-v2 does not ship — idioms.js was never ported. The corpus is 4,809:
-         4,009 vocabulary words, 300 acronyms, 500 one-word substitutes. THE ONLY
-         SITE stating a corpus size in app-v2; if a second one ever appears, both
-         should read one exported constant, since the target is 10,000 within the
-         year and this string will be edited again. */
+         4,009 vocabulary words, 300 acronyms, 500 one-word substitutes.
+
+         NO LONGER THE ONLY SITE, and no longer the one a student reads: these
+         steps still have no renderer, while the PWA manifest in vite.config.js
+         now states the same figure and is the only corpus claim that reaches a
+         screen. Both say 4,800+ and both have to be edited together — the corpus
+         targets 10,000 within the year — which is the point at which they should
+         read one exported constant instead. */
       description: 'Master 4,800+ vocabulary items for competitive exams like UPSC, SSC, Banking & more.',
       icon: '📚',
       highlight: null

@@ -56,6 +56,14 @@ export default function DifficultyPicker({ mode, remembered, onSelect, onClose }
                 {option.description && (
                   <span className="block text-xs text-slate-400">{option.description}</span>
                 )}
+                {/* Plain text for now — the visual treatment is a later pass.
+                    Its own line rather than appended to the description, since
+                    only Mixed has a description and the three levels would
+                    otherwise have the price as their whole subtitle in one
+                    style and Mixed's in another. */}
+                {option.points && (
+                  <span className="block text-xs text-slate-400 tabular-nums">{option.points}</span>
+                )}
               </span>
               {isCurrent && <Check width="18" height="18" className="shrink-0 text-primary" />}
             </button>

@@ -93,8 +93,19 @@ export default defineConfig(({ mode }) => {
           id: 'com.literaryrides.vocabpro',
           name: 'Literary Rides VocabPro',
           short_name: 'VocabPro',
+          /* 4,800+, NOT the legacy manifest's 5,900+. That figure counted the
+             1,116 idioms app-v2 does not ship — idioms.js was never ported — so
+             carrying it across field-for-field carried a false claim with it.
+             The corpus is 4,809: 4,009 vocabulary words, 300 acronyms, 500
+             one-word substitutes. The legacy manifest.json keeps its own figure,
+             because it still serves the build that has those idioms.
+
+             THE ONLY CORPUS FIGURE A STUDENT CAN READ. The other one in the tree
+             (OnboardingManager.steps) has no renderer. If that changes, or a
+             third appears, they should read one exported constant — the corpus
+             targets 10,000 within the year and both strings will be edited. */
           description:
-            'Master 5,900+ vocabulary items for UPSC, SSC, Banking, Railways & CAT. Free forever.',
+            'Master 4,800+ vocabulary items for UPSC, SSC, Banking, Railways & CAT. Free forever.',
           scope: base,
           start_url: base,
           display: 'standalone',

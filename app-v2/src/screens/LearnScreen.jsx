@@ -3,9 +3,14 @@ import BottomSheet from '../components/BottomSheet.jsx'
 import { CARD, ROW } from '../components/chrome.js'
 import { Flame, Shield, ChevronRight, Check } from '../components/icons.jsx'
 import { DailyGoalsManager, DAILY_GOAL_PRESET_LIST } from '../logic/dailygoals.js'
-import { StatsManager, StreakProtection, MAX_SHIELDS } from '../logic/gamification.js'
+import {
+  StatsManager,
+  StreakProtection,
+  MAX_SHIELDS,
+  getLevelProgress
+} from '../logic/gamification.js'
 import { DailyChallengeManager, DAILY_CHALLENGE_QUESTIONS } from '../logic/daily-challenge.js'
-import { pluralise, plural, formatDayCount } from '../logic/format.js'
+import { pluralise, plural, formatDayCount, formatNumber } from '../logic/format.js'
 import { getWordOfTheDay } from '../logic/word-of-day.js'
 import LaunchNotice from '../quiz/LaunchNotice.jsx'
 import { DAILY_MODE } from '../quiz/quiz-modes.js'
@@ -152,7 +157,19 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
      The reasoning above is unchanged from when this read SRS entries; only the
      store moved. loadStats is what guarantees the field exists on a save
      written before the pool did. */
-  const [reviewDue] = useState(() => StatsManager.loadStats().reviewPool.length)
+  /* ONE READ, not three. This screen already loaded stats for reviewDue, and
+     the two tiles below need totalPoints and masteredWords off the same object;
+     calling loadStats again per value would re-validate the whole blob twice
+     for fields that cannot change while Learn is mounted. */
+  const [stats] = useState(() => StatsManager.loadStats())
+
+  const reviewDue = stats.reviewPool.length
+
+  /* DERIVED, NOT STORED, and derived here rather than read from anywhere new:
+     getLevelProgress is the same function Progress uses for the identical
+     figure, so the two screens cannot disagree about how far the next level is.
+     Nothing is computed that did not already exist. */
+  const levelProgress = getLevelProgress(stats.totalPoints)
 
   /* Null when no vocabulary has loaded yet, or when every difficulty is empty.
      useMemo so a sheet opening does not re-run it. */
@@ -298,6 +315,55 @@ export default function LearnScreen({ onStartQuiz, launch, streakBridge }) {
           </button>
         </>
       )}
+
+      {/* --- 3b. POINTS AND MASTERY -------------------------------------
+          TWO OF js/'s FOUR HOME CARDS, restored deliberately short of the set.
+          js/ also showed a streak card — the header above already carries the
+          day streak and shields — and an accuracy card, which is the one figure
+          on that screen a student cannot act on and which Progress still shows.
+
+          BELOW THE CHALLENGE, NOT ABOVE IT. These are a record of what has been
+          done; the challenge is the thing to do now, and it keeps the fold. On a
+          360px screen this row sits at the fold rather than above it, which is
+          the right trade for a card that answers "how am I doing" rather than
+          "what next".
+
+          NOT TAPPABLE. Both figures have a home on Progress, one tab away, and a
+          tile that navigates would need the tab switcher this screen does not
+          have. Plain text keeps them a readout, which is what they are. */}
+      <section className="grid grid-cols-2 gap-2">
+        <div className={`${CARD} px-4 py-3`}>
+          <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
+            Points
+          </p>
+          <p className="mt-1 text-xl font-semibold text-white tabular-nums">
+            {formatNumber(stats.totalPoints)}
+          </p>
+          {/* At max level getLevelProgress reports 0 to next and nextLevel ===
+              currentLevel, so the distance line would read "0 to next level" on
+              a student who has no next level. Same wording Progress uses. */}
+          <p className="mt-0.5 text-xs text-slate-400 tabular-nums">
+            {levelProgress.isMaxLevel
+              ? 'Highest level'
+              : `${formatNumber(levelProgress.pointsToNext)} to next level`}
+          </p>
+        </div>
+
+        <div className={`${CARD} px-4 py-3`}>
+          <p className="text-eyebrow font-semibold tracking-wider text-slate-400 uppercase">
+            Mastered
+          </p>
+          <p className="mt-1 text-xl font-semibold text-white tabular-nums">
+            {formatNumber(stats.masteredWords)}
+          </p>
+          {/* js/ put "N need practice" here. Left out: strugglingWords is the
+              same pool Smart Review already offers to fix, and naming it twice
+              on one screen makes it a nag rather than a route. */}
+          <p className="mt-0.5 text-xs text-slate-400">
+            {pluralise(stats.masteredWords, 'word')}
+          </p>
+        </div>
+      </section>
 
       {/* --- 4. DAILY GOAL ---------------------------------------------
           goalTarget, not goalDone, governs the inflection in both this row's
