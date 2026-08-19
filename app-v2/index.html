@@ -5,6 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>app-v2</title>
+    <!-- Cloudflare Web Analytics. THE ONLY THIRD-PARTY RESOURCE app-v2 loads:
+         everything else — React, the fonts, the whole corpus — is bundled or
+         self-hosted. Restored after the Phase 6 cutover dropped it with the
+         legacy shell, so the app reported nothing.
+
+         THE TOKEN IS PUBLIC BY DESIGN. It is a write-only site identifier, not
+         a credential; the worst it permits is someone posting junk pageviews
+         into our own dashboard. It is safe in a public repo.
+
+         FLAGGED FOR THE CSP PASS: a policy written now needs script-src and
+         connect-src exceptions for static.cloudflareinsights.com. Before this
+         line there were none to write. -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+    data-cf-beacon='{"token": "8c578877abcb4bceace296cda65fb4b9"}'></script>
   </head>
   <body>
     <div id="root"></div>

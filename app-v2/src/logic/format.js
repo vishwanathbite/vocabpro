@@ -40,21 +40,14 @@
  */
 
 // ===========================
-// VALIDATION & REFERRAL
+// VALIDATION
 // ===========================
 
-/**
- * Generate a referral code from a user's name
- * @param {string} firstName - User's first name
- * @param {string} lastName - User's last name
- * @returns {string} - Unique referral code
- */
-export const generateReferralCode = (firstName, lastName) => {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 6);
-  const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
-  return `${initials}${timestamp}${random}`.toUpperCase();
-};
+/* generateReferralCode WAS HERE and is gone. It took a first and last name —
+   fields no screen in app-v2 collects — and minted a code for a referral system
+   that cannot exist without a server. Exported, never imported. Removed because
+   a reader auditing this repo should not find name-handling code in an app that
+   collects nothing. */
 
 /**
  * Validate email format

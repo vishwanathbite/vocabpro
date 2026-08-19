@@ -25,11 +25,15 @@
 /**
  * A fresh default stats object.
  *
- * The field set is deliberately UNCHANGED from what the two copies declared,
- * including the ones nothing can write any more: `referrals` (accounts are cut)
- * and the four `idioms*` counters (idioms are cut). Old saves contain them, so
- * removing them is a migration rather than a cleanup, and that waits for
- * Phase 6 — see the retired-badge note in gamification.js.
+ * `referrals` IS GONE, Phase 6 having arrived. It counted invitations for an
+ * account system that no longer exists, and nothing in this tree could write it.
+ * Dropping a field from the DEFAULTS is not a destructive migration: deepMerge
+ * copies unknown keys through, so an old save that carries `referrals: 3` keeps
+ * it untouched in storage — it simply stops being minted for new students.
+ *
+ * The four `idioms*` counters stay for now. They are the same kind of dead, but
+ * they are read by the retired-badge guards in gamification.js, so removing them
+ * is a separate change with its own blast radius.
  *
  * @returns {Object} Initial statistics, owning its own arrays
  */
@@ -50,7 +54,6 @@ export const createDefaultStats = () => ({
   // correctly twice with no wrong in between. Replaces the SM-2 scheduler.
   reviewPool: [],
 
-  referrals: 0,
   modesPlayed: 0,
   modesPlayedList: [],
   level: 1,

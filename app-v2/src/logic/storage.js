@@ -31,13 +31,17 @@ const LEGACY_KEYS = [
   'vocabProQuizHistory',
   'vocabProOnboarding',
   'vocabProStreakProtection',
-  'vocabProUsers',
-  'vocabProCurrentUser',
   'vocabProWOTD',
   'vocabProSoundEnabled',
-  'vocabProStats',
-  'pendingReferral'
+  'vocabProStats'
 ];
+
+/* vocabProUsers, vocabProCurrentUser AND pendingReferral WERE HERE. app-v2 has
+   no accounts and no referrals, so migrating those blobs forward meant copying
+   a student's old profile — a name, a mobile number, an email, a toy password
+   hash — into a store nothing would ever read it from. Left where they are:
+   this list is also what cleanup deletes, so dropping them stops app-v2
+   touching that data in either direction. */
 
 // Prefix for preserved copies of state blobs that failed to load. A corrupt blob
 // may be the only remaining copy of the user's data, so these are kept rather
@@ -192,15 +196,16 @@ const getDefaultState = () => ({
     protectedDays: []
   },
 
-  // User profiles (for multi-user support)
-  users: [],
-  currentUser: null,
+  /* users, currentUser AND pendingReferral WERE HERE, and are gone with the
+     account system they belonged to. Nothing in app-v2 read them; a reviewer
+     reading this file could reasonably have taken them for data collection.
+
+     NOT A DESTRUCTIVE MIGRATION. deepMerge copies unknown keys through, so a
+     store written by js/ that still carries these sections keeps them intact —
+     they simply stop being created, validated or salvaged here. */
 
   // Word of the Day tracking
   wordOfTheDay: null,
-
-  // Pending referral code
-  pendingReferral: null,
 
   // Quiz preferences — the last difficulty chosen, per mode.
   //
@@ -289,16 +294,10 @@ const validateState = (state) => {
   validated.version = STORAGE_VERSION;
 
   // deepMerge copies scalars through verbatim, so a blob carrying a wrong-typed
-  // account section (users as a string, currentUser as a number) would survive
-  // merging and be treated as a real session. Reset only sections whose shape is
-  // wrong; a well-formed section is never touched.
-  if (!Array.isArray(validated.users)) {
-    validated.users = defaults.users;
-  }
-  if (validated.currentUser !== null &&
-      (typeof validated.currentUser !== 'object' || Array.isArray(validated.currentUser))) {
-    validated.currentUser = defaults.currentUser;
-  }
+  // section would survive merging and be treated as real. Reset only sections
+  // whose shape is wrong; a well-formed section is never touched. The users and
+  // currentUser guards went with the account sections themselves — an unknown
+  // key that app-v2 never reads needs no shape.
   if (!validated.stats || typeof validated.stats !== 'object' || Array.isArray(validated.stats)) {
     validated.stats = defaults.stats;
   }
@@ -400,23 +399,9 @@ const migrateLegacyData = () => {
       } catch (e) { /* ignore */ }
     }
 
-    // Migrate users
-    const users = localStorage.getItem('vocabProUsers');
-    if (users) {
-      hasLegacyData = true;
-      try {
-        state.users = JSON.parse(users);
-      } catch (e) { /* ignore */ }
-    }
-
-    // Migrate current user
-    const currentUser = localStorage.getItem('vocabProCurrentUser');
-    if (currentUser) {
-      hasLegacyData = true;
-      try {
-        state.currentUser = JSON.parse(currentUser);
-      } catch (e) { /* ignore */ }
-    }
+    /* The users and currentUser migrations were here. app-v2 has nowhere to
+       put a profile and nothing that reads one, so copying it forward would
+       only spread personal data into a second store. */
 
     // Migrate word of the day
     const wotd = localStorage.getItem('vocabProWOTD');
@@ -425,13 +410,6 @@ const migrateLegacyData = () => {
       try {
         state.wordOfTheDay = JSON.parse(wotd);
       } catch (e) { /* ignore */ }
-    }
-
-    // Migrate pending referral
-    const pendingReferral = localStorage.getItem('pendingReferral');
-    if (pendingReferral) {
-      hasLegacyData = true;
-      state.pendingReferral = pendingReferral;
     }
 
     // Migrate guest stats. This key predates the unified store and was never
@@ -578,14 +556,10 @@ const extractJSONValue = (raw, key) => {
  * to be trusted.
  *
  * Deliberately excluded:
- *   - pendingReferral: re-arming a referral that may already have been consumed
- *     would award the bonus twice. Losing it is the safer failure.
  *   - wordOfTheDay: rebuilds itself on the next load.
  *   - version/createdAt/updatedAt: metadata, reset by validateState anyway.
  */
 const SALVAGEABLE_SECTIONS = {
-  users: 'array',
-  currentUser: 'object',
   stats: 'object',
   settings: 'object',
   srs: 'object',
