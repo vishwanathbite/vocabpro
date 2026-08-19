@@ -124,50 +124,27 @@ export default defineConfig(({ mode }) => {
              chunks. Workbox precaches as one batch — see the note below. */
           globPatterns: ['**/*.{html,js,css,woff2,png,svg}'],
 
-          /* ================= CUTOVER ONLY — REVERT IN DEPLOY 2 =============
-             DELETE skipWaiting, clientsClaim and importScripts below, and
-             delete public/sw-legacy-purge.js, once a real device confirms the
-             legacy worker is gone. Everything else in this block stays.
+          /* THE CUTOVER FORCING IS GONE, deploy 2 of two. skipWaiting,
+             clientsClaim and the imported legacy-cache purge lived here for
+             exactly one deploy: they existed to drag every installed client off
+             the legacy worker, which a real device has now confirmed they did.
 
-             WHY FORCE ACTIVATION ONCE. app-v2's worker lands at the same script
-             URL and scope as the legacy one, so it arrives as an update to that
-             registration — but an update WAITS while any client the old worker
-             controls is still open. In a TWA that means until the student fully
-             exits, which for an offline student is an unbounded time on the old
-             app. skipWaiting activates it on install instead; clientsClaim hands
-             the open page over rather than leaving it on a worker that is no
-             longer there.
+             WHAT THIS RESTORES. Without them the worker behaves the way
+             registerType 'prompt' always intended — a new build installs
+             silently, sits in `waiting` while any tab is open, and takes over on
+             the next launch. A student mid-quiz is never reloaded and never
+             has the worker swapped underneath their session.
 
-             THIS DOES NOT RELOAD ANYONE, which is why registerType stays
-             'prompt'. The reload students fear comes from autoUpdate's injected
-             registration listening for controllerchange and calling
-             location.reload — prompt's registration has no such listener, and
-             the plugin only forces these two flags on when registerType IS
-             'autoUpdate' (vite-plugin-pwa dist/index.js:874-877), so setting
-             them here does not smuggle that behaviour in. A student mid-quiz
-             keeps their session; the worker under them simply changes.
+             THE PURGE IS SAFE TO DROP, and not because vocabpro-v47 no longer
+             exists anywhere: a device that has taken any app-v2 update has
+             already run it, and a device that has not will fetch the CURRENT
+             worker first — which still carries it — before it ever sees this
+             one. The script cannot be skipped over. */
 
-             ONE CAVEAT WORTH KNOWING: clientsClaim hands a still-running LEGACY
-             page to a worker with no routes for legacy URLs. Online that falls
-             through to the network harmlessly. Offline it breaks that one
-             session until the next reload — which is strictly better than the
-             same student staying on the old build indefinitely.
-             ================================================================ */
-          skipWaiting: true,
-          clientsClaim: true,
-
-          /* Workbox's own housekeeping: retires precaches written by earlier
-             Workbox versions. It does NOT touch vocabpro-v*, which is a foreign
-             cache name — that is what the imported script is for. */
+          /* Workbox's own housekeeping, and never part of the cutover: retires
+             precaches written by earlier Workbox versions. It has no opinion
+             about foreign cache names. */
           cleanupOutdatedCaches: true,
-
-          /* THE ONLY EXTENSION POINT generateSW OFFERS. It writes the worker
-             from a template and accepts no arbitrary activate handler, so
-             custom code arrives via importScripts, emitted at the top of sw.js.
-             The path is relative to the worker's own URL, so it follows
-             DEPLOY_BASE without being restated. No move to injectManifest is
-             needed or made. */
-          importScripts: ['sw-legacy-purge.js'],
         },
       }),
     ],
