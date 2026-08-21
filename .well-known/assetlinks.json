@@ -3,6 +3,9 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.literaryrides.vocabpro",
-    "sha256_cert_fingerprints": ["B7:11:75:45:E0:94:9A:CA:E0:87:D4:04:9F:C0:9E:EA:15:C4:7E:9A:0A:C5:C1:ED:CE:FC:D5:65:37:E0:F4:64"]
+    "sha256_cert_fingerprints": [
+      "B7:11:75:45:E0:94:9A:CA:E0:87:D4:04:9F:C0:9E:EA:15:C4:7E:9A:0A:C5:C1:ED:CE:FC:D5:65:37:E0:F4:64",
+      "80:40:93:9B:45:CB:8B:A2:F4:F7:3B:44:5D:86:8E:E8:AD:4F:9D:15:E2:A6:C0:87:9D:E1:B6:7A:89:82:0E:DB"
+    ]
   }
 }]
