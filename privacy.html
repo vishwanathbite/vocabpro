@@ -11,9 +11,9 @@
   <link rel="icon" type="image/png" href="/vocabpro/icons/icon-192.png" />
   <style>
     :root {
-      --bg: #0f0d1a; --surface: #1a1730; --border: #2d2a4a;
-      --purple: #7c3aed; --purple-light: #a78bfa; --blue: #3b82f6;
-      --text: #e2e8f0; --text-muted: #94a3b8;
+      --bg: #071B2F; --surface: #0F2B47; --border: #1D3B5A;
+      --orange: #F47B20; --on-orange: #071B2F;
+      --text: #F7F7F4; --text-muted: #A9B8C8;
       --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,17 +30,16 @@
     .icon { font-size: 48px; margin-bottom: 16px; }
     h1 {
       font-size: 26px; font-weight: 800; margin-bottom: 12px;
-      background: linear-gradient(135deg, var(--purple-light), var(--blue));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      color: var(--text);
     }
     p { color: var(--text-muted); font-size: 15px; margin-bottom: 24px; }
     .cta {
       display: inline-block; padding: 14px 28px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--purple), var(--blue));
-      color: #fff; font-size: 16px; font-weight: 600; text-decoration: none;
+      background: var(--orange);
+      color: var(--on-orange); font-size: 16px; font-weight: 600; text-decoration: none;
     }
     .cta:hover { opacity: 0.9; }
-    .back { display: block; margin-top: 24px; color: var(--purple-light); font-size: 14px; text-decoration: none; }
+    .back { display: block; margin-top: 24px; color: var(--orange); font-size: 14px; text-decoration: none; }
     .back:hover { text-decoration: underline; }
     @media (max-width: 600px) { main { padding: 36px 20px; } h1 { font-size: 22px; } }
   </style>
