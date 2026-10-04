@@ -1,0 +1,19 @@
+Copyright (c) 2026 Dr Vishwanath Bite / Literary Rides. All rights reserved.
+
+This licence covers the VocabPro application: its source code, its built
+files, and its vocabulary content, including the word lists, definitions,
+synonyms, antonyms, example sentences, mnemonics, explanations, one-word
+substitutes, acronyms and their arrangement.
+
+No part of it may be copied, modified, redistributed, republished or used to
+build another product, in whole or in part, without prior written permission
+from the copyright holder. Being able to view these files, for example in a
+public repository or a web browser, grants no licence to reuse them.
+
+Third-party components keep their own licences and are not covered above:
+- The Inter and Playfair Display fonts are under the SIL Open Font License
+  1.1; see the *-OFL.txt files beside the font files.
+- React and the other npm packages bundled into the build are under their own
+  licences (mostly MIT), as recorded in each package.
+
+For permission requests, contact Literary Rides via https://literaryrides.com.
