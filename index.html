@@ -6,7 +6,13 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/vocabpro/icons/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="48x48" href="/vocabpro/icons/favicon-48.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Navy for both themes: it matches the Play app's navy status bar, and
+         Paper & Ink's own top bar is navy too. -->
     <meta name="theme-color" content="#071B2F" />
+    <!-- Stamps the Navy Night or Paper & Ink theme before the first paint. A
+         file rather than inline code because the Content-Security-Policy
+         forbids inline scripts; see public/theme-boot.js. -->
+    <script src="/vocabpro/theme-boot.js"></script>
     <title>VocabPro – Vocabulary for Exams</title>
     <meta
       name="description"
@@ -26,8 +32,8 @@
          origin means changing that policy too. -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
     data-cf-beacon='{"token": "8c578877abcb4bceace296cda65fb4b9"}'></script>
-    <script type="module" crossorigin src="/vocabpro/assets/index-DSHZPwrp.js"></script>
-    <link rel="stylesheet" crossorigin href="/vocabpro/assets/index-NmFK4Nmz.css">
+    <script type="module" crossorigin src="/vocabpro/assets/index-D6mwJXou.js"></script>
+    <link rel="stylesheet" crossorigin href="/vocabpro/assets/index-Hst3IuoC.css">
   <link rel="manifest" href="/vocabpro/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/vocabpro/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
