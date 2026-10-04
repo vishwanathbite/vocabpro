@@ -15,5 +15,8 @@ Third-party components keep their own licences and are not covered above:
   1.1; see the *-OFL.txt files beside the font files.
 - React and the other npm packages bundled into the build are under their own
   licences (mostly MIT), as recorded in each package.
+- LexiRide's list of everyday English words is derived from the "3of6game" list in
+  the 12dicts word lists by Alan Beale (version 6.0.2), released into the public
+  domain. Acknowledgment of its use is requested and given here and in the app.
 
 For permission requests, contact Literary Rides via https://literaryrides.com.
